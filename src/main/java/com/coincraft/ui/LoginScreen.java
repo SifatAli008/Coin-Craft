@@ -2,6 +2,7 @@ package com.coincraft.ui;
 
 import java.util.logging.Logger;
 
+import com.coincraft.audio.SoundManager;
 import com.coincraft.models.User;
 import com.coincraft.models.UserRole;
 import com.coincraft.services.FirebaseService;
@@ -20,6 +21,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
@@ -30,7 +32,7 @@ import javafx.util.Duration;
 public class LoginScreen {
     private static final Logger LOGGER = Logger.getLogger(LoginScreen.class.getName());
     
-    private VBox root;
+    private StackPane root;
     private TextField emailField;
     private PasswordField passwordField;
     private Button loginButton;
@@ -42,6 +44,7 @@ public class LoginScreen {
     public interface LoginCallback {
         void onLoginSuccess(User user);
         void onLoginFailed(String error);
+        void onNavigateToSignUp();
     }
     
     public LoginScreen(LoginCallback callback) {
@@ -50,15 +53,17 @@ public class LoginScreen {
     }
     
     private void initializeUI() {
-        root = new VBox(0);
+        root = new StackPane();
         root.setPadding(new Insets(0));
         root.setAlignment(Pos.CENTER);
-        // Load Pixelify Sans font
+        
+        // Load Minecraft font
         try {
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/Pixelify_Sans/static/PixelifySans-Regular.ttf"), 14);
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/Pixelify_Sans/static/PixelifySans-Bold.ttf"), 14);
+            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 14);
+            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 16);
+            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 18);
         } catch (Exception e) {
-            System.out.println("Could not load Pixelify Sans font: " + e.getMessage());
+            System.out.println("Could not load Minecraft font: " + e.getMessage());
         }
         
         // Set animated GIF background
@@ -77,17 +82,23 @@ public class LoginScreen {
         darkOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         darkOverlay.setMouseTransparent(true); // Allow clicks to pass through
         
-        // Create main login card
+        // Create main login card with status label container
+        VBox centerContainer = new VBox(20);
+        centerContainer.setAlignment(Pos.CENTER);
+        centerContainer.setMaxWidth(420);
+        
         VBox loginCard = createLoginCard();
         
         // Status label
         statusLabel = new Label();
-        statusLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 20 0 0 0;");
+        statusLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 0 0 0;");
         statusLabel.setWrapText(true);
         statusLabel.setMaxWidth(400);
         statusLabel.setAlignment(Pos.CENTER);
         
-        root.getChildren().addAll(darkOverlay, loginCard, statusLabel);
+        centerContainer.getChildren().addAll(loginCard, statusLabel);
+        
+        root.getChildren().addAll(darkOverlay, centerContainer);
         try { new FadeIn(root).play(); } catch (Throwable ignored) {}
     }
     
@@ -119,22 +130,22 @@ public class LoginScreen {
             "-fx-font-size: 16px;" +
             "-fx-font-weight: bold;" +
             "-fx-text-fill: #FF9800;" +
-            "-fx-font-family: 'Pixelify Sans', 'Courier New', monospace;"
+            "-fx-font-family: 'Minecraft', 'Courier New', monospace;"
         );
         
-        Label titleLabel = new Label("🪙CoinCraft🛠️");
+        Label titleLabel = new Label("CoinCraft");
         titleLabel.setStyle(
             "-fx-font-size: 28px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #000000;" +
-            "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        Label subtitleLabel = new Label("Begin your financial adventure • Level up your money skills");
+        Label subtitleLabel = new Label("Level up your money skills");
         subtitleLabel.setStyle(
             "-fx-font-size: 16px;" +
             "-fx-text-fill: #000000;" +
-            "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
         titleSection.getChildren().addAll(gameLabel, titleLabel, subtitleLabel);
@@ -152,7 +163,7 @@ public class LoginScreen {
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #000000;" +
-            "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
         emailField = new TextField();
@@ -167,10 +178,11 @@ public class LoginScreen {
             "-fx-background-radius: 8;" +
             "-fx-padding: 12 16;" +
             "-fx-font-size: 14px;" +
-            "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         emailField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
+                SoundManager.getInstance().playInputClick();
                 emailField.setStyle(emailField.getStyle() + "-fx-border-color: #FF9800; -fx-border-width: 2;");
             } else {
                 emailField.setStyle(emailField.getStyle().replace("-fx-border-color: #FF9800; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
@@ -182,31 +194,13 @@ public class LoginScreen {
         // Password field
         VBox passwordSection = new VBox(8);
         
-        HBox passwordHeader = new HBox();
-        passwordHeader.setAlignment(Pos.CENTER_LEFT);
-        
         Label passwordLabel = new Label("Password");
         passwordLabel.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #000000;" +
-            "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
-        
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-        Label forgotLabel = new Label("Forgot password?");
-        forgotLabel.setStyle(
-            "-fx-font-size: 14px;" +
-            "-fx-text-fill: #FF9800;" +
-            "-fx-underline: true;" +
-            "-fx-cursor: hand;" +
-            "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;"
-        );
-        forgotLabel.setOnMouseClicked(e -> showStatus("Password reset coming soon!", true));
-        
-        passwordHeader.getChildren().addAll(passwordLabel, spacer, forgotLabel);
         
         passwordField = new PasswordField();
         passwordField.setPrefWidth(340);
@@ -219,17 +213,34 @@ public class LoginScreen {
             "-fx-background-radius: 8;" +
             "-fx-padding: 12 16;" +
             "-fx-font-size: 14px;" +
-            "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         passwordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
+                SoundManager.getInstance().playInputClick();
                 passwordField.setStyle(passwordField.getStyle() + "-fx-border-color: #FF9800; -fx-border-width: 2;");
             } else {
                 passwordField.setStyle(passwordField.getStyle().replace("-fx-border-color: #FF9800; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
             }
         });
         
-        passwordSection.getChildren().addAll(passwordHeader, passwordField);
+        // Forgot password link
+        Label forgotLabel = new Label("Forgot password?");
+        forgotLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-text-fill: #FF9800;" +
+            "-fx-underline: true;" +
+            "-fx-cursor: hand;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-padding: 8 0 0 0;"
+        );
+        forgotLabel.setOnMouseClicked(e -> showStatus("Password reset coming soon!", true));
+        
+        HBox forgotContainer = new HBox();
+        forgotContainer.setAlignment(Pos.CENTER_RIGHT);
+        forgotContainer.getChildren().add(forgotLabel);
+        
+        passwordSection.getChildren().addAll(passwordLabel, passwordField, forgotContainer);
         
         // Gaming-style login button
         loginButton = new Button("🚀 START ADVENTURE");
@@ -243,10 +254,11 @@ public class LoginScreen {
             "-fx-background-radius: 8;" +
             "-fx-border-radius: 8;" +
             "-fx-cursor: hand;" +
-            "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
             "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.4), 8, 0, 0, 2);"
         );
         loginButton.setOnMouseEntered(e -> {
+            SoundManager.getInstance().playButtonHover();
             loginButton.setStyle(
                 "-fx-background-color: #000000;" +
                 "-fx-text-fill: white;" +
@@ -255,7 +267,7 @@ public class LoginScreen {
                 "-fx-background-radius: 8;" +
                 "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
-                "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
                 "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 16, 0, 0, 4);" +
                 "-fx-scale-x: 1.05; -fx-scale-y: 1.05;"
             );
@@ -269,11 +281,14 @@ public class LoginScreen {
                 "-fx-background-radius: 8;" +
                 "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
-                "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
                 "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.4), 8, 0, 0, 2);"
             );
         });
-        loginButton.setOnAction(e -> handleLogin());
+        loginButton.setOnAction(e -> {
+            SoundManager.getInstance().playButtonClick();
+            handleLogin();
+        });
         
         // Divider
         HBox divider = new HBox(12);
@@ -288,7 +303,7 @@ public class LoginScreen {
         orLabel.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-text-fill: #6b7280;" +
-            "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
         Region rightLine = new Region();
@@ -310,10 +325,11 @@ public class LoginScreen {
             "-fx-background-radius: 8;" +
             "-fx-border-radius: 8;" +
             "-fx-cursor: hand;" +
-            "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
             "-fx-effect: dropshadow(gaussian, rgba(66,133,244,0.4), 8, 0, 0, 2);"
         );
         googleSignInButton.setOnMouseEntered(e -> {
+            SoundManager.getInstance().playButtonHover();
             googleSignInButton.setStyle(
                 "-fx-background-color: #3367d6;" +
                 "-fx-text-fill: white;" +
@@ -322,7 +338,7 @@ public class LoginScreen {
                 "-fx-background-radius: 8;" +
                 "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
-                "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
                 "-fx-effect: dropshadow(gaussian, rgba(51,103,214,0.8), 16, 0, 0, 4);" +
                 "-fx-scale-x: 1.05; -fx-scale-y: 1.05;"
             );
@@ -336,11 +352,14 @@ public class LoginScreen {
                 "-fx-background-radius: 8;" +
                 "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
-                "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
                 "-fx-effect: dropshadow(gaussian, rgba(66,133,244,0.4), 8, 0, 0, 2);"
             );
         });
-        googleSignInButton.setOnAction(e -> handleGoogleSignIn());
+        googleSignInButton.setOnAction(e -> {
+            SoundManager.getInstance().playButtonClick();
+            handleGoogleSignIn();
+        });
         
         // Sign up link
         HBox signupSection = new HBox(4);
@@ -350,19 +369,24 @@ public class LoginScreen {
         noAccountLabel.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-text-fill: #000000;" +
-            "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
         Label signupLabel = new Label("Sign up");
         signupLabel.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-text-fill: #FF9800;" +
-            "-fx-font-weight: 600;" +
+            "-fx-font-weight: 700;" +
             "-fx-underline: true;" +
             "-fx-cursor: hand;" +
-            "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
-        signupLabel.setOnMouseClicked(e -> showStatus("Registration coming soon!", true));
+        signupLabel.setOnMouseClicked(e -> {
+            SoundManager.getInstance().playButtonClick();
+            if (callback != null) {
+                callback.onNavigateToSignUp();
+            }
+        });
         
         signupSection.getChildren().addAll(noAccountLabel, signupLabel);
         
@@ -381,7 +405,8 @@ public class LoginScreen {
             return;
         }
         
-        showStatus("Signing in...", true);
+        showStatus("🚀 Starting your adventure...", true);
+        loginButton.setText("🌟 LAUNCHING...");
         loginButton.setDisable(true);
         
         // Authenticate in background thread
@@ -392,27 +417,38 @@ public class LoginScreen {
                 
                 Platform.runLater(() -> {
                     loginButton.setDisable(false);
+                    loginButton.setText("🚀 START ADVENTURE");
                     
                     if (userId != null) {
                         // Load user data
                         User user = firebaseService.loadUser(userId);
                         if (user != null) {
-                            showStatus("Login successful! Welcome back, " + user.getName(), true);
-                            if (callback != null) {
-                                callback.onLoginSuccess(user);
-                            }
+                            SoundManager.getInstance().playAdventureStart();
+                            showStatus("🎉 Adventure started! Welcome, " + user.getName() + "!", true);
+                            
+                            // Small delay for better UX before transitioning
+                            Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+                                if (callback != null) {
+                                    callback.onLoginSuccess(user);
+                                }
+                            }));
+                            timeline.play();
                         } else {
-                            showStatus("Login failed: Could not load user data", false);
+                            SoundManager.getInstance().playError();
+                            showStatus("❌ Could not load your profile. Please try again.", false);
                         }
                     } else {
-                        showStatus("Login failed: Invalid email or password", false);
+                        SoundManager.getInstance().playError();
+                        showStatus("❌ Invalid credentials. Check your email and password.", false);
                     }
                 });
                 
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     loginButton.setDisable(false);
-                    showStatus("Login error: " + e.getMessage(), false);
+                    loginButton.setText("🚀 START ADVENTURE");
+                    SoundManager.getInstance().playError();
+                    showStatus("⚠️ Connection error: " + e.getMessage(), false);
                     LOGGER.severe(() -> "Login error: " + e.getMessage());
                 });
             }
@@ -439,6 +475,7 @@ public class LoginScreen {
                         googleUser.setDailyStreaks(1);
                         googleUser.setLastLogin(java.time.LocalDateTime.now());
                         
+                        SoundManager.getInstance().playSuccess();
                         showStatus("Google sign-in successful! Welcome!", true);
                         
                         // Small delay before transitioning
@@ -451,6 +488,7 @@ public class LoginScreen {
                         
                     } catch (Exception e) {
                         googleSignInButton.setDisable(false);
+                        SoundManager.getInstance().playError();
                         showStatus("Google sign-in failed: " + e.getMessage(), false);
                         LOGGER.severe(() -> "Google sign-in error: " + e.getMessage());
                     }

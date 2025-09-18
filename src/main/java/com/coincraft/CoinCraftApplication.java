@@ -6,6 +6,7 @@ import com.coincraft.models.User;
 import com.coincraft.services.FirebaseService;
 import com.coincraft.ui.LoginScreen;
 import com.coincraft.ui.MainDashboard;
+import com.coincraft.ui.RegistrationScreen;
 import com.coincraft.ui.theme.PixelSkin;
 
 import javafx.application.Application;
@@ -48,52 +49,7 @@ public class CoinCraftApplication extends Application {
             }
             
             // Create and show login screen first
-            LoginScreen loginScreen = new LoginScreen(new LoginScreen.LoginCallback() {
-                @Override
-                public void onLoginSuccess(User user) {
-                    // Switch to main dashboard after successful login
-                    Platform.runLater(() -> {
-                        try {
-                            MainDashboard dashboard = new MainDashboard();
-                            Scene dashboardScene = new Scene(dashboard.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
-                            
-                            // Load CSS styles
-                            try {
-                                dashboardScene.getStylesheets().add(
-                                    getClass().getResource("/styles/coincraft-styles.css").toExternalForm()
-                                );
-                            } catch (Exception e) {
-                                System.out.println("Could not load CSS styles: " + e.getMessage());
-                            }
-                            
-                            primaryStage.setScene(dashboardScene);
-                            primaryStage.setTitle(APP_TITLE + " - " + user.getName());
-                            
-                        } catch (Exception e) {
-                            System.err.println("Error switching to dashboard: " + e.getMessage());
-                        }
-                    });
-                }
-                
-                @Override
-                public void onLoginFailed(String error) {
-                    System.err.println("Login failed: " + error);
-                }
-            });
-            
-            Scene scene = new Scene(loginScreen.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
-            
-            // Load CSS styles
-            try {
-                scene.getStylesheets().add(
-                    getClass().getResource("/styles/coincraft-styles.css").toExternalForm()
-                );
-            } catch (Exception e) {
-                System.out.println("Could not load CSS styles: " + e.getMessage());
-            }
-            
-            PixelSkin.apply(scene);
-            primaryStage.setScene(scene);
+            showLoginScreen(primaryStage);
             primaryStage.show();
             
             System.out.println("CoinCraft application started successfully!");
@@ -101,6 +57,82 @@ public class CoinCraftApplication extends Application {
         } catch (Exception e) {
             System.err.println("Error starting CoinCraft application: " + e.getMessage());
             LOGGER.severe(() -> "Application startup error: " + e.getMessage());
+        }
+    }
+    
+    private void showLoginScreen(Stage primaryStage) {
+        LoginScreen loginScreen = new LoginScreen(new LoginScreen.LoginCallback() {
+            @Override
+            public void onLoginSuccess(User user) {
+                showMainDashboard(primaryStage, user);
+            }
+            
+            @Override
+            public void onLoginFailed(String error) {
+                System.err.println("Login failed: " + error);
+            }
+            
+            @Override
+            public void onNavigateToSignUp() {
+                showRegistrationScreen(primaryStage);
+            }
+        });
+        
+        Scene scene = new Scene(loginScreen.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
+        loadStyles(scene);
+        PixelSkin.apply(scene);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle(APP_TITLE + " - Login");
+    }
+    
+    private void showRegistrationScreen(Stage primaryStage) {
+        RegistrationScreen registrationScreen = new RegistrationScreen(new RegistrationScreen.RegistrationCallback() {
+            @Override
+            public void onRegistrationSuccess(User user) {
+                showMainDashboard(primaryStage, user);
+            }
+            
+            @Override
+            public void onRegistrationFailed(String error) {
+                System.err.println("Registration failed: " + error);
+            }
+            
+            @Override
+            public void onBackToLogin() {
+                showLoginScreen(primaryStage);
+            }
+        });
+        
+        Scene scene = new Scene(registrationScreen.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
+        loadStyles(scene);
+        PixelSkin.apply(scene);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle(APP_TITLE + " - Registration");
+    }
+    
+    private void showMainDashboard(Stage primaryStage, User user) {
+        Platform.runLater(() -> {
+            try {
+                MainDashboard dashboard = new MainDashboard();
+                Scene dashboardScene = new Scene(dashboard.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
+                loadStyles(dashboardScene);
+                
+                primaryStage.setScene(dashboardScene);
+                primaryStage.setTitle(APP_TITLE + " - " + user.getName());
+                
+            } catch (Exception e) {
+                System.err.println("Error switching to dashboard: " + e.getMessage());
+            }
+        });
+    }
+    
+    private void loadStyles(Scene scene) {
+        try {
+            scene.getStylesheets().add(
+                getClass().getResource("/styles/coincraft-styles.css").toExternalForm()
+            );
+        } catch (Exception e) {
+            System.out.println("Could not load CSS styles: " + e.getMessage());
         }
     }
     
