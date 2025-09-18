@@ -59,7 +59,7 @@ public class LoginScreen {
         }
         
         // Set animated GIF background
-        String backgroundImage = getClass().getResource("/images/bd565dcc0a556add0b0a0ed6b26d686e.gif").toExternalForm();
+        String backgroundImage = getClass().getResource("/images/3a8256b391b0de71639848f2815c2b14.gif").toExternalForm();
         root.setStyle(
             "-fx-background-image: url('" + backgroundImage + "');" +
             "-fx-background-size: cover;" +
