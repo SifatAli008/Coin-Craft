@@ -4,6 +4,8 @@
 
 CoinCraft is an educational application that teaches children (ages 7-14) financial literacy through an engaging, gamified experience. Players explore "Treasure Town" and complete quests to learn essential money management skills including budgeting, saving, banking, investing, and social responsibility.
 
+CoinCraft makes learning money fun for kids through a gamified experience. It uses interactive lessons, real-world tasks, and game elements like points, badges, quests, leaderboards, and avatars. Kids learn budgeting, saving, banking, investing, and social responsibility in an engaging, practical way.
+
 ## Features
 
 ### Core Features (MVP)
@@ -67,8 +69,8 @@ src/
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd coincraft
+   git clone https://github.com/SifatAli008/Coin-Craft.git
+   cd Coin-Craft
    ```
 
 2. **Build the project**
