@@ -100,6 +100,9 @@ public class LoginScreen {
         
         root.getChildren().addAll(darkOverlay, centerContainer);
         try { new FadeIn(root).play(); } catch (Throwable ignored) {}
+        
+        // Start background music
+        SoundManager.getInstance().startBackgroundMusic();
     }
     
     private VBox createLoginCard() {
