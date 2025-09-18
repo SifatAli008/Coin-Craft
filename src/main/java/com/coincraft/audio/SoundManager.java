@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javafx.scene.media.AudioClip;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 
 /**
  * Sound manager for CoinCraft application
@@ -15,12 +17,16 @@ public class SoundManager {
     private static SoundManager instance;
     
     private Map<String, AudioClip> soundCache;
+    private MediaPlayer backgroundMusicPlayer;
     private boolean soundEnabled = true;
+    private boolean musicEnabled = true;
     private double volume = 0.5; // 50% volume by default
+    private double musicVolume = 0.3; // 30% volume for background music
     
     private SoundManager() {
         soundCache = new HashMap<>();
         loadSounds();
+        loadBackgroundMusic();
     }
     
     public static synchronized SoundManager getInstance() {
@@ -46,6 +52,26 @@ public class SoundManager {
             LOGGER.info("Sound effects loaded successfully");
         } catch (Exception e) {
             LOGGER.warning("Could not load all sound effects: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Load background music
+     */
+    private void loadBackgroundMusic() {
+        try {
+            var resource = getClass().getResource("/sounds/adventure-319767.mp3");
+            if (resource != null) {
+                Media media = new Media(resource.toExternalForm());
+                backgroundMusicPlayer = new MediaPlayer(media);
+                backgroundMusicPlayer.setVolume(musicVolume);
+                backgroundMusicPlayer.setCycleCount(MediaPlayer.INDEFINITE); // Loop indefinitely
+                LOGGER.info("Background music loaded: adventure-319767.mp3");
+            } else {
+                LOGGER.warning("Background music file not found: /sounds/adventure-319767.mp3");
+            }
+        } catch (Exception e) {
+            LOGGER.warning("Failed to load background music: " + e.getMessage());
         }
     }
     
@@ -138,6 +164,62 @@ public class SoundManager {
     }
     
     /**
+     * Start background music
+     */
+    public void startBackgroundMusic() {
+        if (backgroundMusicPlayer != null && musicEnabled) {
+            try {
+                backgroundMusicPlayer.play();
+                LOGGER.info("Background music started");
+            } catch (Exception e) {
+                LOGGER.warning("Error starting background music: " + e.getMessage());
+            }
+        }
+    }
+    
+    /**
+     * Stop background music
+     */
+    public void stopBackgroundMusic() {
+        if (backgroundMusicPlayer != null) {
+            try {
+                backgroundMusicPlayer.stop();
+                LOGGER.info("Background music stopped");
+            } catch (Exception e) {
+                LOGGER.warning("Error stopping background music: " + e.getMessage());
+            }
+        }
+    }
+    
+    /**
+     * Pause background music
+     */
+    public void pauseBackgroundMusic() {
+        if (backgroundMusicPlayer != null) {
+            try {
+                backgroundMusicPlayer.pause();
+                LOGGER.info("Background music paused");
+            } catch (Exception e) {
+                LOGGER.warning("Error pausing background music: " + e.getMessage());
+            }
+        }
+    }
+    
+    /**
+     * Resume background music
+     */
+    public void resumeBackgroundMusic() {
+        if (backgroundMusicPlayer != null && musicEnabled) {
+            try {
+                backgroundMusicPlayer.play();
+                LOGGER.info("Background music resumed");
+            } catch (Exception e) {
+                LOGGER.warning("Error resuming background music: " + e.getMessage());
+            }
+        }
+    }
+    
+    /**
      * Enable or disable sound effects
      */
     public void setSoundEnabled(boolean enabled) {
@@ -150,6 +232,26 @@ public class SoundManager {
      */
     public boolean isSoundEnabled() {
         return soundEnabled;
+    }
+    
+    /**
+     * Enable or disable background music
+     */
+    public void setMusicEnabled(boolean enabled) {
+        this.musicEnabled = enabled;
+        if (enabled) {
+            startBackgroundMusic();
+        } else {
+            stopBackgroundMusic();
+        }
+        LOGGER.info("Background music " + (enabled ? "enabled" : "disabled"));
+    }
+    
+    /**
+     * Check if music is enabled
+     */
+    public boolean isMusicEnabled() {
+        return musicEnabled;
     }
     
     /**
@@ -176,6 +278,27 @@ public class SoundManager {
     }
     
     /**
+     * Set music volume level (0.0 to 1.0)
+     */
+    public void setMusicVolume(double volume) {
+        this.musicVolume = Math.max(0.0, Math.min(1.0, volume));
+        
+        // Update volume for background music player
+        if (backgroundMusicPlayer != null) {
+            backgroundMusicPlayer.setVolume(this.musicVolume);
+        }
+        
+        LOGGER.info("Music volume set to: " + (this.musicVolume * 100) + "%");
+    }
+    
+    /**
+     * Get current music volume level
+     */
+    public double getMusicVolume() {
+        return musicVolume;
+    }
+    
+    /**
      * Stop all currently playing sounds
      */
     public void stopAllSounds() {
@@ -195,6 +318,11 @@ public class SoundManager {
      */
     public void shutdown() {
         stopAllSounds();
+        stopBackgroundMusic();
+        if (backgroundMusicPlayer != null) {
+            backgroundMusicPlayer.dispose();
+            backgroundMusicPlayer = null;
+        }
         soundCache.clear();
         LOGGER.info("SoundManager shutdown complete");
     }

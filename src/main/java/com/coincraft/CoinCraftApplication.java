@@ -113,12 +113,12 @@ public class CoinCraftApplication extends Application {
     private void showMainDashboard(Stage primaryStage, User user) {
         Platform.runLater(() -> {
             try {
-                MainDashboard dashboard = new MainDashboard();
+                MainDashboard dashboard = new MainDashboard(user);
                 Scene dashboardScene = new Scene(dashboard.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
                 loadStyles(dashboardScene);
                 
                 primaryStage.setScene(dashboardScene);
-                primaryStage.setTitle(APP_TITLE + " - " + user.getName());
+                primaryStage.setTitle(APP_TITLE + " - " + user.getName() + " (" + user.getRole() + ")");
                 
             } catch (Exception e) {
                 System.err.println("Error switching to dashboard: " + e.getMessage());
