@@ -93,8 +93,8 @@ public class MainDashboard {
         appBar.getStyleClass().add("app-bar");
         appBar.setAlignment(Pos.CENTER_LEFT);
 
-        Label title = new Label("Welcome back, Money Explorer!");
-        title.getStyleClass().add("app-title");
+        welcomeLabel = new Label("Welcome back, Money Explorer!");
+        welcomeLabel.getStyleClass().add("app-title");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -105,7 +105,7 @@ public class MainDashboard {
         Button settings = new Button("Settings");
         actions.getChildren().addAll(help, settings);
 
-        appBar.getChildren().addAll(title, spacer, actions);
+        appBar.getChildren().addAll(welcomeLabel, spacer, actions);
 
         // Secondary row with level info
         HBox levelRow = new HBox(12);
