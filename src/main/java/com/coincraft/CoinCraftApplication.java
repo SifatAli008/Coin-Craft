@@ -1,0 +1,121 @@
+package com.coincraft;
+
+import java.util.logging.Logger;
+
+import com.coincraft.models.User;
+import com.coincraft.services.FirebaseService;
+import com.coincraft.ui.LoginScreen;
+import com.coincraft.ui.MainDashboard;
+import com.coincraft.ui.theme.PixelSkin;
+
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
+
+/**
+ * Main application class for CoinCraft - Interactive Gamified Financial Literacy Platform
+ * 
+ * This application teaches children financial concepts through a fully gamified experience
+ * combining interactive digital modules, real-world partner-validated tasks, and game elements.
+ */
+public class CoinCraftApplication extends Application {
+    private static final Logger LOGGER = Logger.getLogger(CoinCraftApplication.class.getName());
+    private static final String APP_TITLE = "CoinCraft - Money Explorer Adventure";
+    private static final int WINDOW_WIDTH = 1200;
+    private static final int WINDOW_HEIGHT = 800;
+    
+    @Override
+    public void start(Stage primaryStage) {
+        try {
+            // Initialize Firebase service
+            FirebaseService.getInstance().initialize();
+            
+            // Set up the main window
+            primaryStage.setTitle(APP_TITLE);
+            primaryStage.setWidth(WINDOW_WIDTH);
+            primaryStage.setHeight(WINDOW_HEIGHT);
+            primaryStage.setResizable(true);
+            
+            // Set application icon
+            try {
+                primaryStage.getIcons().add(new Image(
+                    getClass().getResourceAsStream("/images/coincraft-icon.png")
+                ));
+            } catch (Exception e) {
+                System.out.println("Could not load application icon: " + e.getMessage());
+            }
+            
+            // Create and show login screen first
+            LoginScreen loginScreen = new LoginScreen(new LoginScreen.LoginCallback() {
+                @Override
+                public void onLoginSuccess(User user) {
+                    // Switch to main dashboard after successful login
+                    Platform.runLater(() -> {
+                        try {
+                            MainDashboard dashboard = new MainDashboard();
+                            Scene dashboardScene = new Scene(dashboard.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
+                            
+                            // Load CSS styles
+                            try {
+                                dashboardScene.getStylesheets().add(
+                                    getClass().getResource("/styles/coincraft-styles.css").toExternalForm()
+                                );
+                            } catch (Exception e) {
+                                System.out.println("Could not load CSS styles: " + e.getMessage());
+                            }
+                            
+                            primaryStage.setScene(dashboardScene);
+                            primaryStage.setTitle(APP_TITLE + " - " + user.getName());
+                            
+                        } catch (Exception e) {
+                            System.err.println("Error switching to dashboard: " + e.getMessage());
+                        }
+                    });
+                }
+                
+                @Override
+                public void onLoginFailed(String error) {
+                    System.err.println("Login failed: " + error);
+                }
+            });
+            
+            Scene scene = new Scene(loginScreen.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
+            
+            // Load CSS styles
+            try {
+                scene.getStylesheets().add(
+                    getClass().getResource("/styles/coincraft-styles.css").toExternalForm()
+                );
+            } catch (Exception e) {
+                System.out.println("Could not load CSS styles: " + e.getMessage());
+            }
+            
+            PixelSkin.apply(scene);
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            
+            System.out.println("CoinCraft application started successfully!");
+            
+        } catch (Exception e) {
+            System.err.println("Error starting CoinCraft application: " + e.getMessage());
+            LOGGER.severe(() -> "Application startup error: " + e.getMessage());
+        }
+    }
+    
+    @Override
+    public void stop() {
+        try {
+            // Cleanup resources
+            FirebaseService.getInstance().shutdown();
+            System.out.println("CoinCraft application stopped successfully.");
+        } catch (Exception e) {
+            System.err.println("Error during application shutdown: " + e.getMessage());
+        }
+    }
+    
+    public static void main(String[] args) {
+        launch(args);
+    }
+}

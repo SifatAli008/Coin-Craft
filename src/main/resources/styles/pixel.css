@@ -1,0 +1,162 @@
+/* Modern Pixel Art Gamified Theme - Clean + Retro Gaming Elements */
+
+/* Root styling - Modern with pixel touches */
+.pixel-root {
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+    -fx-font-size: 14px;
+}
+
+/* Gaming accent elements */
+.pixel-accent {
+    -fx-font-family: "Courier New", "Monaco", monospace;
+    -fx-font-weight: bold;
+}
+
+/* 8-bit style buttons (chunky borders, retro colors) */
+.pixel-button {
+    -fx-background-color: #000000;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+    -fx-background-radius: 0;
+    -fx-border-color: #000000;
+    -fx-border-width: 4 4 4 4;
+    -fx-border-style: solid;
+    -fx-padding: 12 24;
+    -fx-font-size: 12px;
+    -fx-font-family: "Courier New", monospace;
+}
+.pixel-button:hover {
+    -fx-background-color: #333333;
+}
+.pixel-button:pressed {
+    -fx-background-color: #000000;
+}
+
+/* 8-bit style cards (thick borders, retro panel look) */
+.pixel-card {
+    -fx-background-color: #F5F5F5;
+    -fx-background-radius: 0;
+    -fx-border-color: #000000;
+    -fx-border-width: 4 4 4 4;
+    -fx-border-style: solid;
+    -fx-padding: 20;
+}
+
+/* Login form styling */
+.pixel-login-form {
+    -fx-background-color: #F5F5F5;
+    -fx-background-radius: 0;
+    -fx-border-color: #000000;
+    -fx-border-width: 6 6 6 6;
+    -fx-border-style: solid;
+    -fx-padding: 30;
+    -fx-spacing: 20;
+}
+
+/* Input fields */
+.pixel-input {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 0;
+    -fx-border-color: #000000;
+    -fx-border-width: 3 3 3 3;
+    -fx-border-style: solid;
+    -fx-padding: 8 12;
+    -fx-font-family: "Courier New", monospace;
+    -fx-font-size: 12px;
+}
+
+/* Labels */
+.pixel-label {
+    -fx-text-fill: #000000;
+    -fx-font-family: "Courier New", monospace;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* 8-bit navigation (like retro game menu) */
+.pixel-nav {
+    -fx-background-color: #2E2E2E;
+    -fx-border-color: #000000;
+    -fx-border-width: 0 3 0 0;
+    -fx-border-style: solid;
+}
+.pixel-nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 12 16;
+    -fx-font-size: 10px;
+}
+.pixel-nav-button:hover {
+    -fx-background-color: #404040;
+}
+.pixel-nav-selected {
+    -fx-background-color: #FF9800;
+    -fx-text-fill: #000000;
+}
+
+/* 8-bit progress bars (blocky segments) */
+.pixel-progress {
+    -fx-accent: #00FF00;
+    -fx-background-color: #404040;
+    -fx-border-color: #000000;
+    -fx-border-width: 2;
+    -fx-background-radius: 0;
+}
+
+/* 8-bit text styling */
+.pixel-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFFFFF;
+    -fx-effect: dropshadow(one-pass-box, #000000, 1, 0, 1, 1);
+}
+
+/* Retro background */
+.retro-bg-dark {
+    -fx-background-color: #1a1a2e;
+}
+
+/* Secondary button variant */
+.pixel-button-secondary {
+    -fx-background-color: #757575;
+    -fx-text-fill: #FFFFFF;
+}
+.pixel-button-secondary:hover {
+    -fx-background-color: #9E9E9E;
+}
+
+/* Highlighted card variant */
+.pixel-card-highlighted {
+    -fx-background-color: #FFE082;
+    -fx-border-color: #FF9800;
+    -fx-border-width: 4;
+    -fx-effect: dropshadow(one-pass-box, #FF9800, 4, 0, 0, 0);
+}
+
+/* 8-bit level tiles */
+.pixel-level-tile {
+    -fx-background-color: #4CAF50;
+    -fx-border-color: #000000;
+    -fx-border-width: 3;
+    -fx-background-radius: 0;
+    -fx-text-fill: #000000;
+    -fx-font-weight: bold;
+    -fx-padding: 16;
+}
+.pixel-level-tile:hover {
+    -fx-translate-y: -2;
+    -fx-background-color: #66BB6A;
+}
+.pixel-level-current {
+    -fx-background-color: #FFD700;
+    -fx-effect: dropshadow(one-pass-box, #FFA000, 4, 0, 0, 0);
+}
+.pixel-level-locked {
+    -fx-background-color: #757575;
+    -fx-text-fill: #424242;
+}
+
