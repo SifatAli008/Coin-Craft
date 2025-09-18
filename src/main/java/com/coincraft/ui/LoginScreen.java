@@ -7,6 +7,8 @@ import com.coincraft.models.UserRole;
 import com.coincraft.services.FirebaseService;
 
 import animatefx.animation.FadeIn;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -20,6 +22,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.util.Duration;
 
 /**
  * Modern hackday-style login screen based on sprightly-platypus-6aa71e.netlify.app
@@ -31,7 +34,7 @@ public class LoginScreen {
     private TextField emailField;
     private PasswordField passwordField;
     private Button loginButton;
-    private Button demoButton;
+    private Button googleSignInButton;
     private Label statusLabel;
     
     private final LoginCallback callback;
@@ -59,7 +62,7 @@ public class LoginScreen {
         }
         
         // Set animated GIF background
-        String backgroundImage = getClass().getResource("/images/3a8256b391b0de71639848f2815c2b14.gif").toExternalForm();
+        String backgroundImage = getClass().getResource("/images/bd565dcc0a556add0b0a0ed6b26d686e.gif").toExternalForm();
         root.setStyle(
             "-fx-background-image: url('" + backgroundImage + "');" +
             "-fx-background-size: cover;" +
@@ -111,7 +114,7 @@ public class LoginScreen {
         VBox titleSection = new VBox(4);
         titleSection.setAlignment(Pos.CENTER);
         
-        Label gameLabel = new Label("🏰 COINCRAFT 💰");
+        Label gameLabel = new Label("Wealcome to Coincraft");
         gameLabel.setStyle(
             "-fx-font-size: 16px;" +
             "-fx-font-weight: bold;" +
@@ -119,7 +122,7 @@ public class LoginScreen {
             "-fx-font-family: 'Pixelify Sans', 'Courier New', monospace;"
         );
         
-        Label titleLabel = new Label("Welcome to Treasure Town");
+        Label titleLabel = new Label("🪙CoinCraft🛠️");
         titleLabel.setStyle(
             "-fx-font-size: 28px;" +
             "-fx-font-weight: 700;" +
@@ -295,12 +298,12 @@ public class LoginScreen {
         
         divider.getChildren().addAll(leftLine, orLabel, rightLine);
         
-        // Gaming demo button
-        demoButton = new Button("🎮 DEMO MODE");
-        demoButton.setPrefWidth(340);
-        demoButton.setPrefHeight(48);
-        demoButton.setStyle(
-            "-fx-background-color: #FF9800;" +
+        // Google Sign-in button
+        googleSignInButton = new Button("🔍 SIGN IN WITH GOOGLE");
+        googleSignInButton.setPrefWidth(340);
+        googleSignInButton.setPrefHeight(48);
+        googleSignInButton.setStyle(
+            "-fx-background-color: #4285f4;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 600;" +
@@ -308,11 +311,11 @@ public class LoginScreen {
             "-fx-border-radius: 8;" +
             "-fx-cursor: hand;" +
             "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;" +
-            "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.4), 8, 0, 0, 2);"
+            "-fx-effect: dropshadow(gaussian, rgba(66,133,244,0.4), 8, 0, 0, 2);"
         );
-        demoButton.setOnMouseEntered(e -> {
-            demoButton.setStyle(
-                "-fx-background-color: #000000;" +
+        googleSignInButton.setOnMouseEntered(e -> {
+            googleSignInButton.setStyle(
+                "-fx-background-color: #3367d6;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 16px;" +
                 "-fx-font-weight: 600;" +
@@ -320,13 +323,13 @@ public class LoginScreen {
                 "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
                 "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;" +
-                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 16, 0, 0, 4);" +
+                "-fx-effect: dropshadow(gaussian, rgba(51,103,214,0.8), 16, 0, 0, 4);" +
                 "-fx-scale-x: 1.05; -fx-scale-y: 1.05;"
             );
         });
-        demoButton.setOnMouseExited(e -> {
-            demoButton.setStyle(
-                "-fx-background-color: #FF9800;" +
+        googleSignInButton.setOnMouseExited(e -> {
+            googleSignInButton.setStyle(
+                "-fx-background-color: #4285f4;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 16px;" +
                 "-fx-font-weight: 600;" +
@@ -334,10 +337,10 @@ public class LoginScreen {
                 "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
                 "-fx-font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;" +
-                "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.4), 8, 0, 0, 2);"
+                "-fx-effect: dropshadow(gaussian, rgba(66,133,244,0.4), 8, 0, 0, 2);"
             );
         });
-        demoButton.setOnAction(e -> handleDemoLogin());
+        googleSignInButton.setOnAction(e -> handleGoogleSignIn());
         
         // Sign up link
         HBox signupSection = new HBox(4);
@@ -363,7 +366,7 @@ public class LoginScreen {
         
         signupSection.getChildren().addAll(noAccountLabel, signupLabel);
         
-        form.getChildren().addAll(emailSection, passwordSection, loginButton, divider, demoButton);
+        form.getChildren().addAll(emailSection, passwordSection, loginButton, divider, googleSignInButton);
         card.getChildren().addAll(header, form, signupSection);
         
         return card;
@@ -416,18 +419,49 @@ public class LoginScreen {
         }).start();
     }
     
-    private void handleDemoLogin() {
-        showStatus("Loading demo mode...", true);
+    private void handleGoogleSignIn() {
+        showStatus("Signing in with Google...", true);
+        googleSignInButton.setDisable(true);
         
-        // Create demo user
-        User demoUser = new User("demo_user", "Money Explorer", UserRole.CHILD, 10);
-        demoUser.setSmartCoinBalance(100);
-        demoUser.setLevel(2);
-        demoUser.setDailyStreaks(3);
-        
-        if (callback != null) {
-            callback.onLoginSuccess(demoUser);
-        }
+        // Simulate Google OAuth flow (in a real app, this would open browser/WebView)
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000); // Simulate network delay
+                
+                Platform.runLater(() -> {
+                    try {
+                        // For now, create a demo Google user
+                        // In production, this would handle actual Google OAuth response
+                        User googleUser = new User("google_user_123", "Google User", UserRole.CHILD, 10);
+                        googleUser.setEmail("user@gmail.com");
+                        googleUser.setSmartCoinBalance(50);
+                        googleUser.setLevel(1);
+                        googleUser.setDailyStreaks(1);
+                        googleUser.setLastLogin(java.time.LocalDateTime.now());
+                        
+                        showStatus("Google sign-in successful! Welcome!", true);
+                        
+                        // Small delay before transitioning
+                        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+                            if (callback != null) {
+                                callback.onLoginSuccess(googleUser);
+                            }
+                        }));
+                        timeline.play();
+                        
+                    } catch (Exception e) {
+                        googleSignInButton.setDisable(false);
+                        showStatus("Google sign-in failed: " + e.getMessage(), false);
+                        LOGGER.severe(() -> "Google sign-in error: " + e.getMessage());
+                    }
+                });
+            } catch (InterruptedException e) {
+                Platform.runLater(() -> {
+                    googleSignInButton.setDisable(false);
+                    showStatus("Google sign-in cancelled", false);
+                });
+            }
+        }).start();
     }
     
     private void showStatus(String message, boolean isSuccess) {

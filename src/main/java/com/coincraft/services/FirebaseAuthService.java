@@ -144,6 +144,41 @@ public class FirebaseAuthService {
         }
     }
     
+    /**
+     * Sign in user with Google OAuth token
+     * In production, this would handle the actual Google OAuth flow
+     */
+    public AuthResult signInWithGoogle(String idToken) {
+        try {
+            // In a real implementation, this would:
+            // 1. Verify the Google ID token
+            // 2. Extract user information from the token
+            // 3. Create or update the user in Firebase
+            // 4. Return authentication result
+            
+            // For now, simulate the process
+            Thread.sleep(1000); // Simulate network delay
+            
+            // Mock successful Google sign-in
+            AuthResult result = new AuthResult();
+            result.setSuccess(true);
+            result.setUserId("google_user_123");
+            result.setIdToken("mock_firebase_token");
+            result.setEmail("user@gmail.com");
+            result.setDisplayName("Google User");
+            
+            LOGGER.info("Google sign-in successful for user: " + result.getEmail());
+            return result;
+            
+        } catch (InterruptedException e) {
+            LOGGER.severe("Google sign-in interrupted: " + e.getMessage());
+            return createErrorResult("Google sign-in was cancelled");
+        } catch (Exception e) {
+            LOGGER.severe("Google sign-in error: " + e.getMessage());
+            return createErrorResult("Google sign-in failed: " + e.getMessage());
+        }
+    }
+    
     private AuthResult createErrorResult(String errorMessage) {
         AuthResult result = new AuthResult();
         result.setSuccess(false);
