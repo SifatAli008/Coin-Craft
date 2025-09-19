@@ -12,8 +12,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 // import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 
 /**
  * Avatar display component showing the user's customizable character
@@ -30,47 +28,130 @@ public class AvatarDisplay {
         initializeComponent();
     }
     
+    public AvatarDisplay(User user) {
+        this.currentUser = user;
+        initializeComponent();
+        updateDisplay();
+    }
+    
     private void initializeComponent() {
-        root = new VBox(10);
+        root = new VBox(8);
         root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(15));
+        root.setPadding(new Insets(12));
+        root.setStyle(
+            "-fx-background-color: rgba(255, 255, 255, 0.9);" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
+            "-fx-border-color: rgba(255, 255, 255, 0.6);" +
+            "-fx-border-width: 2;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0, 0, 4);"
+        );
         root.getStyleClass().add("avatar-display");
         
-        // Avatar image with circular frame
+        // Avatar image with circular frame and border
         avatarImageView = new ImageView();
-        avatarImageView.setFitWidth(120);
-        avatarImageView.setFitHeight(120);
+        avatarImageView.setFitWidth(70);
+        avatarImageView.setFitHeight(70);
         avatarImageView.setPreserveRatio(true);
         
         // Create circular clip for avatar
-        Circle clip = new Circle(60, 60, 60);
+        Circle clip = new Circle(35, 35, 35);
         avatarImageView.setClip(clip);
+        
+        // Add border effect to avatar
+        avatarImageView.setStyle(
+            "-fx-effect: dropshadow(gaussian, #FF9800, 8, 0, 0, 0)," +
+            "           dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 3);"
+        );
         
         // Load default avatar image
         try {
             Image defaultAvatar = new Image(getClass().getResourceAsStream("/images/avatars/default_explorer.png"));
             avatarImageView.setImage(defaultAvatar);
         } catch (Exception e) {
-            // Create a placeholder if image not found
-            avatarImageView.setStyle("-fx-background-color: #4CAF50; -fx-background-radius: 60;");
+            // Create a colorful placeholder if image not found
+            avatarImageView.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #4CAF50, #388E3C);" +
+                "-fx-background-radius: 35;" +
+                "-fx-effect: dropshadow(gaussian, #FF9800, 6, 0, 0, 0)," +
+                "           dropshadow(gaussian, rgba(0,0,0,0.3), 4, 0, 0, 2);"
+            );
         }
         
-        // Avatar name
+        // Avatar name with gaming style
         nameLabel = new Label("Money Explorer");
-        nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        nameLabel.setStyle(
+            "-fx-font-size: 13px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #000000;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0, 0, 1);"
+        );
         nameLabel.getStyleClass().add("avatar-name");
         
-        // Level badge
+        // Level badge with gaming style
         levelLabel = new Label("Level 1");
-        levelLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
+        levelLabel.setStyle(
+            "-fx-background-color: #FF9800;" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 10px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-padding: 4 8;" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
+            "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.4), 4, 0, 0, 2);"
+        );
         levelLabel.getStyleClass().add("avatar-level");
-        levelLabel.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; " +
-                          "-fx-padding: 5 10; -fx-background-radius: 15;");
         
-        // Customize button
-        customizeButton = new Button("Customize Avatar");
+        // Customize button with gaming style
+        customizeButton = new Button("🎨 Customize");
+        customizeButton.setStyle(
+            "-fx-background-color: #4CAF50;" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 10px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-background-radius: 6;" +
+            "-fx-border-radius: 6;" +
+            "-fx-cursor: hand;" +
+            "-fx-padding: 4 8;" +
+            "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.3), 4, 0, 0, 2);"
+        );
         customizeButton.getStyleClass().add("customize-button");
         customizeButton.setOnAction(e -> openCustomization());
+        
+        // Add hover effects
+        customizeButton.setOnMouseEntered(e -> {
+            customizeButton.setStyle(
+                "-fx-background-color: #388E3C;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 10px;" +
+                "-fx-font-weight: 600;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-background-radius: 6;" +
+                "-fx-border-radius: 6;" +
+                "-fx-cursor: hand;" +
+                "-fx-padding: 4 8;" +
+                "-fx-effect: dropshadow(gaussian, rgba(56,142,60,0.5), 6, 0, 0, 3);" +
+                "-fx-scale-x: 1.05; -fx-scale-y: 1.05;"
+            );
+        });
+        
+        customizeButton.setOnMouseExited(e -> {
+            customizeButton.setStyle(
+                "-fx-background-color: #4CAF50;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 10px;" +
+                "-fx-font-weight: 600;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-background-radius: 6;" +
+                "-fx-border-radius: 6;" +
+                "-fx-cursor: hand;" +
+                "-fx-padding: 4 8;" +
+                "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.3), 4, 0, 0, 2);"
+            );
+        });
         
         root.getChildren().addAll(avatarImageView, nameLabel, levelLabel, customizeButton);
     }
@@ -102,14 +183,48 @@ public class AvatarDisplay {
     }
     
     private void openCustomization() {
-        // TODO: Open avatar customization dialog
         System.out.println("Opening avatar customization...");
         
-        // For MVP, show a simple message
+        // Create gaming-style customization dialog
         javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-        alert.setTitle("Avatar Customization");
-        alert.setHeaderText("Customize Your Character");
-        alert.setContentText("Avatar customization will be available soon! Complete more levels to unlock new items.");
+        alert.setTitle("Avatar Workshop");
+        alert.setHeaderText("🎨 Customize Your Adventurer!");
+        
+        String content = "Welcome to the Avatar Workshop!\n\n" +
+                        "🎯 Current Customization Options:\n" +
+                        "• Hair styles and colors\n" +
+                        "• Clothing and accessories\n" +
+                        "• Special adventure gear\n" +
+                        "• Unlock rewards from completed quests\n\n" +
+                        "🔓 Unlock More Items:\n" +
+                        "• Complete learning quests\n" +
+                        "• Earn special badges\n" +
+                        "• Reach higher levels\n" +
+                        "• Participate in events\n\n" +
+                        "✨ Full customization system coming soon!\n" +
+                        "Keep adventuring to unlock amazing new items!";
+        
+        alert.setContentText(content);
+        
+        // Style the dialog with game theme
+        alert.getDialogPane().setStyle(
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-background-color: rgba(255, 255, 255, 0.95);" +
+            "-fx-background-radius: 16;" +
+            "-fx-border-radius: 16;" +
+            "-fx-border-color: #FF9800;" +
+            "-fx-border-width: 2;" +
+            "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.3), 16, 0, 0, 8);"
+        );
+        
+        // Play sound effect if available
+        try {
+            // In a real implementation, you might play a customization sound here
+            System.out.println("🔊 Playing customization workshop sound...");
+        } catch (Exception e) {
+            // Sound not available, continue silently
+        }
+        
         alert.showAndWait();
     }
     
@@ -119,5 +234,23 @@ public class AvatarDisplay {
     
     public User getCurrentUser() {
         return currentUser;
+    }
+    
+    /**
+     * Update the display with current user data
+     */
+    private void updateDisplay() {
+        if (currentUser != null) {
+            nameLabel.setText(currentUser.getName());
+            levelLabel.setText("Level " + currentUser.getLevel());
+            loadAvatarImage(currentUser.getAvatar());
+        }
+    }
+    
+    /**
+     * Refresh the display (public method)
+     */
+    public void refresh() {
+        updateDisplay();
     }
 }

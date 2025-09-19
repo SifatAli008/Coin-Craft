@@ -16,6 +16,7 @@ public class User {
     private int age;
     private int level;
     private int smartCoinBalance;
+    private int experiencePoints;
     private List<Task> currentTasks;
     private List<Badge> earnedBadges;
     private Avatar avatar;
@@ -31,6 +32,7 @@ public class User {
         this.avatar = new Avatar();
         this.level = 1;
         this.smartCoinBalance = 0;
+        this.experiencePoints = 0;
         this.dailyStreaks = 0;
         this.leaderboardRank = 0;
         this.createdAt = LocalDateTime.now();
@@ -65,6 +67,12 @@ public class User {
     
     public int getSmartCoinBalance() { return smartCoinBalance; }
     public void setSmartCoinBalance(int smartCoinBalance) { this.smartCoinBalance = smartCoinBalance; }
+    
+    public int getExperiencePoints() { return experiencePoints; }
+    public void setExperiencePoints(int experiencePoints) { this.experiencePoints = experiencePoints; }
+    
+    // Convenience method for getId (alias for getUserId)
+    public String getId() { return userId; }
     
     public List<Task> getCurrentTasks() { return currentTasks; }
     public void setCurrentTasks(List<Task> currentTasks) { this.currentTasks = currentTasks; }

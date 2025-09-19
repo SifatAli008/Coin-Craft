@@ -12,7 +12,11 @@ public enum BadgeCategory {
     INVESTING("Investment & Growth"),
     SOCIAL("Social Responsibility"),
     ACHIEVEMENT("General Achievement"),
-    STREAK("Consistency & Streaks");
+    STREAK("Consistency & Streaks"),
+    LEARNING("Learning & Education"),
+    CREATIVITY("Creative Arts"),
+    FITNESS("Physical Fitness"),
+    SPECIAL("Special Events");
     
     private final String displayName;
     

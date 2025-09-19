@@ -7,8 +7,10 @@ import java.time.LocalDateTime;
  */
 public class Task {
     private String taskId;
+    private String title;
     private String description;
     private String assignedBy;
+    private double progressPercentage;
     private LocalDateTime deadline;
     private boolean completed;
     private int rewardCoins;
@@ -25,22 +27,39 @@ public class Task {
         this.completed = false;
         this.createdAt = LocalDateTime.now();
         this.difficultyLevel = 1;
+        this.progressPercentage = 0.0;
     }
     
     public Task(String taskId, String description, TaskType type, int rewardCoins) {
         this();
         this.taskId = taskId;
+        this.title = description; // Use description as title by default
         this.description = description;
         this.type = type;
         this.rewardCoins = rewardCoins;
+    }
+    
+    public Task(String taskId, String title, String description, TaskType type, String assignedBy) {
+        this();
+        this.taskId = taskId;
+        this.title = title;
+        this.description = description;
+        this.type = type;
+        this.assignedBy = assignedBy;
     }
     
     // Getters and Setters
     public String getTaskId() { return taskId; }
     public void setTaskId(String taskId) { this.taskId = taskId; }
     
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+    
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    
+    public double getProgressPercentage() { return progressPercentage; }
+    public void setProgressPercentage(double progressPercentage) { this.progressPercentage = progressPercentage; }
     
     public String getAssignedBy() { return assignedBy; }
     public void setAssignedBy(String assignedBy) { this.assignedBy = assignedBy; }
