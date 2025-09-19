@@ -9,6 +9,8 @@ public enum TaskType {
     QUEST("Adventure Quest"),
     DONATION("Donation Activity"),
     LEARNING("Learning Module"),
+    CREATIVE("Creative Activity"),
+    PHYSICAL("Physical Activity"),
     SOCIAL("Social Activity");
     
     private final String displayName;
@@ -32,6 +34,8 @@ public enum TaskType {
             case QUEST -> 20;
             case DONATION -> 25;
             case LEARNING -> 5;
+            case CREATIVE -> 12;
+            case PHYSICAL -> 8;
             case SOCIAL -> 30;
         };
     }

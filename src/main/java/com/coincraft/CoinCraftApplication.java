@@ -7,6 +7,7 @@ import com.coincraft.services.FirebaseService;
 import com.coincraft.ui.LoginScreen;
 import com.coincraft.ui.MainDashboard;
 import com.coincraft.ui.RegistrationScreen;
+import com.coincraft.ui.routing.DashboardRouter;
 import com.coincraft.ui.theme.PixelSkin;
 
 import javafx.application.Application;
@@ -113,15 +114,30 @@ public class CoinCraftApplication extends Application {
     private void showMainDashboard(Stage primaryStage, User user) {
         Platform.runLater(() -> {
             try {
-                MainDashboard dashboard = new MainDashboard(user);
-                Scene dashboardScene = new Scene(dashboard.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
+                // Use the new dashboard router for role-based navigation
+                DashboardRouter router = DashboardRouter.getInstance();
+                Scene dashboardScene = new Scene(router.routeToDashboard(user), WINDOW_WIDTH, WINDOW_HEIGHT);
                 loadStyles(dashboardScene);
                 
                 primaryStage.setScene(dashboardScene);
                 primaryStage.setTitle(APP_TITLE + " - " + user.getName() + " (" + user.getRole() + ")");
                 
+                LOGGER.info(() -> "Loaded " + user.getRole() + " dashboard for user: " + user.getName());
+                
             } catch (Exception e) {
                 System.err.println("Error switching to dashboard: " + e.getMessage());
+                LOGGER.severe(() -> "Dashboard routing error: " + e.getMessage());
+                
+                // Fallback to original dashboard
+                try {
+                    MainDashboard dashboard = new MainDashboard(user);
+                    Scene dashboardScene = new Scene(dashboard.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
+                    loadStyles(dashboardScene);
+                    primaryStage.setScene(dashboardScene);
+                    primaryStage.setTitle(APP_TITLE + " - " + user.getName() + " (Fallback)");
+                } catch (Exception fallbackError) {
+                    System.err.println("Fallback dashboard also failed: " + fallbackError.getMessage());
+                }
             }
         });
     }

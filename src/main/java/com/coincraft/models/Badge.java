@@ -31,6 +31,15 @@ public class Badge {
         this.level = level;
     }
     
+    public Badge(String badgeId, String name, String description, BadgeCategory category, BadgeLevel level) {
+        this();
+        this.badgeId = badgeId;
+        this.name = name;
+        this.description = description;
+        this.category = category;
+        this.level = level;
+    }
+    
     // Getters and Setters
     public String getBadgeId() { return badgeId; }
     public void setBadgeId(String badgeId) { this.badgeId = badgeId; }

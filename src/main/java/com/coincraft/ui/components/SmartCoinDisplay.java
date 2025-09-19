@@ -1,5 +1,6 @@
 package com.coincraft.ui.components;
 
+import com.coincraft.models.User;
 import javafx.animation.ScaleTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -21,22 +22,37 @@ public class SmartCoinDisplay {
     private Label balanceLabel;
     private ImageView coinIcon;
     private int currentBalance;
+    private User currentUser;
     
     public SmartCoinDisplay() {
         initializeComponent();
     }
     
+    public SmartCoinDisplay(User user) {
+        this.currentUser = user;
+        initializeComponent();
+        updateBalance();
+    }
+    
     private void initializeComponent() {
-        root = new VBox(10);
+        root = new VBox(6);
         root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(15));
+        root.setPadding(new Insets(10));
+        root.setStyle(
+            "-fx-background-color: #FFF8DC;" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-color: #EAB308;" +
+            "-fx-border-radius: 12;" +
+            "-fx-border-width: 2;" +
+            "-fx-effect: dropshadow(gaussian, rgba(234,179,8,0.3), 8, 0, 0, 4);"
+        );
         root.getStyleClass().add("smartcoin-display");
         root.getStyleClass().add("pixel-card");
         
         // Coin icon
         coinIcon = new ImageView();
-        coinIcon.setFitWidth(40);
-        coinIcon.setFitHeight(40);
+        coinIcon.setFitWidth(28);
+        coinIcon.setFitHeight(28);
         coinIcon.setPreserveRatio(true);
         
         // Load coin icon or create placeholder
@@ -45,21 +61,29 @@ public class SmartCoinDisplay {
             coinIcon.setImage(coinImage);
         } catch (Exception e) {
             // Create a styled placeholder
-            coinIcon.setStyle("-fx-background-color: #FFD700; -fx-background-radius: 20;");
+            coinIcon.setStyle("-fx-background-color: #FFD700; -fx-background-radius: 14;");
         }
         
         // Balance display
-        HBox balanceBox = new HBox(8);
+        HBox balanceBox = new HBox(6);
         balanceBox.setAlignment(Pos.CENTER);
         
         balanceLabel = new Label("0");
-        balanceLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        balanceLabel.setStyle(
+            "-fx-font-size: 18px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #B8860B;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
         balanceLabel.getStyleClass().add("balance-label");
-        balanceLabel.setStyle("-fx-text-fill: #B8860B;");
         
         Label coinText = new Label("SmartCoins");
-        coinText.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
-        coinText.setStyle("-fx-text-fill: #8B7355;");
+        coinText.setStyle(
+            "-fx-font-size: 10px;" +
+            "-fx-font-weight: 500;" +
+            "-fx-text-fill: #8B7355;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
         
         balanceBox.getChildren().addAll(coinIcon, balanceLabel);
         
@@ -126,5 +150,21 @@ public class SmartCoinDisplay {
     
     public int getCurrentBalance() {
         return currentBalance;
+    }
+    
+    /**
+     * Update balance from user data
+     */
+    private void updateBalance() {
+        if (currentUser != null) {
+            updateBalance(currentUser.getSmartCoinBalance());
+        }
+    }
+    
+    /**
+     * Refresh the display (public method)
+     */
+    public void refresh() {
+        updateBalance();
     }
 }
