@@ -21,8 +21,9 @@ public class AdminDashboard extends BaseDashboard {
     
     @Override
     protected void initializeUI() {
-        root = new BorderPane();
-        root.getStyleClass().add("admin-dashboard");
+        BorderPane borderPane = new BorderPane();
+        borderPane.getStyleClass().add("admin-dashboard");
+        root = borderPane;
         
         // Temporary placeholder content
         VBox centerContent = new VBox(20);
@@ -65,7 +66,7 @@ public class AdminDashboard extends BaseDashboard {
         descriptionLabel.setWrapText(true);
         
         centerContent.getChildren().addAll(titleLabel, welcomeLabel, descriptionLabel);
-        root.setCenter(centerContent);
+        borderPane.setCenter(centerContent);
         
         // Apply admin-specific theme
         applyAdminTheme();
@@ -82,7 +83,7 @@ public class AdminDashboard extends BaseDashboard {
         );
         
         // Update text colors for dark theme
-        VBox centerContent = (VBox) root.getCenter();
+        VBox centerContent = (VBox) ((BorderPane) root).getCenter();
         if (centerContent != null && centerContent.getChildren().size() >= 2) {
             Label welcomeLabel = (Label) centerContent.getChildren().get(1);
             welcomeLabel.setStyle(welcomeLabel.getStyle().replace("#333333", "#FFFFFF"));

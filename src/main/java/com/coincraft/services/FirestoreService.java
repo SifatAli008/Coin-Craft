@@ -423,4 +423,51 @@ public class FirestoreService {
         }
         return false;
     }
+    
+    /**
+     * Get all users from Firestore
+     */
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        try {
+            String url = config.getFirestoreUrl() + "/users";
+            
+            Request request = new Request.Builder()
+                    .url(url)
+                    .addHeader("Authorization", "Bearer " + idToken)
+                    .get()
+                    .build();
+            
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String responseBody = response.body().string();
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
+                    
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> documents = (List<Map<String, Object>>) responseMap.get("documents");
+                    
+                    if (documents != null) {
+                        for (Map<String, Object> doc : documents) {
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> fields = (Map<String, Object>) doc.get("fields");
+                            User user = convertFirestoreToUser(fields);
+                            if (user != null) {
+                                users.add(user);
+                            }
+                        }
+                    }
+                    
+                    LOGGER.info("Successfully loaded " + users.size() + " users from Firestore");
+                } else {
+                    LOGGER.warning("Failed to load users from Firestore: " + response.code());
+                }
+            }
+            
+        } catch (Exception e) {
+            LOGGER.severe("Error loading users from Firestore: " + e.getMessage());
+        }
+        
+        return users;
+    }
 }

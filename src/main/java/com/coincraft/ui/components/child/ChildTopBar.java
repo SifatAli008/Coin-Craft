@@ -1,5 +1,7 @@
 package com.coincraft.ui.components.child;
 
+import java.time.LocalDateTime;
+
 import com.coincraft.models.User;
 
 import javafx.geometry.Insets;
@@ -11,8 +13,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.shape.Circle;
-
-import java.time.LocalDateTime;
 
 /**
  * Top bar for Child Dashboard
@@ -31,15 +31,17 @@ public class ChildTopBar {
     
     private void initializeUI() {
         root = new HBox(8);
-        root.setPadding(new Insets(8));
+        root.setPadding(new Insets(16, 16, 16, 16));
+        root.setMinHeight(60);
+        root.setPrefHeight(60);
         root.setAlignment(Pos.CENTER_LEFT);
         root.setStyle(
             "-fx-background-color: rgba(255, 255, 255, 0.9);" +
-            "-fx-background-radius: 0 0 12 12;" +
-            "-fx-border-radius: 0 0 12 12;" +
-            "-fx-border-color: rgba(255, 255, 255, 0.7);" +
-            "-fx-border-width: 1;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0, 0, 4);"
+            "-fx-background-radius: 0 0 16 16;" +
+            "-fx-border-radius: 0 0 16 16;" +
+            "-fx-border-color: rgba(255, 255, 255, 0.3);" +
+            "-fx-border-width: 0 0 1 0;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 10);"
         );
         
         // Compact avatar with just image and level

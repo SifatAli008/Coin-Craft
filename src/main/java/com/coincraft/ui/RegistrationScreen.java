@@ -21,7 +21,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -76,7 +75,7 @@ public class RegistrationScreen {
         }
         
         // Set animated GIF background
-        String backgroundImage = getClass().getResource("/images/bd565dcc0a556add0b0a0ed6b26d686e.gif").toExternalForm();
+        String backgroundImage = getClass().getResource("/images/588a44195922117.66168b374ece8-ezgif.com-webp-to-gif-converter.gif").toExternalForm();
         root.setStyle(
             "-fx-background-image: url('" + backgroundImage + "');" +
             "-fx-background-size: cover;" +
@@ -378,7 +377,7 @@ public class RegistrationScreen {
         thirdRow.getChildren().addAll(passwordSection, confirmPasswordSection);
         
         // Registration button
-        signUpButton = new Button("CREATE ADVENTURER ID");
+        signUpButton = new Button("⚔️ CREATE YOUR MERCHANT ID");
         signUpButton.setPrefWidth(580);
         signUpButton.setPrefHeight(48);
         signUpButton.setStyle(
@@ -494,7 +493,7 @@ public class RegistrationScreen {
             return;
         }
         
-        showStatus("🏰 Creating your adventurer profile...", true);
+        showStatus("🏰 Creating your merchant profile...", true);
         signUpButton.setText("⚡ CREATING...");
         signUpButton.setDisable(true);
         
@@ -533,7 +532,7 @@ public class RegistrationScreen {
                         
                     } catch (Exception e) {
                         signUpButton.setDisable(false);
-                        signUpButton.setText("⚔️ CREATE ADVENTURER");
+                        signUpButton.setText("⚔️ CREATE YOUR MERCHANT ID");
                         SoundManager.getInstance().playError();
                         showStatus("❌ Failed to create account: " + e.getMessage(), false);
                         LOGGER.severe(() -> "Registration error: " + e.getMessage());

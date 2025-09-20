@@ -1,7 +1,6 @@
 package com.coincraft.ui.routing;
 
 import com.coincraft.models.User;
-import com.coincraft.models.UserRole;
 import com.coincraft.ui.dashboards.AdminDashboard;
 import com.coincraft.ui.dashboards.BaseDashboard;
 import com.coincraft.ui.dashboards.ChildDashboard;
@@ -108,6 +107,12 @@ public class DashboardRouter {
      * Logout and clear current session
      */
     public void logout() {
+        // Clear Firebase authentication state
+        com.coincraft.services.FirebaseService firebaseService = com.coincraft.services.FirebaseService.getInstance();
+        if (firebaseService != null) {
+            firebaseService.clearAuthState();
+        }
+        
         currentUser = null;
         currentDashboard = null;
     }
