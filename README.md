@@ -9,11 +9,15 @@ CoinCraft makes learning money fun for kids through a gamified experience. It us
 ## Features
 
 ### Core Features (MVP)
-- **Interactive Dashboard**: Avatar display, SmartCoin balance, progress tracking
+- **Role-Based Dashboards**: Separate interfaces for Children, Parents, and Administrators
+- **Interactive Child Dashboard**: Avatar display, SmartCoin balance, progress tracking, gamified UI
+- **Parent Management Portal**: Task validation, family analytics, child monitoring tools
 - **Level-Based Learning**: 10 progressive levels covering different financial topics
-- **Gamification Elements**: Badges, achievements, leaderboards, daily streaks
-- **Task System**: Chore tracking with partner validation
-- **Avatar Customization**: 2D character customization with unlockable items
+- **Gamification Elements**: Badges, achievements, leaderboards, daily streaks, pixel-themed UI
+- **Task System**: Comprehensive chore tracking with real-time parent validation
+- **Avatar Customization**: 2D character customization with unlockable items and animations
+- **Audio System**: Background music, sound effects, and audio feedback
+- **Cross-Platform Support**: Windows launcher with automatic JavaFX setup
 
 ### Key Characters (NPCs)
 - **Elder Pennywise**: Wise mentor and guide
@@ -40,20 +44,33 @@ src/
 │   ├── java/
 │   │   └── com/coincraft/
 │   │       ├── CoinCraftApplication.java    # Main application entry
+│   │       ├── audio/                       # Audio system
+│   │       │   └── SoundManager.java
 │   │       ├── models/                      # Data models
-│   │       │   ├── User.java
-│   │       │   ├── Task.java
-│   │       │   ├── Badge.java
-│   │       │   └── Avatar.java
+│   │       │   ├── User.java, Task.java, Badge.java
+│   │       │   ├── Avatar.java, AvatarItem.java
+│   │       │   └── UserRole.java, ValidationStatus.java
 │   │       ├── services/                    # Business logic
-│   │       │   └── FirebaseService.java
+│   │       │   ├── FirebaseService.java
+│   │       │   ├── FirebaseAuthService.java
+│   │       │   ├── FirestoreService.java
+│   │       │   └── RewardService.java
 │   │       └── ui/                          # User interface
-│   │           ├── MainDashboard.java
-│   │           └── components/
+│   │           ├── dashboards/              # Role-based dashboards
+│   │           │   ├── ChildDashboard.java
+│   │           │   ├── ParentDashboard.java
+│   │           │   └── AdminDashboard.java
+│   │           ├── components/              # UI components
+│   │           │   ├── child/               # Child-specific components
+│   │           │   ├── parent/              # Parent-specific components
+│   │           │   └── theme/               # Pixel-themed components
+│   │           ├── routing/                 # Navigation system
+│   │           └── LoginScreen.java, RegistrationScreen.java
 │   └── resources/
-│       ├── styles/
-│       │   └── coincraft-styles.css
-│       └── images/                          # Visual assets
+│       ├── styles/                          # CSS styling
+│       ├── images/                          # Visual assets & GIFs
+│       ├── sounds/                          # Audio files
+│       └── fonts/                           # Custom pixel fonts
 └── test/
     └── java/                                # Unit tests
 ```
@@ -79,6 +96,13 @@ src/
    ```
 
 3. **Run the application**
+   
+   **Option A: Using the launcher (Recommended for Windows)**
+   ```bash
+   launch-coincraft.bat
+   ```
+   
+   **Option B: Using Maven**
    ```bash
    mvn javafx:run
    ```
@@ -91,9 +115,11 @@ src/
 ### Development Mode
 
 For development, the application runs in mock mode with:
-- Simulated Firebase authentication
-- Sample user data and tasks
-- Mock leaderboard data
+- Simulated Firebase authentication with role-based access
+- Sample user data, tasks, and family structures
+- Mock leaderboard and analytics data
+- Automated launcher with JavaFX environment detection
+- Audio system with sample sound effects and music
 
 ## Game Progression
 
@@ -125,14 +151,18 @@ For development, the application runs in mock mode with:
 
 ## Development Timeline (MVP)
 
-This MVP was developed as a 2-3 day demonstration focusing on:
+This MVP has been significantly expanded with comprehensive features:
 - ✅ Core project structure and models
-- ✅ Main dashboard with all components
-- ✅ Firebase integration (mock implementation)
-- ✅ Basic UI components and styling
-- ⏳ Level 1 implementation (Budget Basics)
-- ⏳ Partner validation system
-- ⏳ Basic admin interface
+- ✅ Role-based dashboard system (Child, Parent, Admin)
+- ✅ Firebase integration with authentication services
+- ✅ Comprehensive UI component library
+- ✅ Audio system with sound effects and background music
+- ✅ Parent validation and task management system
+- ✅ Child-focused gamified interface with avatars and badges
+- ✅ Family analytics and monitoring tools
+- ✅ Settings and configuration management
+- ✅ Pixel-themed custom UI components
+- ✅ Cross-platform launcher with JavaFX auto-setup
 
 ## Future Enhancements
 
