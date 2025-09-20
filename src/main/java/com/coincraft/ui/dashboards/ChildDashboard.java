@@ -10,7 +10,7 @@ import com.coincraft.ui.components.child.DailyStreakCalendar;
 import com.coincraft.ui.components.child.EventBanner;
 import com.coincraft.ui.components.child.LevelProgressWidget;
 import com.coincraft.ui.components.child.ShopPage;
-import com.coincraft.ui.components.child.TaskCardList;
+import com.coincraft.ui.components.child.AdventurerTaskView;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -36,7 +36,7 @@ public class ChildDashboard extends BaseDashboard {
     // Main UI Components
     private ChildTopBar topBar;
     private LevelProgressWidget levelProgress;
-    private TaskCardList taskList;
+    private AdventurerTaskView taskView;
     private BadgesStrip badgesStrip;
     private DailyStreakCalendar streakCalendar;
     private ChildLeaderboard leaderboard;
@@ -205,11 +205,14 @@ public class ChildDashboard extends BaseDashboard {
     private VBox createTasksSection() {
         VBox tasksSection = new VBox(16);
         
-        taskList = new TaskCardList(currentUser);
+        taskView = new AdventurerTaskView(currentUser, task -> {
+            // Handle task completion - could refresh user data or show notifications
+            System.out.println("Task completed: " + task.getTitle());
+        });
         badgesStrip = new BadgesStrip(currentUser);
         
         // Tasks Card
-        VBox tasksCard = createModernCard("Active Quests", taskList.getRoot());
+        VBox tasksCard = createModernCard("Active Quests", taskView.getRoot());
         
         // Badges Card
         VBox badgesCard = createModernCard("Achievement Collection", badgesStrip.getRoot());
@@ -527,7 +530,7 @@ public class ChildDashboard extends BaseDashboard {
                 
             case "tasks":
                 // Highlight tasks section
-                taskList.refresh();
+                taskView.refresh();
                 break;
                 
             case "messages":

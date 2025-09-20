@@ -35,8 +35,9 @@ public class AddAdventurerDialog {
     private PasswordField confirmPasswordField;
     private Button createButton;
     private Button cancelButton;
+    private Label adventureIdStatusLabel;
     
-    private Consumer<User> onAdventurerCreated;
+    private final Consumer<User> onAdventurerCreated;
     
     public AddAdventurerDialog(Stage parentStage, Consumer<User> onAdventurerCreated) {
         this.onAdventurerCreated = onAdventurerCreated;
@@ -142,7 +143,22 @@ public class AddAdventurerDialog {
         adventureIdField.setPromptText("e.g., brave_emma or quest_master");
         adventureIdField.setPrefWidth(400);
         styleTextField(adventureIdField);
-        idSection.getChildren().add(adventureIdField);
+        
+        // Add real-time validation for Adventure ID
+        adventureIdField.textProperty().addListener((observable, oldValue, newValue) -> {
+            validateAdventureIdRealTime(newValue);
+        });
+        
+        // Add status label for Adventure ID validation feedback
+        adventureIdStatusLabel = new Label();
+        adventureIdStatusLabel.setStyle(
+            "-fx-font-size: 12px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-padding: 4 0 0 0;"
+        );
+        adventureIdStatusLabel.setVisible(false);
+        
+        idSection.getChildren().addAll(adventureIdField, adventureIdStatusLabel);
         
         // Third Row: Password and Confirm Password (inline)
         HBox passwordRow = new HBox(16);
@@ -382,6 +398,19 @@ public class AddAdventurerDialog {
             return;
         }
         
+        // Check for invalid characters
+        if (!adventureId.matches("^[a-zA-Z0-9_]+$")) {
+            showError("Adventure ID can only contain letters, numbers, and underscores");
+            return;
+        }
+        
+        // Check if Adventure ID is already taken
+        FirebaseService firebaseService = FirebaseService.getInstance();
+        if (firebaseService.isAdventureIdTaken(adventureId)) {
+            showError("Adventure ID '" + adventureId + "' is already taken. Please choose a different one.");
+            return;
+        }
+        
         if (password.isEmpty()) {
             showError("Please create a password");
             return;
@@ -413,8 +442,7 @@ public class AddAdventurerDialog {
         newAdventurer.setLastLogin(java.time.LocalDateTime.now());
         newAdventurer.setCreatedAt(java.time.LocalDateTime.now()); // Set creation timestamp
         
-        // Save to Firebase
-        FirebaseService firebaseService = FirebaseService.getInstance();
+        // Save to Firebase (reuse the firebaseService variable)
         firebaseService.saveUser(newAdventurer);
         
         // Debug: Check if user was saved
@@ -445,6 +473,57 @@ public class AddAdventurerDialog {
             new javafx.animation.KeyFrame(javafx.util.Duration.seconds(3), e -> dialogStage.close())
         );
         timeline.play();
+    }
+    
+    /**
+     * Validates Adventure ID in real-time as user types
+     */
+    private void validateAdventureIdRealTime(String adventureId) {
+        if (adventureId == null || adventureId.trim().isEmpty()) {
+            adventureIdStatusLabel.setVisible(false);
+            return;
+        }
+        
+        String trimmedId = adventureId.trim();
+        
+        // Check basic requirements first
+        if (trimmedId.length() < 3) {
+            showAdventureIdStatus("⚠️ Must be at least 3 characters", false);
+            return;
+        }
+        
+        // Check for invalid characters
+        if (!trimmedId.matches("^[a-zA-Z0-9_]+$")) {
+            showAdventureIdStatus("⚠️ Only letters, numbers, and underscores allowed", false);
+            return;
+        }
+        
+        // Check if Adventure ID is taken (with debouncing to avoid excessive calls)
+        javafx.animation.Timeline timeline = new javafx.animation.Timeline(
+            new javafx.animation.KeyFrame(javafx.util.Duration.millis(500), e -> {
+                FirebaseService firebaseService = FirebaseService.getInstance();
+                if (firebaseService.isAdventureIdTaken(trimmedId)) {
+                    showAdventureIdStatus("❌ This Adventure ID is already taken", false);
+                } else {
+                    showAdventureIdStatus("✅ Adventure ID is available!", true);
+                }
+            })
+        );
+        timeline.play();
+    }
+    
+    /**
+     * Shows status message for Adventure ID validation
+     */
+    private void showAdventureIdStatus(String message, boolean isSuccess) {
+        adventureIdStatusLabel.setText(message);
+        adventureIdStatusLabel.setStyle(
+            "-fx-font-size: 12px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-padding: 4 0 0 0;" +
+            "-fx-text-fill: " + (isSuccess ? "#10b981;" : "#ef4444;")
+        );
+        adventureIdStatusLabel.setVisible(true);
     }
     
     private void showError(String message) {

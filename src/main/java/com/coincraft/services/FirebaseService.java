@@ -189,6 +189,47 @@ public class FirebaseService {
     }
     
     /**
+     * Get a specific user by their user ID
+     */
+    public User getUserById(String userId) {
+        try {
+            if (!initialized) {
+                throw new IllegalStateException("Firebase not initialized");
+            }
+            
+            if (firestoreService != null && currentIdToken != null) {
+                // Use real Firestore - would need implementation
+                return null;
+            } else {
+                // Load from local storage as fallback
+                return getUserByIdLocally(userId);
+            }
+            
+        } catch (Exception e) {
+            LOGGER.severe("Failed to get user by ID: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Get a specific user by their user ID from local storage
+     */
+    private User getUserByIdLocally(String userId) {
+        try {
+            List<User> allUsers = loadUsersLocally();
+            for (User user : allUsers) {
+                if (user.getUserId().equals(userId)) {
+                    return user;
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            LOGGER.warning("Failed to get user by ID locally: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
      * Get all users from Firestore (for merchant to see their adventurers)
      */
     public List<User> getAllUsers() {
@@ -208,6 +249,42 @@ public class FirebaseService {
         } catch (Exception e) {
             LOGGER.severe("Failed to load users: " + e.getMessage());
             return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Check if an Adventure ID (username) is already taken
+     * Adventure IDs are stored in the email field as: adventureId@coincraft.adventure
+     */
+    public boolean isAdventureIdTaken(String adventureId) {
+        try {
+            if (adventureId == null || adventureId.trim().isEmpty()) {
+                return false;
+            }
+            
+            // Normalize the Adventure ID
+            String normalizedId = adventureId.trim().toLowerCase();
+            String targetEmail = normalizedId + "@coincraft.adventure";
+            
+            // Get all users and check for Adventure ID collision
+            List<User> allUsers = getAllUsers();
+            for (User user : allUsers) {
+                if (user.getRole() == UserRole.CHILD && user.getEmail() != null) {
+                    String userEmail = user.getEmail().toLowerCase();
+                    if (userEmail.equals(targetEmail)) {
+                        LOGGER.info("Adventure ID '" + adventureId + "' is already taken");
+                        return true;
+                    }
+                }
+            }
+            
+            LOGGER.info("Adventure ID '" + adventureId + "' is available");
+            return false;
+            
+        } catch (Exception e) {
+            LOGGER.severe("Error checking Adventure ID availability: " + e.getMessage());
+            // In case of error, assume it's taken to be safe
+            return true;
         }
     }
     
@@ -415,12 +492,140 @@ public class FirebaseService {
                 throw new IllegalStateException("Firebase not initialized");
             }
             
-            // Mock save operation for MVP
-            LOGGER.info("Mock: Saving task data for " + task.getTaskId());
+            if (firestoreService != null && currentIdToken != null) {
+                // Use real Firestore
+                boolean success = firestoreService.saveTask(task);
+                if (success) {
+                    LOGGER.info("Task saved successfully: " + task.getTaskId());
+                } else {
+                    LOGGER.warning("Failed to save task: " + task.getTaskId());
+                }
+            } else {
+                // Save to local storage as fallback
+                saveTaskLocally(task);
+                LOGGER.info("Task saved locally: " + task.getTaskId());
+            }
             
         } catch (Exception e) {
             LOGGER.severe("Failed to save task: " + e.getMessage());
         }
+    }
+    
+    /**
+     * Save task to local storage as fallback
+     */
+    private void saveTaskLocally(Task task) {
+        try {
+            // Create data directory if it doesn't exist
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Files.createDirectories(dataDir);
+            
+            // Create tasks file
+            Path tasksFile = dataDir.resolve("tasks.txt");
+            
+            // Load existing tasks
+            List<Task> existingTasks = loadTasksFromFile(tasksFile);
+            
+            // Remove existing task with same ID (update scenario)
+            existingTasks.removeIf(t -> t.getTaskId().equals(task.getTaskId()));
+            
+            // Add the new/updated task
+            existingTasks.add(task);
+            
+            // Save all tasks back to file
+            saveTasksToFile(existingTasks, tasksFile);
+            
+            LOGGER.info("Task saved locally: " + task.getTitle());
+            
+        } catch (Exception e) {
+            LOGGER.warning("Failed to save task locally: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Save tasks to file
+     */
+    private void saveTasksToFile(List<Task> tasks, Path tasksFile) throws IOException {
+        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(tasksFile))) {
+            for (Task task : tasks) {
+                String taskData = task.getTaskId() + "|" + 
+                                task.getTitle() + "|" + 
+                                task.getDescription() + "|" + 
+                                task.getType() + "|" + 
+                                task.getAssignedBy() + "|" + 
+                                task.getRewardCoins() + "|" + 
+                                task.getDifficultyLevel() + "|" + 
+                                task.isCompleted() + "|" + 
+                                task.getValidationStatus() + "|" + 
+                                (task.getDeadline() != null ? task.getDeadline().toString() : "") + "|" +
+                                (task.getCreatedAt() != null ? task.getCreatedAt().toString() : "") + "|" +
+                                (task.getCompletedAt() != null ? task.getCompletedAt().toString() : "") + "|" +
+                                (task.getCompletionNotes() != null ? task.getCompletionNotes() : "");
+                writer.println(taskData);
+            }
+        }
+    }
+    
+    /**
+     * Load tasks from file
+     */
+    private List<Task> loadTasksFromFile(Path tasksFile) throws IOException {
+        List<Task> tasks = new ArrayList<>();
+        if (!Files.exists(tasksFile)) {
+            return tasks;
+        }
+        
+        try (BufferedReader reader = Files.newBufferedReader(tasksFile)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Task task = parseTaskDataFromFile(line);
+                if (task != null) {
+                    tasks.add(task);
+                }
+            }
+        }
+        
+        return tasks;
+    }
+    
+    /**
+     * Parse task data from stored string (file format)
+     */
+    private Task parseTaskDataFromFile(String taskData) {
+        try {
+            String[] parts = taskData.split("\\|", -1);
+            if (parts.length >= 9) {
+                Task task = new Task();
+                task.setTaskId(parts[0]);
+                task.setTitle(parts[1]);
+                task.setDescription(parts[2]);
+                task.setType(com.coincraft.models.TaskType.valueOf(parts[3]));
+                task.setAssignedBy(parts[4]);
+                task.setRewardCoins(Integer.parseInt(parts[5]));
+                task.setDifficultyLevel(Integer.parseInt(parts[6]));
+                task.setCompleted(Boolean.parseBoolean(parts[7]));
+                task.setValidationStatus(com.coincraft.models.ValidationStatus.valueOf(parts[8]));
+                
+                // Parse optional fields
+                if (parts.length > 9 && !parts[9].isEmpty()) {
+                    task.setDeadline(LocalDateTime.parse(parts[9]));
+                }
+                if (parts.length > 10 && !parts[10].isEmpty()) {
+                    task.setCreatedAt(LocalDateTime.parse(parts[10]));
+                }
+                if (parts.length > 11 && !parts[11].isEmpty()) {
+                    task.setCompletedAt(LocalDateTime.parse(parts[11]));
+                }
+                if (parts.length > 12 && !parts[12].isEmpty()) {
+                    task.setCompletionNotes(parts[12]);
+                }
+                
+                return task;
+            }
+        } catch (Exception e) {
+            LOGGER.warning("Failed to parse task data: " + taskData + " - " + e.getMessage());
+        }
+        return null;
     }
     
     /**
@@ -432,22 +637,85 @@ public class FirebaseService {
                 throw new IllegalStateException("Firebase not initialized");
             }
             
-            // Mock load operation for MVP - return sample tasks
-            List<Task> mockTasks = new ArrayList<>();
-            
-            Task task1 = new Task("task_1", "Complete Level 1: Budget Basics", 
-                                 com.coincraft.models.TaskType.LEARNING, 20);
-            Task task2 = new Task("task_2", "Set up your first savings goal", 
-                                 com.coincraft.models.TaskType.CHALLENGE, 15);
-            
-            mockTasks.add(task1);
-            mockTasks.add(task2);
-            
-            LOGGER.info("Mock: Loading tasks for user " + userId);
-            return mockTasks;
+            if (firestoreService != null && currentIdToken != null) {
+                // Use real Firestore
+                return firestoreService.loadUserTasks(userId);
+            } else {
+                // Load from local storage as fallback
+                return loadUserTasksLocally(userId);
+            }
             
         } catch (Exception e) {
             LOGGER.severe("Failed to load tasks: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Load all tasks from storage
+     */
+    public List<Task> loadAllTasks() {
+        try {
+            if (!initialized) {
+                throw new IllegalStateException("Firebase not initialized");
+            }
+            
+            if (firestoreService != null && currentIdToken != null) {
+                // Use real Firestore - would need implementation
+                return new ArrayList<>();
+            } else {
+                // Load from local storage as fallback
+                return loadAllTasksLocally();
+            }
+            
+        } catch (Exception e) {
+            LOGGER.severe("Failed to load all tasks: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Load tasks for a specific user from local storage
+     */
+    private List<Task> loadUserTasksLocally(String userId) {
+        try {
+            List<Task> allTasks = loadAllTasksLocally();
+            List<Task> userTasks = new ArrayList<>();
+            
+            // Filter tasks assigned to this user (simplified - in real app would have proper assignment logic)
+            for (Task task : allTasks) {
+                // For now, return all tasks as they could be assigned to any adventurer
+                userTasks.add(task);
+            }
+            
+            LOGGER.info("Loaded " + userTasks.size() + " tasks for user: " + userId);
+            return userTasks;
+            
+        } catch (Exception e) {
+            LOGGER.warning("Failed to load user tasks locally: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Load all tasks from local storage
+     */
+    private List<Task> loadAllTasksLocally() {
+        try {
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Path tasksFile = dataDir.resolve("tasks.txt");
+            
+            if (Files.exists(tasksFile)) {
+                List<Task> tasks = loadTasksFromFile(tasksFile);
+                LOGGER.info("Loaded " + tasks.size() + " tasks from local storage");
+                return tasks;
+            } else {
+                LOGGER.info("No local tasks file found");
+                return new ArrayList<>();
+            }
+            
+        } catch (Exception e) {
+            LOGGER.warning("Failed to load tasks locally: " + e.getMessage());
             return new ArrayList<>();
         }
     }
