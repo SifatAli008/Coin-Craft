@@ -41,6 +41,12 @@ public class LoginScreen {
     private Button googleSignInButton;
     private Label statusLabel;
     
+    // Additional UI references for dynamic updates
+    private HBox dividerElement;
+    private Label emailLabel;
+    private Label signupLabel;
+    private boolean isNavigatingToSignUp = false;
+    
     private final LoginCallback callback;
     
     public interface LoginCallback {
@@ -380,7 +386,7 @@ public class LoginScreen {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        Label signupLabel = new Label("Sign up");
+        signupLabel = new Label("Sign up");
         signupLabel.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-text-fill: #FF9800;" +
@@ -390,9 +396,29 @@ public class LoginScreen {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         signupLabel.setOnMouseClicked(e -> {
+            if (isNavigatingToSignUp) {
+                return; // Prevent multiple rapid clicks
+            }
+            
             SoundManager.getInstance().playButtonClick();
+            System.out.println("Navigate to sign up requested");
+            
             if (callback != null) {
-                callback.onNavigateToSignUp();
+                isNavigatingToSignUp = true;
+                signupLabel.setStyle(
+                    "-fx-font-size: 14px;" +
+                    "-fx-text-fill: #CCCCCC;" +
+                    "-fx-font-weight: 700;" +
+                    "-fx-underline: true;" +
+                    "-fx-cursor: default;" +
+                    "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+                );
+                
+                // Add a small delay to prevent rapid clicking
+                Timeline timeline = new Timeline(new KeyFrame(Duration.millis(200), ev -> {
+                    callback.onNavigateToSignUp();
+                }));
+                timeline.play();
             }
         });
         
@@ -400,6 +426,13 @@ public class LoginScreen {
         
         form.getChildren().addAll(emailSection, passwordSection, roleSection, loginButton, divider, googleSignInButton);
         card.getChildren().addAll(header, form, signupSection);
+        
+        // Store references to UI elements for dynamic updates
+        this.dividerElement = divider;
+        this.emailLabel = emailLabel;
+        
+        // Initialize UI based on default role selection
+        updateUIForSelectedRole();
         
         return card;
     }
@@ -512,7 +545,8 @@ public class LoginScreen {
         
         // Add change listener for role selection
         roleSelector.valueProperty().addListener((obs, oldVal, newVal) -> {
-            // Role selection changed - could add sound effect here if needed
+            // Role selection changed - update UI based on role
+            updateUIForSelectedRole();
         });
         
         roleSection.getChildren().addAll(roleLabel, roleSelector);
@@ -534,11 +568,50 @@ public class LoginScreen {
         }
     }
     
+    /**
+     * Updates the UI elements based on the selected role
+     * Adventurers (Children) should only see username/password login
+     * Parents, Teachers, and Admins can use Google sign-in
+     */
+    private void updateUIForSelectedRole() {
+        UserRole selectedRole = getSelectedUserRole();
+        
+        if (selectedRole == UserRole.CHILD) {
+            // For adventurers (children): hide Google sign-in, update labels
+            emailLabel.setText("Adventure ID");
+            emailField.setPromptText("Enter your Adventure ID");
+            
+            // Hide Google sign-in option for children
+            dividerElement.setVisible(false);
+            dividerElement.setManaged(false);
+            googleSignInButton.setVisible(false);
+            googleSignInButton.setManaged(false);
+            
+        } else {
+            // For parents, teachers, admins: show Google sign-in, update labels
+            emailLabel.setText("Email");
+            emailField.setPromptText("Enter your email address");
+            
+            // Show Google sign-in option for adults
+            dividerElement.setVisible(true);
+            dividerElement.setManaged(true);
+            googleSignInButton.setVisible(true);
+            googleSignInButton.setManaged(true);
+        }
+    }
+    
     private void handleGoogleSignIn() {
+        UserRole selectedRole = getSelectedUserRole();
+        
+        // Prevent children from using Google sign-in
+        if (selectedRole == UserRole.CHILD) {
+            SoundManager.getInstance().playError();
+            showStatus("❌ Adventurers must use Adventure ID and password to log in!", false);
+            return;
+        }
+        
         showStatus("Signing in with Google...", true);
         googleSignInButton.setDisable(true);
-        
-        UserRole selectedRole = getSelectedUserRole();
         
         // Simulate Google OAuth flow (in a real app, this would open browser/WebView)
         new Thread(() -> {
@@ -572,13 +645,8 @@ public class LoginScreen {
                             googleUser.setLevel(1);
                             googleUser.setLastLogin(java.time.LocalDateTime.now());
                         } else {
-                            // Create adventurer user (default)
-                            googleUser = new User("google_adventurer_123", "Emma Wilson", UserRole.CHILD, 10);
-                            googleUser.setEmail("adventurer@gmail.com");
-                            googleUser.setSmartCoinBalance(50);
-                            googleUser.setLevel(1);
-                            googleUser.setDailyStreaks(1);
-                            googleUser.setLastLogin(java.time.LocalDateTime.now());
+                            // This should never happen since we block children from Google sign-in
+                            throw new IllegalStateException("Children cannot use Google authentication");
                         }
                         
                         SoundManager.getInstance().playSuccess();

@@ -10,6 +10,7 @@ public class Task {
     private String title;
     private String description;
     private String assignedBy;
+    private String assignedTo; // User ID of the adventurer assigned to this task
     private double progressPercentage;
     private LocalDateTime deadline;
     private boolean completed;
@@ -63,6 +64,9 @@ public class Task {
     
     public String getAssignedBy() { return assignedBy; }
     public void setAssignedBy(String assignedBy) { this.assignedBy = assignedBy; }
+    
+    public String getAssignedTo() { return assignedTo; }
+    public void setAssignedTo(String assignedTo) { this.assignedTo = assignedTo; }
     
     public LocalDateTime getDeadline() { return deadline; }
     public void setDeadline(LocalDateTime deadline) { this.deadline = deadline; }

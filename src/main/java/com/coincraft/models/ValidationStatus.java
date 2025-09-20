@@ -5,6 +5,7 @@ package com.coincraft.models;
  */
 public enum ValidationStatus {
     PENDING("Awaiting Validation"),
+    AWAITING_APPROVAL("Awaiting Approval"),
     APPROVED("Approved"),
     REJECTED("Rejected"),
     AUTO_APPROVED("Automatically Approved");

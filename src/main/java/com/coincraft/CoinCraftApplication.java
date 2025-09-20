@@ -87,28 +87,36 @@ public class CoinCraftApplication extends Application {
     }
     
     private void showRegistrationScreen(Stage primaryStage) {
-        RegistrationScreen registrationScreen = new RegistrationScreen(new RegistrationScreen.RegistrationCallback() {
-            @Override
-            public void onRegistrationSuccess(User user) {
-                showMainDashboard(primaryStage, user);
-            }
+        System.out.println("Showing registration screen...");
+        try {
+            RegistrationScreen registrationScreen = new RegistrationScreen(new RegistrationScreen.RegistrationCallback() {
+                @Override
+                public void onRegistrationSuccess(User user) {
+                    showMainDashboard(primaryStage, user);
+                }
+                
+                @Override
+                public void onRegistrationFailed(String error) {
+                    System.err.println("Registration failed: " + error);
+                }
+                
+                @Override
+                public void onBackToLogin() {
+                    System.out.println("Back to login requested");
+                    showLoginScreen(primaryStage);
+                }
+            });
             
-            @Override
-            public void onRegistrationFailed(String error) {
-                System.err.println("Registration failed: " + error);
-            }
-            
-            @Override
-            public void onBackToLogin() {
-                showLoginScreen(primaryStage);
-            }
-        });
-        
-        Scene scene = new Scene(registrationScreen.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
-        loadStyles(scene);
-        PixelSkin.apply(scene);
-        primaryStage.setScene(scene);
-        primaryStage.setTitle(APP_TITLE + " - Registration");
+            Scene scene = new Scene(registrationScreen.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
+            loadStyles(scene);
+            PixelSkin.apply(scene);
+            primaryStage.setScene(scene);
+            primaryStage.setTitle(APP_TITLE + " - Registration");
+            System.out.println("Registration screen loaded successfully");
+        } catch (Exception e) {
+            System.err.println("Error showing registration screen: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     
     private void showMainDashboard(Stage primaryStage, User user) {

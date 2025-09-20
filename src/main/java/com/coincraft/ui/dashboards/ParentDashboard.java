@@ -11,6 +11,8 @@ import com.coincraft.ui.components.parent.ChildMonitorCard;
 import com.coincraft.ui.components.parent.FamilyAnalytics;
 import com.coincraft.ui.components.parent.ParentSidebar;
 import com.coincraft.ui.components.parent.ParentTopBar;
+import com.coincraft.ui.components.parent.SettingsPage;
+import com.coincraft.ui.components.parent.TaskManagementPage;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -110,7 +112,6 @@ public class ParentDashboard extends BaseDashboard {
             
         } catch (Exception e) {
             System.out.println("⚠️ Could not load adventurers from Firebase: " + e.getMessage());
-            e.printStackTrace();
             // Keep empty list - no mock data
         }
     }
@@ -203,7 +204,8 @@ public class ParentDashboard extends BaseDashboard {
         mainContent = new VBox(24);
         mainContent.setPadding(new Insets(16));
         mainContent.setAlignment(Pos.TOP_CENTER);
-        mainContent.setMaxWidth(1200);
+        // Remove maxWidth constraint to allow full width usage
+        mainContent.setMaxWidth(Double.MAX_VALUE);
         
         // Create scroll pane for content
         contentScrollPane = new ScrollPane(mainContent);
@@ -217,11 +219,8 @@ public class ParentDashboard extends BaseDashboard {
             "-fx-faint-focus-color: transparent;"
         );
         
-        // Add margin to prevent content from touching edges
-        VBox contentWrapper = new VBox();
-        contentWrapper.setPadding(new Insets(0, 8, 0, 0));
-        contentWrapper.getChildren().add(mainContent);
-        contentScrollPane.setContent(contentWrapper);
+        // Remove extra wrapper that might cause width issues
+        contentScrollPane.setContent(mainContent);
         
         // Show overview by default
         showOverviewContent();
@@ -446,28 +445,12 @@ public class ParentDashboard extends BaseDashboard {
         sidebar.setActiveSection(section);
         
         switch (section.toLowerCase()) {
-            case "overview":
-                showOverviewContent();
-                break;
-                
-            case "children":
-                showChildrenContent();
-                break;
-                
-            case "tasks":
-                showTasksContent();
-                break;
-                
-            case "analytics":
-                showAnalyticsContent();
-                break;
-                
-            case "settings":
-                showSettingsContent();
-                break;
-                
-            default:
-                System.out.println("Unknown parent section: " + section);
+            case "overview" -> showOverviewContent();
+            case "children" -> showChildrenContent();
+            case "tasks" -> showTasksContent();
+            case "analytics" -> showAnalyticsContent();
+            case "settings" -> showSettingsContent();
+            default -> System.out.println("Unknown parent section: " + section);
         }
     }
     
@@ -511,23 +494,9 @@ public class ParentDashboard extends BaseDashboard {
     private void showTasksContent() {
         mainContent.getChildren().clear();
         
-        Label titleLabel = new Label("📋 Task Management");
-        titleLabel.setStyle(
-            "-fx-font-size: 24px;" +
-            "-fx-font-weight: 700;" +
-            "-fx-text-fill: #333333;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
-        );
-        
-        Label placeholderLabel = new Label("Task management interface coming soon!\n\nFeatures will include:\n• Task approval and verification\n• Custom task creation\n• Reward management\n• Progress tracking");
-        placeholderLabel.setStyle(
-            "-fx-font-size: 16px;" +
-            "-fx-text-fill: #666666;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
-        );
-        placeholderLabel.setWrapText(true);
-        
-        mainContent.getChildren().addAll(titleLabel, placeholderLabel);
+        // Create and display the task management page
+        TaskManagementPage taskManagementPage = new TaskManagementPage(currentUser, children);
+        mainContent.getChildren().add(taskManagementPage.getRoot());
     }
     
     private void showAnalyticsContent() {
@@ -540,23 +509,9 @@ public class ParentDashboard extends BaseDashboard {
     private void showSettingsContent() {
         mainContent.getChildren().clear();
         
-        Label titleLabel = new Label("⚙️ Merchant Settings");
-        titleLabel.setStyle(
-            "-fx-font-size: 24px;" +
-            "-fx-font-weight: 700;" +
-            "-fx-text-fill: #333333;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
-        );
-        
-        Label placeholderLabel = new Label("Settings panel coming soon!\n\nFeatures will include:\n• Account preferences\n• Notification settings\n• Privacy controls\n• Family management");
-        placeholderLabel.setStyle(
-            "-fx-font-size: 16px;" +
-            "-fx-text-fill: #666666;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
-        );
-        placeholderLabel.setWrapText(true);
-        
-        mainContent.getChildren().addAll(titleLabel, placeholderLabel);
+        // Create and display the comprehensive settings page
+        SettingsPage settingsPage = new SettingsPage(currentUser, children);
+        mainContent.getChildren().add(settingsPage.getRoot());
     }
     
     private Button createAddAdventurerButton() {

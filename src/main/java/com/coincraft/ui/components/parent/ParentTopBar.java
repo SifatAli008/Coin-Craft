@@ -41,17 +41,18 @@ public class ParentTopBar {
     }
     
     private void initializeUI() {
-        root = new HBox(20);
+        root = new HBox(24);
         root.setAlignment(Pos.CENTER_LEFT);
-        root.setPadding(new Insets(8, 16, 8, 16));
-        root.setPrefHeight(60);
+        root.setPadding(new Insets(16, 24, 16, 24));
+        root.setPrefHeight(80);
+        root.setMaxWidth(Double.MAX_VALUE);
         root.setStyle(
-            "-fx-background-color: rgba(255, 255, 255, 0.95);" +
-            "-fx-background-radius: 16;" +
-            "-fx-border-radius: 16;" +
-            "-fx-border-color: rgba(255, 255, 255, 0.4);" +
-            "-fx-border-width: 1;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 20, 0, 0, 10);"
+            "-fx-background-color: rgba(255, 255, 255, 0.98);" +
+            "-fx-background-radius: 20;" +
+            "-fx-border-radius: 20;" +
+            "-fx-border-color: rgba(76, 175, 80, 0.2);" +
+            "-fx-border-width: 2;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 15, 0, 0, 5);"
         );
         
         createWelcomeSection();
@@ -66,16 +67,17 @@ public class ParentTopBar {
         
         Label welcomeLabel = new Label("Good " + getTimeOfDay() + ", " + currentUser.getName() + "!");
         welcomeLabel.setStyle(
-            "-fx-font-size: 18px;" +
+            "-fx-font-size: 20px;" +
             "-fx-font-weight: 700;" +
-            "-fx-text-fill: #333333;" +
+            "-fx-text-fill: #2E7D32;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
         timeLabel = new Label();
         timeLabel.setStyle(
-            "-fx-font-size: 12px;" +
-            "-fx-text-fill: #666666;" +
+            "-fx-font-size: 14px;" +
+            "-fx-text-fill: #4CAF50;" +
+            "-fx-font-weight: 500;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         updateTimeLabel();
@@ -91,17 +93,18 @@ public class ParentTopBar {
     }
     
     private void createFamilyStats() {
-        HBox statsSection = new HBox(20);
+        HBox statsSection = new HBox(16);
         statsSection.setAlignment(Pos.CENTER);
         
         // Family Balance
-        VBox balanceBox = new VBox(4);
+        VBox balanceBox = new VBox(6);
         balanceBox.setAlignment(Pos.CENTER);
         
         Label balanceTitle = new Label("Family Balance");
         balanceTitle.setStyle(
-            "-fx-font-size: 11px;" +
-            "-fx-text-fill: #666666;" +
+            "-fx-font-size: 12px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #2E7D32;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -111,26 +114,28 @@ public class ParentTopBar {
         familyBalanceDisplay = new SmartCoinDisplay(mockUser);
         familyBalanceDisplay.getRoot().setStyle(
             familyBalanceDisplay.getRoot().getStyle() + 
-            "-fx-font-size: 16px;" +
-            "-fx-font-weight: 700;"
+            "-fx-font-size: 18px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-padding: 8 16;"
         );
         
         balanceBox.getChildren().addAll(balanceTitle, familyBalanceDisplay.getRoot());
         
         // Active Adventurers
-        VBox childrenBox = new VBox(4);
+        VBox childrenBox = new VBox(6);
         childrenBox.setAlignment(Pos.CENTER);
         
         Label childrenTitle = new Label("Active Adventurers");
         childrenTitle.setStyle(
-            "-fx-font-size: 11px;" +
-            "-fx-text-fill: #666666;" +
+            "-fx-font-size: 12px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #2E7D32;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
         Label childrenValue = new Label("⚔️ " + activeChildren);
         childrenValue.setStyle(
-            "-fx-font-size: 16px;" +
+            "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #4CAF50;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
@@ -139,19 +144,20 @@ public class ParentTopBar {
         childrenBox.getChildren().addAll(childrenTitle, childrenValue);
         
         // Pending Tasks
-        VBox tasksBox = new VBox(4);
+        VBox tasksBox = new VBox(6);
         tasksBox.setAlignment(Pos.CENTER);
         
         Label tasksTitle = new Label("Pending Review");
         tasksTitle.setStyle(
-            "-fx-font-size: 11px;" +
-            "-fx-text-fill: #666666;" +
+            "-fx-font-size: 12px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #2E7D32;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
         Label tasksValue = new Label("📋 " + pendingTasks);
         tasksValue.setStyle(
-            "-fx-font-size: 16px;" +
+            "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #FF9800;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
@@ -169,40 +175,52 @@ public class ParentTopBar {
         
         notificationLabel = new Label("🔔 " + pendingTasks + " new notifications");
         notificationLabel.setStyle(
-            "-fx-font-size: 12px;" +
+            "-fx-font-size: 13px;" +
             "-fx-text-fill: #FF9800;" +
             "-fx-font-weight: 600;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
             "-fx-cursor: hand;" +
-            "-fx-background-color: rgba(255, 152, 0, 0.1);" +
-            "-fx-background-radius: 12;" +
-            "-fx-padding: 6 12;"
+            "-fx-background-color: rgba(255, 152, 0, 0.15);" +
+            "-fx-background-radius: 16;" +
+            "-fx-border-radius: 16;" +
+            "-fx-border-color: rgba(255, 152, 0, 0.3);" +
+            "-fx-border-width: 1;" +
+            "-fx-padding: 8 16;" +
+            "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.2), 4, 0, 0, 2);"
         );
         
         notificationLabel.setOnMouseEntered(e -> {
             notificationLabel.setStyle(
-                "-fx-font-size: 12px;" +
+                "-fx-font-size: 13px;" +
                 "-fx-text-fill: #FF9800;" +
                 "-fx-font-weight: 600;" +
                 "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
                 "-fx-cursor: hand;" +
-                "-fx-background-color: rgba(255, 152, 0, 0.2);" +
-                "-fx-background-radius: 12;" +
-                "-fx-padding: 6 12;" +
+                "-fx-background-color: rgba(255, 152, 0, 0.25);" +
+                "-fx-background-radius: 16;" +
+                "-fx-border-radius: 16;" +
+                "-fx-border-color: rgba(255, 152, 0, 0.4);" +
+                "-fx-border-width: 1;" +
+                "-fx-padding: 8 16;" +
+                "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.3), 6, 0, 0, 3);" +
                 "-fx-scale-x: 1.05; -fx-scale-y: 1.05;"
             );
         });
         
         notificationLabel.setOnMouseExited(e -> {
             notificationLabel.setStyle(
-                "-fx-font-size: 12px;" +
+                "-fx-font-size: 13px;" +
                 "-fx-text-fill: #FF9800;" +
                 "-fx-font-weight: 600;" +
                 "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
                 "-fx-cursor: hand;" +
-                "-fx-background-color: rgba(255, 152, 0, 0.1);" +
-                "-fx-background-radius: 12;" +
-                "-fx-padding: 6 12;"
+                "-fx-background-color: rgba(255, 152, 0, 0.15);" +
+                "-fx-background-radius: 16;" +
+                "-fx-border-radius: 16;" +
+                "-fx-border-color: rgba(255, 152, 0, 0.3);" +
+                "-fx-border-width: 1;" +
+                "-fx-padding: 8 16;" +
+                "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.2), 4, 0, 0, 2);"
             );
         });
         
