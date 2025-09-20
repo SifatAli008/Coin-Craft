@@ -1,6 +1,5 @@
 package com.coincraft.ui.components.child;
 
-import com.coincraft.audio.SoundManager;
 import com.coincraft.models.User;
 
 import javafx.animation.KeyFrame;
@@ -35,29 +34,43 @@ public class LevelProgressWidget {
     private void initializeUI() {
         root = new VBox(6);
         root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(10));
+        root.setPadding(new Insets(16));
+        root.setMaxWidth(600);
+        root.setPrefWidth(600);
         root.setStyle(
-            "-fx-background-color: linear-gradient(to right, #FF9800, #FFC107);" +
-            "-fx-background-radius: 12;" +
-            "-fx-border-radius: 12;" +
-            "-fx-border-color: #FF8F00;" +
+            "-fx-background-color: rgba(255, 255, 255, 0.9);" +
+            "-fx-background-radius: 16;" +
+            "-fx-border-radius: 16;" +
+            "-fx-border-color: rgba(255, 152, 0, 0.6);" +
             "-fx-border-width: 2;" +
-            "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.4), 10, 0, 0, 5);"
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 10);"
         );
         
         // Smaller level label
         levelLabel = new Label("LEVEL " + currentUser.getLevel());
         levelLabel.setStyle(
-            "-fx-font-size: 16px;" +
-            "-fx-font-weight: 800;" +
-            "-fx-text-fill: white;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.7), 4, 0, 0, 2);"
+            "-fx-font-size: 18px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #FF9800;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
+        
+        // Create main horizontal layout
+        HBox mainLayout = new HBox(16);
+        mainLayout.setAlignment(Pos.CENTER_LEFT);
+        
+        // Left side - Level text
+        VBox levelSection = new VBox(4);
+        levelSection.setAlignment(Pos.CENTER_LEFT);
+        levelSection.getChildren().add(levelLabel);
+        
+        // Right side - Progress info
+        VBox progressSection = new VBox(4);
+        progressSection.setAlignment(Pos.CENTER_LEFT);
         
         // Create horizontal layout for progress info
         HBox progressInfo = new HBox(8);
-        progressInfo.setAlignment(Pos.CENTER);
+        progressInfo.setAlignment(Pos.CENTER_LEFT);
         
         // Smaller progress bar
         progressBar = new ProgressBar();
@@ -78,11 +91,10 @@ public class LevelProgressWidget {
         progressLabel = new Label(String.format("%.0f%% to Level %d", 
             currentProgress * 100, currentUser.getLevel() + 1));
         progressLabel.setStyle(
-            "-fx-font-size: 11px;" +
-            "-fx-font-weight: 600;" +
-            "-fx-text-fill: white;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 2, 0, 0, 1);"
+            "-fx-font-size: 12px;" +
+            "-fx-font-weight: 500;" +
+            "-fx-text-fill: #666666;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
         progressInfo.getChildren().addAll(progressBar, progressLabel);
@@ -92,13 +104,16 @@ public class LevelProgressWidget {
         int nextLevelXP = calculateXPForNextLevel();
         experienceLabel = new Label(String.format("Experience: %d / %d XP", currentXP, nextLevelXP));
         experienceLabel.setStyle(
-            "-fx-font-size: 9px;" +
-            "-fx-font-weight: 500;" +
-            "-fx-text-fill: rgba(255,255,255,0.85);" +
+            "-fx-font-size: 10px;" +
+            "-fx-font-weight: 400;" +
+            "-fx-text-fill: #999999;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        root.getChildren().addAll(levelLabel, progressInfo, experienceLabel);
+        progressSection.getChildren().addAll(progressInfo, experienceLabel);
+        mainLayout.getChildren().addAll(levelSection, progressSection);
+        
+        root.getChildren().add(mainLayout);
     }
     
     private double calculateLevelProgress() {

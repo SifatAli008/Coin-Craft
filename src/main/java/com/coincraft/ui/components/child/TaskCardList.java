@@ -16,18 +16,24 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 /**
- * Task card list component for Child Dashboard
- * Displays active tasks as interactive cards with progress indicators
- * Features complete buttons and visual feedback
+ * Task card slider component for Child Dashboard
+ * Displays active tasks as horizontal scrollable cards
+ * Features navigation buttons and modern card design
  */
 public class TaskCardList {
-    private VBox root;
+    private StackPane root;
+    private ScrollPane scrollPane;
+    private HBox cardContainer;
+    private Button leftButton;
+    private Button rightButton;
     private User currentUser;
     private List<Task> activeTasks;
     
@@ -38,18 +44,133 @@ public class TaskCardList {
     }
     
     private void initializeUI() {
-        root = new VBox(12);
-        root.setAlignment(Pos.TOP_CENTER);
-        root.setPadding(new Insets(0));
+        // Create main container
+        root = new StackPane();
+        root.setPrefHeight(240);
+        root.setMaxHeight(240);
+        root.setStyle("-fx-background-color: transparent;");
+        
+        // Create horizontal scrolling container
+        cardContainer = new HBox(16);
+        cardContainer.setAlignment(Pos.CENTER_LEFT);
+        cardContainer.setPadding(new Insets(16, 60, 16, 60)); // Extra padding for nav buttons
+        
+        // Create scroll pane (hidden scrollbars)
+        scrollPane = new ScrollPane(cardContainer);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setFitToHeight(true);
+        scrollPane.setStyle(
+            "-fx-background-color: transparent;" +
+            "-fx-background: transparent;" +
+            "-fx-focus-color: transparent;" +
+            "-fx-faint-focus-color: transparent;"
+        );
+        
+        // Create navigation buttons
+        createNavigationButtons();
+        
+        // Add everything to root
+        root.getChildren().addAll(scrollPane, leftButton, rightButton);
         
         refreshTaskCards();
+    }
+    
+    /**
+     * Create navigation buttons for quest slider
+     */
+    private void createNavigationButtons() {
+        // Left navigation button
+        leftButton = new Button("‹");
+        leftButton.setPrefSize(45, 45);
+        leftButton.setStyle(
+            "-fx-background-color: rgba(255, 255, 255, 0.95);" +
+            "-fx-text-fill: #333333;" +
+            "-fx-font-size: 24px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-background-radius: 22.5;" +
+            "-fx-border-radius: 22.5;" +
+            "-fx-cursor: hand;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 8);"
+        );
+        leftButton.setOnAction(e -> scrollLeft());
+        
+        // Right navigation button
+        rightButton = new Button("›");
+        rightButton.setPrefSize(45, 45);
+        rightButton.setStyle(
+            "-fx-background-color: rgba(255, 255, 255, 0.95);" +
+            "-fx-text-fill: #333333;" +
+            "-fx-font-size: 24px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-background-radius: 22.5;" +
+            "-fx-border-radius: 22.5;" +
+            "-fx-cursor: hand;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 8);"
+        );
+        rightButton.setOnAction(e -> scrollRight());
+        
+        // Position buttons
+        StackPane.setAlignment(leftButton, Pos.CENTER_LEFT);
+        StackPane.setAlignment(rightButton, Pos.CENTER_RIGHT);
+        StackPane.setMargin(leftButton, new Insets(0, 0, 0, 12));
+        StackPane.setMargin(rightButton, new Insets(0, 12, 0, 0));
+        
+        // Add hover effects
+        addButtonHoverEffects(leftButton);
+        addButtonHoverEffects(rightButton);
+    }
+    
+    /**
+     * Add hover effects to navigation buttons
+     */
+    private void addButtonHoverEffects(Button button) {
+        button.setOnMouseEntered(e -> {
+            SoundManager.getInstance().playButtonHover();
+            button.setStyle(button.getStyle() + 
+                "-fx-scale-x: 1.1; -fx-scale-y: 1.1;" +
+                "-fx-background-color: rgba(33, 150, 243, 0.9);" +
+                "-fx-text-fill: white;"
+            );
+        });
+        
+        button.setOnMouseExited(e -> {
+            button.setStyle(
+                "-fx-background-color: rgba(255, 255, 255, 0.95);" +
+                "-fx-text-fill: #333333;" +
+                "-fx-font-size: 24px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-background-radius: 22.5;" +
+                "-fx-border-radius: 22.5;" +
+                "-fx-cursor: hand;" +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 8);"
+            );
+        });
+    }
+    
+    /**
+     * Scroll left in the quest slider
+     */
+    private void scrollLeft() {
+        SoundManager.getInstance().playButtonClick();
+        double currentValue = scrollPane.getHvalue();
+        scrollPane.setHvalue(Math.max(0, currentValue - 0.3));
+    }
+    
+    /**
+     * Scroll right in the quest slider
+     */
+    private void scrollRight() {
+        SoundManager.getInstance().playButtonClick();
+        double currentValue = scrollPane.getHvalue();
+        scrollPane.setHvalue(Math.min(1, currentValue + 0.3));
     }
     
     /**
      * Refresh the task cards display
      */
     public void refresh() {
-        root.getChildren().clear();
+        cardContainer.getChildren().clear();
         refreshTaskCards();
     }
     
@@ -67,59 +188,164 @@ public class TaskCardList {
                 "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
                 "-fx-padding: 20;"
             );
-            root.getChildren().add(emptyLabel);
+            cardContainer.getChildren().add(emptyLabel);
             return;
         }
         
-        // Create horizontal rows with 3 cards each
-        HBox currentRow = null;
-        int cardCount = 0;
-        
+        // Create horizontal slider cards
         for (Task task : activeTasks) {
-            // Create new row every 3 cards with calculated spacing (205px×3 + 12px×2 = 639px)
-            if (cardCount % 3 == 0) {
-                currentRow = new HBox(12);
-                currentRow.setAlignment(Pos.CENTER);
-                currentRow.setPadding(new Insets(0, 0, 10, 0));
-                root.getChildren().add(currentRow);
-            }
-            
-            // Create perfectly sized task card (3 cards = 640px total)
-            VBox taskCard = createCompactTaskCard(task);
-            taskCard.setPrefWidth(205);
-            taskCard.setMaxWidth(205);
-            
-            currentRow.getChildren().add(taskCard);
-            cardCount++;
+            VBox taskCard = createSliderTaskCard(task);
+            cardContainer.getChildren().add(taskCard);
         }
     }
     
     /**
-     * Create a wide task card for horizontal grid layout with full content visibility
+     * Create a slider task card for horizontal scrolling
+     */
+    private VBox createSliderTaskCard(Task task) {
+        VBox card = new VBox(8);
+        card.setPadding(new Insets(16));
+        card.setAlignment(Pos.CENTER);
+        card.setPrefWidth(320);
+        card.setMaxWidth(320);
+        card.setPrefHeight(180);
+        card.setMaxHeight(180);
+        card.setStyle(
+            "-fx-background-color: rgba(255, 255, 255, 0.95);" +
+            "-fx-background-radius: 16;" +
+            "-fx-border-radius: 16;" +
+            "-fx-border-color: " + getTaskTypeColor(task.getType()) + ";" +
+            "-fx-border-width: 2;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 20, 0, 0, 10);"
+        );
+        
+        // Task type icon
+        Label typeIcon = new Label(getTaskTypeIcon(task.getType()));
+        typeIcon.setStyle("-fx-font-size: 32px;");
+        
+        // Task title
+        Label titleLabel = new Label(task.getTitle());
+        titleLabel.setStyle(
+            "-fx-font-size: 16px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #333333;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-text-alignment: center;" +
+            "-fx-wrap-text: true;"
+        );
+        titleLabel.setMaxWidth(290);
+        titleLabel.setPrefHeight(32);
+        
+        // Progress bar
+        ProgressBar progressBar = new ProgressBar(task.getProgressPercentage() / 100.0);
+        progressBar.setPrefWidth(280);
+        progressBar.setPrefHeight(8);
+        progressBar.setStyle(
+            "-fx-accent: " + getTaskTypeColor(task.getType()) + ";" +
+            "-fx-background-color: rgba(224, 224, 224, 0.8);" +
+            "-fx-background-radius: 4;"
+        );
+        
+        // Progress percentage
+        Label progressLabel = new Label(String.format("%.0f%% Complete", task.getProgressPercentage()));
+        progressLabel.setStyle(
+            "-fx-font-size: 12px;" +
+            "-fx-font-weight: 500;" +
+            "-fx-text-fill: #666666;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        // Action button
+        Button actionButton = createSliderActionButton(task);
+        
+        card.getChildren().addAll(typeIcon, titleLabel, progressBar, progressLabel, actionButton);
+        return card;
+    }
+    
+    /**
+     * Create action button for slider cards
+     */
+    private Button createSliderActionButton(Task task) {
+        Button button = new Button();
+        button.setPrefWidth(260);
+        button.setPrefHeight(32);
+        
+        if (task.getProgressPercentage() >= 100) {
+            button.setText("✅ COMPLETE");
+            button.setStyle(
+                "-fx-background-color: #4CAF50;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 14px;" +
+                "-fx-font-weight: 600;" +
+                "-fx-background-radius: 18;" +
+                "-fx-border-radius: 18;" +
+                "-fx-cursor: hand;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.3), 15, 0, 0, 5);"
+            );
+            button.setOnAction(e -> {
+                SoundManager.getInstance().playButtonClick();
+                completeTask(task);
+            });
+        } else {
+            button.setText("📋 VIEW DETAILS");
+            button.setStyle(
+                "-fx-background-color: #2196F3;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 14px;" +
+                "-fx-font-weight: 600;" +
+                "-fx-background-radius: 18;" +
+                "-fx-border-radius: 18;" +
+                "-fx-cursor: hand;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-effect: dropshadow(gaussian, rgba(33,150,243,0.3), 15, 0, 0, 5);"
+            );
+            button.setOnAction(e -> {
+                SoundManager.getInstance().playButtonClick();
+                viewTaskDetails(task);
+            });
+        }
+        
+        // Hover effects
+        button.setOnMouseEntered(e -> {
+            SoundManager.getInstance().playButtonHover();
+            button.setStyle(button.getStyle() + "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
+        });
+        
+        button.setOnMouseExited(e -> {
+            String baseStyle = button.getStyle().replace("-fx-scale-x: 1.05; -fx-scale-y: 1.05;", "");
+            button.setStyle(baseStyle);
+        });
+        
+        return button;
+    }
+    
+    /**
+     * Create a wide task card for horizontal grid layout with full content visibility (legacy)
      */
     private VBox createCompactTaskCard(Task task) {
         VBox card = new VBox(10);
         card.setPadding(new Insets(12));
         card.setAlignment(Pos.CENTER);
         card.setStyle(
-            "-fx-background-color: rgba(255, 255, 255, 0.95);" +
-            "-fx-background-radius: 10;" +
-            "-fx-border-radius: 10;" +
+            "-fx-background-color: rgba(255, 255, 255, 0.9);" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
             "-fx-border-color: " + getTaskTypeColor(task.getType()) + ";" +
             "-fx-border-width: 2;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 3);"
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 8);"
         );
         
         // Task type icon (large)
         Label typeIcon = new Label(getTaskTypeIcon(task.getType()));
         typeIcon.setStyle("-fx-font-size: 24px;");
         
-        // Task title (maximum width for 205px card)
+        // Clean task title
         Label titleLabel = new Label(task.getTitle());
         titleLabel.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-font-weight: 700;" +
-            "-fx-text-fill: #000000;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #333333;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
             "-fx-text-alignment: center;" +
             "-fx-wrap-text: true;"
@@ -161,11 +387,11 @@ public class TaskCardList {
         card.setPadding(new Insets(16));
         card.setStyle(
             "-fx-background-color: rgba(255, 255, 255, 0.9);" +
-            "-fx-background-radius: 12;" +
-            "-fx-border-radius: 12;" +
+            "-fx-background-radius: 16;" +
+            "-fx-border-radius: 16;" +
             "-fx-border-color: " + getTaskTypeColor(task.getType()) + ";" +
             "-fx-border-width: 2;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 8, 0, 0, 4);"
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 10);"
         );
         
         // Task header
@@ -455,12 +681,12 @@ public class TaskCardList {
      */
     private String getTaskTypeIcon(TaskType type) {
         switch (type) {
-            case LEARNING: return "📚";
-            case CHORE: return "🏠";
-            case CREATIVE: return "🎨";
-            case PHYSICAL: return "⚽";
-            case SOCIAL: return "👥";
-            default: return "📋";
+            case LEARNING: return "🎓";
+            case CHORE: return "🏡";
+            case CREATIVE: return "🎭";
+            case PHYSICAL: return "🏃‍♂️";
+            case SOCIAL: return "👫";
+            default: return "⭐";
         }
     }
     
@@ -518,7 +744,7 @@ public class TaskCardList {
     /**
      * Get the root UI component
      */
-    public VBox getRoot() {
+    public StackPane getRoot() {
         return root;
     }
 }

@@ -1,5 +1,8 @@
 package com.coincraft.ui.components.child;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.coincraft.audio.SoundManager;
 import com.coincraft.models.Badge;
 import com.coincraft.models.BadgeCategory;
@@ -9,26 +12,27 @@ import com.coincraft.models.User;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Horizontally scrolling badge display for Child Dashboard
+ * Modern badge slider with navigation buttons for Child Dashboard
  * Shows earned badges and "Coming Soon" slots for motivation
- * Features click interactions and achievement celebrations
+ * Features smooth sliding and navigation controls
  */
 public class BadgesStrip {
-    private ScrollPane root;
+    private StackPane root;
+    private ScrollPane scrollPane;
     private HBox badgeContainer;
-    private User currentUser;
-    private List<Badge> earnedBadges;
-    private List<Badge> availableBadges;
+    private Button leftButton;
+    private Button rightButton;
+    private final User currentUser;
+    private final List<Badge> earnedBadges;
+    private final List<Badge> availableBadges;
     
     public BadgesStrip(User user) {
         this.currentUser = user;
@@ -38,23 +42,126 @@ public class BadgesStrip {
     }
     
     private void initializeUI() {
-        // Create compact horizontal scrolling container
-        badgeContainer = new HBox(8);
-        badgeContainer.setAlignment(Pos.CENTER_LEFT);
-        badgeContainer.setPadding(new Insets(8));
-        
-        // Create scroll pane
-        root = new ScrollPane(badgeContainer);
-        root.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        root.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        root.setFitToHeight(true);
+        // Create main container
+        root = new StackPane();
         root.setPrefHeight(100);
-        root.setStyle(
+        root.setMaxHeight(100);
+        root.setStyle("-fx-background-color: transparent;");
+        
+        // Create horizontal scrolling container
+        badgeContainer = new HBox(12);
+        badgeContainer.setAlignment(Pos.CENTER_LEFT);
+        badgeContainer.setPadding(new Insets(8, 16, 8, 16));
+        
+        // Create scroll pane (hidden scrollbars)
+        scrollPane = new ScrollPane(badgeContainer);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setFitToHeight(true);
+        scrollPane.setStyle(
             "-fx-background-color: transparent;" +
-            "-fx-background: transparent;"
+            "-fx-background: transparent;" +
+            "-fx-focus-color: transparent;" +
+            "-fx-faint-focus-color: transparent;"
         );
         
+        // Create navigation buttons
+        createNavigationButtons();
+        
+        // Add everything to root
+        root.getChildren().addAll(scrollPane, leftButton, rightButton);
+        
         refreshBadges();
+    }
+    
+    /**
+     * Create navigation buttons for slider
+     */
+    private void createNavigationButtons() {
+        // Left navigation button
+        leftButton = new Button("‹");
+        leftButton.setPrefSize(40, 40);
+        leftButton.setStyle(
+            "-fx-background-color: rgba(255, 255, 255, 0.9);" +
+            "-fx-text-fill: #333333;" +
+            "-fx-font-size: 20px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-background-radius: 20;" +
+            "-fx-border-radius: 20;" +
+            "-fx-cursor: hand;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 5);"
+        );
+        leftButton.setOnAction(e -> scrollLeft());
+        
+        // Right navigation button
+        rightButton = new Button("›");
+        rightButton.setPrefSize(40, 40);
+        rightButton.setStyle(
+            "-fx-background-color: rgba(255, 255, 255, 0.9);" +
+            "-fx-text-fill: #333333;" +
+            "-fx-font-size: 20px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-background-radius: 20;" +
+            "-fx-border-radius: 20;" +
+            "-fx-cursor: hand;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 5);"
+        );
+        rightButton.setOnAction(e -> scrollRight());
+        
+        // Position buttons
+        StackPane.setAlignment(leftButton, Pos.CENTER_LEFT);
+        StackPane.setAlignment(rightButton, Pos.CENTER_RIGHT);
+        StackPane.setMargin(leftButton, new Insets(0, 0, 0, 8));
+        StackPane.setMargin(rightButton, new Insets(0, 8, 0, 0));
+        
+        // Add hover effects
+        addButtonHoverEffects(leftButton);
+        addButtonHoverEffects(rightButton);
+    }
+    
+    /**
+     * Add hover effects to navigation buttons
+     */
+    private void addButtonHoverEffects(Button button) {
+        button.setOnMouseEntered(e -> {
+            SoundManager.getInstance().playButtonHover();
+            button.setStyle(button.getStyle() + 
+                "-fx-scale-x: 1.1; -fx-scale-y: 1.1;" +
+                "-fx-background-color: rgba(255, 152, 0, 0.9);" +
+                "-fx-text-fill: white;"
+            );
+        });
+        
+        button.setOnMouseExited(e -> {
+            button.setStyle(
+                "-fx-background-color: rgba(255, 255, 255, 0.9);" +
+                "-fx-text-fill: #333333;" +
+                "-fx-font-size: 20px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-background-radius: 20;" +
+                "-fx-border-radius: 20;" +
+                "-fx-cursor: hand;" +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 5);"
+            );
+        });
+    }
+    
+    /**
+     * Scroll left in the badge slider
+     */
+    private void scrollLeft() {
+        SoundManager.getInstance().playButtonClick();
+        double currentValue = scrollPane.getHvalue();
+        scrollPane.setHvalue(Math.max(0, currentValue - 0.2));
+    }
+    
+    /**
+     * Scroll right in the badge slider
+     */
+    private void scrollRight() {
+        SoundManager.getInstance().playButtonClick();
+        double currentValue = scrollPane.getHvalue();
+        scrollPane.setHvalue(Math.min(1, currentValue + 0.2));
     }
     
     /**
@@ -90,17 +197,18 @@ public class BadgesStrip {
      * Create a compact earned badge item
      */
     private VBox createEarnedBadgeItem(Badge badge) {
-        VBox item = new VBox(6);
+        VBox item = new VBox(4);
         item.setAlignment(Pos.CENTER);
-        item.setPrefWidth(65);
-        item.setPrefHeight(80);
+        item.setPrefWidth(70);
+        item.setPrefHeight(70);
+        item.setMaxHeight(70);
         item.setStyle(
-            "-fx-background-color: linear-gradient(to bottom, #FFD700, #FFA000);" +
-            "-fx-background-radius: 10;" +
-            "-fx-border-radius: 10;" +
-            "-fx-border-color: #FF8F00;" +
+            "-fx-background-color: rgba(255, 215, 0, 0.85);" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
+            "-fx-border-color: rgba(255, 143, 0, 0.8);" +
             "-fx-border-width: 2;" +
-            "-fx-effect: dropshadow(gaussian, rgba(255,215,0,0.4), 8, 0, 0, 4);" +
+            "-fx-effect: dropshadow(gaussian, rgba(255,215,0,0.5), 12, 0, 0, 6);" +
             "-fx-cursor: hand;"
         );
         
@@ -114,15 +222,15 @@ public class BadgesStrip {
         // Compact badge name
         Label nameLabel = new Label(badge.getName());
         nameLabel.setStyle(
-            "-fx-font-size: 8px;" +
-            "-fx-font-weight: 700;" +
+            "-fx-font-size: 9px;" +
+            "-fx-font-weight: 600;" +
             "-fx-text-fill: white;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
             "-fx-text-alignment: center;" +
             "-fx-wrap-text: true;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 2, 0, 0, 1);"
         );
-        nameLabel.setMaxWidth(55);
+        nameLabel.setMaxWidth(60);
         
         item.getChildren().addAll(iconLabel, nameLabel);
         
@@ -149,18 +257,19 @@ public class BadgesStrip {
      * Create a compact "coming soon" badge item
      */
     private VBox createComingSoonBadgeItem(Badge badge) {
-        VBox item = new VBox(6);
+        VBox item = new VBox(4);
         item.setAlignment(Pos.CENTER);
-        item.setPrefWidth(65);
-        item.setPrefHeight(80);
+        item.setPrefWidth(70);
+        item.setPrefHeight(70);
+        item.setMaxHeight(70);
         item.setStyle(
-            "-fx-background-color: linear-gradient(to bottom, #E0E0E0, #BDBDBD);" +
-            "-fx-background-radius: 10;" +
-            "-fx-border-radius: 10;" +
-            "-fx-border-color: #9E9E9E;" +
+            "-fx-background-color: rgba(224, 224, 224, 0.75);" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
+            "-fx-border-color: rgba(158, 158, 158, 0.8);" +
             "-fx-border-width: 2;" +
             "-fx-border-style: dashed;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 6, 0, 0, 3);" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);" +
             "-fx-cursor: hand;"
         );
         
@@ -206,17 +315,18 @@ public class BadgesStrip {
      * Create compact "More Coming" motivational item
      */
     private VBox createMoreComingItem() {
-        VBox item = new VBox(6);
+        VBox item = new VBox(4);
         item.setAlignment(Pos.CENTER);
-        item.setPrefWidth(65);
-        item.setPrefHeight(80);
+        item.setPrefWidth(70);
+        item.setPrefHeight(70);
+        item.setMaxHeight(70);
         item.setStyle(
-            "-fx-background-color: linear-gradient(to bottom, #4CAF50, #388E3C);" +
-            "-fx-background-radius: 10;" +
-            "-fx-border-radius: 10;" +
-            "-fx-border-color: #2E7D32;" +
+            "-fx-background-color: rgba(76, 175, 80, 0.85);" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
+            "-fx-border-color: rgba(46, 125, 50, 0.8);" +
             "-fx-border-width: 2;" +
-            "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.4), 6, 0, 0, 3);"
+            "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.5), 10, 0, 0, 5);"
         );
         
         // Smaller plus icon
@@ -286,13 +396,13 @@ public class BadgesStrip {
      */
     private String getBadgeIcon(BadgeCategory category) {
         switch (category) {
-            case LEARNING: return "📚";
-            case CREATIVITY: return "🎨";
-            case FITNESS: return "💪";
-            case SOCIAL: return "👥";
+            case LEARNING: return "🎓";
+            case CREATIVITY: return "🎭";
+            case FITNESS: return "🏋️‍♀️";
+            case SOCIAL: return "👫";
             case ACHIEVEMENT: return "🏆";
-            case SPECIAL: return "⭐";
-            default: return "🏅";
+            case SPECIAL: return "✨";
+            default: return "🎖️";
         }
     }
     
@@ -345,7 +455,7 @@ public class BadgesStrip {
     /**
      * Get the root UI component
      */
-    public ScrollPane getRoot() {
+    public StackPane getRoot() {
         return root;
     }
 }

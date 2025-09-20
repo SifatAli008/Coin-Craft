@@ -9,6 +9,7 @@ import com.coincraft.ui.components.child.ChildTopBar;
 import com.coincraft.ui.components.child.DailyStreakCalendar;
 import com.coincraft.ui.components.child.EventBanner;
 import com.coincraft.ui.components.child.LevelProgressWidget;
+import com.coincraft.ui.components.child.ShopPage;
 import com.coincraft.ui.components.child.TaskCardList;
 
 import javafx.geometry.Insets;
@@ -16,13 +17,17 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 /**
- * Child Dashboard - Main interface for young adventurers
+ * Adventurer Dashboard - Main interface for young adventurers
  * Features gamified learning, avatar customization, and progress tracking
  * Follows the established game theme with Minecraft fonts and gaming aesthetics
  */
@@ -37,6 +42,7 @@ public class ChildDashboard extends BaseDashboard {
     private ChildLeaderboard leaderboard;
     private EventBanner eventBanner;
     private ChildSidebar sidebar;
+    private ShopPage shopPage;
     
     // Content sections
     private VBox mainContent;
@@ -48,8 +54,26 @@ public class ChildDashboard extends BaseDashboard {
     
     @Override
     protected void initializeUI() {
-        root = new BorderPane();
-        root.getStyleClass().add("child-dashboard");
+        // Create a StackPane as the root to properly handle background
+        StackPane backgroundContainer = new StackPane();
+        backgroundContainer.setPadding(new Insets(0));
+        backgroundContainer.setAlignment(Pos.CENTER);
+        
+        // Create background ImageView for animated GIF
+        ImageView backgroundImageView = createBackgroundImageView(backgroundContainer);
+        
+        // Add semi-transparent dark overlay for better contrast
+        Region darkOverlay = new Region();
+        darkOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.1);");
+        darkOverlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        darkOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        darkOverlay.setMouseTransparent(true); // Allow clicks to pass through
+        
+        // Create the main BorderPane for layout
+        BorderPane mainLayout = new BorderPane();
+        mainLayout.getStyleClass().add("child-dashboard");
+        mainLayout.setStyle("-fx-background-color: transparent;");
+        mainLayout.setPadding(new Insets(8, 8, 8, 8));
         
         // Create main sections
         createTopSection();
@@ -57,12 +81,15 @@ public class ChildDashboard extends BaseDashboard {
         createMainContent();
         
         // Set up layout with sidebar
-        root.setTop(topBar.getRoot());
-        root.setLeft(sidebar.getRoot());
-        root.setCenter(mainContent);
+        mainLayout.setTop(topBar.getRoot());
+        mainLayout.setLeft(sidebar.getRoot());
+        mainLayout.setCenter(mainContent);
         
-        // Apply child-specific styling
-        applyChildTheme();
+        // Add everything to the background container (background first, then overlay, then content)
+        backgroundContainer.getChildren().addAll(backgroundImageView, darkOverlay, mainLayout);
+        
+        // Set the StackPane as the root
+        root = backgroundContainer;
     }
     
     /**
@@ -73,74 +100,160 @@ public class ChildDashboard extends BaseDashboard {
     }
     
     /**
-     * Create the main content area with perfect space utilization
+     * Create properly sized main content area
      */
     private void createMainContent() {
-        mainContent = new VBox(6);
-        mainContent.setPadding(new Insets(5, 0, 5, 0));
+        mainContent = new VBox(16);
+        mainContent.setPadding(new Insets(8, 16, 16, 16));
         mainContent.setAlignment(Pos.TOP_CENTER);
+        mainContent.setStyle("-fx-background-color: transparent;");
+        mainContent.setMaxWidth(1180);
+        mainContent.setPrefWidth(1180);
         
-        // Compact Level Progress Section
+        // Hero Section - Level Progress and Stats
+        HBox heroSection = createHeroSection();
+        
+        // Main Grid Layout - Responsive Cards
+        VBox mainGrid = createMainGrid();
+        
+        // Action Section
+        HBox actionSection = createActionSection();
+        
+        mainContent.getChildren().addAll(heroSection, mainGrid, actionSection);
+    }
+    
+    /**
+     * Create hero section with level progress and inline stats
+     */
+    private HBox createHeroSection() {
+        HBox heroSection = new HBox(24);
+        heroSection.setAlignment(Pos.CENTER);
+        heroSection.setPadding(new Insets(8, 0, 16, 0));
+        heroSection.setMaxWidth(1180);
+        
+        // Left side - Level Progress Widget
         levelProgress = new LevelProgressWidget(currentUser);
-        HBox levelContainer = new HBox();
-        levelContainer.setAlignment(Pos.CENTER);
-        levelContainer.setPadding(new Insets(0, 0, 5, 0));
-        levelContainer.getChildren().add(levelProgress.getRoot());
         
-        // Main dashboard with absolute width control
-        HBox mainRow = new HBox(8);
-        mainRow.setAlignment(Pos.TOP_CENTER);
-        mainRow.setPadding(new Insets(0, 5, 0, 5));
-        mainRow.setPrefWidth(1100);
-        mainRow.setMaxWidth(1100);
+        // Right side - Quick Stats Row
+        HBox statsRow = createQuickStatsRow();
         
-        // Left column - Tasks and Progress (fixed width for 3 quest cards)
-        VBox leftColumn = new VBox(8);
-        leftColumn.setPrefWidth(640);
-        leftColumn.setMaxWidth(640);
-        leftColumn.setMinWidth(640);
+        heroSection.getChildren().addAll(levelProgress.getRoot(), statsRow);
+        HBox.setHgrow(levelProgress.getRoot(), Priority.NEVER);
+        HBox.setHgrow(statsRow, Priority.NEVER);
+        
+        return heroSection;
+    }
+    
+    /**
+     * Create quick stats row
+     */
+    private HBox createQuickStatsRow() {
+        HBox statsRow = new HBox(12);
+        statsRow.setAlignment(Pos.CENTER_RIGHT);
+        statsRow.setPadding(new Insets(0));
+        
+        // Active Tasks Count
+        HBox tasksStatCard = createStatCard("⚔", "3", "Active Quests");
+        
+        // Earned Badges Count  
+        HBox badgesStatCard = createStatCard("🏆", "12", "Badges Earned");
+        
+        // Current Streak
+        HBox streakStatCard = createStatCard("🔥", "7", "Day Streak");
+        
+        // Coins Balance
+        HBox coinsStatCard = createStatCard("💰", "250", "SmartCoins");
+        
+        statsRow.getChildren().addAll(tasksStatCard, badgesStatCard, streakStatCard, coinsStatCard);
+        return statsRow;
+    }
+    
+    /**
+     * Create properly sized grid layout
+     */
+    private VBox createMainGrid() {
+        VBox mainGrid = new VBox(16);
+        mainGrid.setAlignment(Pos.CENTER);
+        mainGrid.setMaxWidth(1180);
+        
+        // Row 1: Primary Content
+        HBox primaryRow = new HBox(16);
+        primaryRow.setAlignment(Pos.TOP_CENTER);
+        primaryRow.setMaxWidth(1180);
+        
+        // Main Tasks Section (65% width)
+        VBox tasksSection = createTasksSection();
+        tasksSection.setPrefWidth(750);
+        tasksSection.setMaxWidth(750);
+        
+        // Side Panel (35% width)  
+        VBox sidePanel = createSidePanel();
+        sidePanel.setPrefWidth(350);
+        sidePanel.setMaxWidth(350);
+        
+        primaryRow.getChildren().addAll(tasksSection, sidePanel);
+        HBox.setHgrow(tasksSection, Priority.NEVER);
+        HBox.setHgrow(sidePanel, Priority.NEVER);
+        
+        mainGrid.getChildren().add(primaryRow);
+        return mainGrid;
+    }
+    
+    /**
+     * Create modern tasks section
+     */
+    private VBox createTasksSection() {
+        VBox tasksSection = new VBox(16);
         
         taskList = new TaskCardList(currentUser);
         badgesStrip = new BadgesStrip(currentUser);
         
-        leftColumn.getChildren().addAll(
-            createSectionCard("🗺️ Active Quests", taskList.getRoot()),
-            createSectionCard("🏆 Badge Collection", badgesStrip.getRoot())
-        );
+        // Tasks Card
+        VBox tasksCard = createModernCard("Active Quests", taskList.getRoot());
         
-        // Right column - Social and Events (fixed width to fill remaining space)
-        VBox rightColumn = new VBox(8);
-        rightColumn.setPrefWidth(452);
-        rightColumn.setMaxWidth(452);
-        rightColumn.setMinWidth(452);
-        rightColumn.setAlignment(Pos.TOP_LEFT);
+        // Badges Card
+        VBox badgesCard = createModernCard("Achievement Collection", badgesStrip.getRoot());
+        
+        tasksSection.getChildren().addAll(tasksCard, badgesCard);
+        return tasksSection;
+    }
+    
+    /**
+     * Create side panel with social features
+     */
+    private VBox createSidePanel() {
+        VBox sidePanel = new VBox(16);
         
         streakCalendar = new DailyStreakCalendar(currentUser);
         leaderboard = new ChildLeaderboard(currentUser);
         eventBanner = new EventBanner(currentUser);
         
-        rightColumn.getChildren().addAll(
-            createCompactSectionCard("🔥 Daily Streak", streakCalendar.getRoot()),
-            createCompactSectionCard("🏅 Leaderboard", leaderboard.getRoot()),
-            createCompactSectionCard("🎉 Special Events", eventBanner.getRoot())
-        );
+        // Streak Card
+        VBox streakCard = createModernCard("Daily Progress", streakCalendar.getRoot());
         
-        mainRow.getChildren().addAll(leftColumn, rightColumn);
-        HBox.setHgrow(leftColumn, Priority.NEVER);
-        HBox.setHgrow(rightColumn, Priority.NEVER);
+        // Leaderboard Card
+        VBox leaderboardCard = createModernCard("Leaderboard", leaderboard.getRoot());
         
-        // Centered Request Mission Button
+        // Events Card
+        VBox eventsCard = createModernCard("Special Events", eventBanner.getRoot());
+        
+        sidePanel.getChildren().addAll(streakCard, leaderboardCard, eventsCard);
+        return sidePanel;
+    }
+    
+    /**
+     * Create action section with primary CTA
+     */
+    private HBox createActionSection() {
+        HBox actionSection = new HBox();
+        actionSection.setAlignment(Pos.CENTER);
+        actionSection.setPadding(new Insets(16, 0, 0, 0));
+        actionSection.setMaxWidth(1180);
+        
         Button requestMissionBtn = createRequestMissionButton();
-        HBox buttonContainer = new HBox();
-        buttonContainer.setAlignment(Pos.CENTER);
-        buttonContainer.setPadding(new Insets(5, 0, 0, 0));
-        buttonContainer.getChildren().add(requestMissionBtn);
+        actionSection.getChildren().add(requestMissionBtn);
         
-        mainContent.getChildren().addAll(
-            levelContainer,
-            mainRow,
-            buttonContainer
-        );
+        return actionSection;
     }
     
     /**
@@ -151,17 +264,58 @@ public class ChildDashboard extends BaseDashboard {
     }
     
     /**
-     * Create a compact standardized section card
+     * Create background ImageView for animated GIF
      */
-    private VBox createSectionCard(String title, javafx.scene.Node content) {
-        VBox card = createGameCard();
+    private ImageView createBackgroundImageView(StackPane container) {
+        try {
+            // Load the animated GIF as an Image
+            Image backgroundImage = new Image(getClass().getResourceAsStream("/images/tumblr_5d37ab2aa782462c7aa092f7bd0d27cb_fe094893_1280.gif"));
+            
+            // Create ImageView
+            ImageView imageView = new ImageView(backgroundImage);
+            imageView.setPreserveRatio(false);
+            imageView.setSmooth(true);
+            imageView.setCache(true);
+            
+            // Make it fill the entire container
+            imageView.fitWidthProperty().bind(container.widthProperty());
+            imageView.fitHeightProperty().bind(container.heightProperty());
+            
+            System.out.println("Child Dashboard background GIF loaded successfully: " + backgroundImage.getWidth() + "x" + backgroundImage.getHeight());
+            return imageView;
+            
+        } catch (Exception e) {
+            System.err.println("Could not load background GIF: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Create a fallback ImageView with a solid color
+            ImageView fallbackView = new ImageView();
+            fallbackView.setStyle("-fx-background-color: linear-gradient(to bottom right, #87CEEB, #98FB98, #F0E68C);");
+            return fallbackView;
+        }
+    }
+    
+    /**
+     * Create modern card with improved design
+     */
+    private VBox createModernCard(String title, javafx.scene.Node content) {
+        VBox card = new VBox(16);
+        card.setPadding(new Insets(24));
+        card.setStyle(
+            "-fx-background-color: rgba(255, 255, 255, 0.95);" +
+            "-fx-background-radius: 16;" +
+            "-fx-border-radius: 16;" +
+            "-fx-border-color: rgba(255, 255, 255, 0.5);" +
+            "-fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 25, 0, 0, 12);"
+        );
         
-        // Compact title
+        // Modern card header
         Label titleLabel = new Label(title);
         titleLabel.setStyle(
-            "-fx-font-size: 13px;" +
-            "-fx-font-weight: 700;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-font-size: 18px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #1a1a1a;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -170,63 +324,137 @@ public class ChildDashboard extends BaseDashboard {
     }
     
     /**
-     * Create a maximum width section card for right column (452px)
+     * Create compact stat card with left-aligned icon
      */
-    private VBox createCompactSectionCard(String title, javafx.scene.Node content) {
-        VBox card = new VBox(10);
-        card.setAlignment(Pos.TOP_CENTER);
-        card.setPrefWidth(452);
-        card.setMaxWidth(452);
-        card.setMinWidth(452);
-        card.setStyle(
+    private HBox createStatCard(String icon, String value, String label) {
+        HBox statCard = new HBox(8);
+        statCard.setAlignment(Pos.CENTER_LEFT);
+        statCard.setPrefWidth(140);
+        statCard.setMaxWidth(140);
+        statCard.setPadding(new Insets(12, 16, 12, 16));
+        statCard.setStyle(
             "-fx-background-color: rgba(255, 255, 255, 0.9);" +
             "-fx-background-radius: 12;" +
             "-fx-border-radius: 12;" +
-            "-fx-border-color: rgba(255, 255, 255, 0.7);" +
-            "-fx-border-width: 2;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 12, 0, 0, 6);" +
-            "-fx-padding: 15;"
+            "-fx-border-color: rgba(255, 152, 0, 0.3);" +
+            "-fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 15, 0, 0, 8);"
         );
         
-        // Maximum title for 452px card
-        Label titleLabel = new Label(title);
-        titleLabel.setStyle(
-            "-fx-font-size: 16px;" +
+        // Left side - Icon
+        Label iconLabel = new Label(icon);
+        iconLabel.setStyle(
+            "-fx-font-size: 24px;"
+        );
+        
+        // Right side - Value and Label
+        VBox textSection = new VBox(2);
+        textSection.setAlignment(Pos.CENTER_LEFT);
+        
+        // Value
+        Label valueLabel = new Label(value);
+        valueLabel.setStyle(
+            "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #FF9800;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-            "-fx-text-alignment: center;"
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
-        titleLabel.setMaxWidth(432);
         
-        card.getChildren().addAll(titleLabel, content);
-        return card;
+        // Label
+        Label descLabel = new Label(label);
+        descLabel.setStyle(
+            "-fx-font-size: 10px;" +
+            "-fx-font-weight: 500;" +
+            "-fx-text-fill: #666666;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        descLabel.setMaxWidth(80);
+        descLabel.setWrapText(true);
+        
+        textSection.getChildren().addAll(valueLabel, descLabel);
+        statCard.getChildren().addAll(iconLabel, textSection);
+        return statCard;
     }
     
     /**
-     * Create the compact Request Mission button (level-gated feature)
+     * Create a compact standardized section card (legacy method)
+     */
+    private VBox createSectionCard(String title, javafx.scene.Node content) {
+        return createModernCard(title, content);
+    }
+    
+    /**
+     * Create a maximum width section card for right column (modern design)
+     */
+    private VBox createCompactSectionCard(String title, javafx.scene.Node content) {
+        return createModernCard(title, content);
+    }
+    
+    /**
+     * Create modern Request Mission button
      */
     private Button createRequestMissionButton() {
-        Button requestBtn = createGameButton("🚀 REQUEST MISSION", "#4CAF50", "#388E3C");
-        requestBtn.setPrefWidth(160);
+        Button requestBtn = new Button("🎯 REQUEST MISSION");
+        requestBtn.setPrefWidth(200);
+        requestBtn.setPrefHeight(50);
         
         // Check if feature is available based on level
         if (!hasLevelAccess("request_mission", 5)) {
             requestBtn.setDisable(true);
-            requestBtn.setText("🔒 LEVEL 5 UNLOCK");
+            requestBtn.setText("🔒 UNLOCK AT LEVEL 5");
             requestBtn.setStyle(
-                "-fx-background-color: #9E9E9E;" +
+                "-fx-background-color: rgba(158, 158, 158, 0.8);" +
                 "-fx-text-fill: white;" +
-                "-fx-font-size: 10px;" +
-                "-fx-font-weight: 700;" +
-                "-fx-background-radius: 8;" +
-                "-fx-border-radius: 8;" +
+                "-fx-font-size: 14px;" +
+                "-fx-font-weight: 600;" +
+                "-fx-background-radius: 25;" +
+                "-fx-border-radius: 25;" +
                 "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-                "-fx-padding: 6 10;" +
-                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0, 0, 2);"
+                "-fx-padding: 12 24;" +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 8);"
             );
         } else {
-            requestBtn.setOnAction(e -> showRequestMissionDialog());
+            requestBtn.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #4CAF50, #388E3C);" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 16px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-background-radius: 25;" +
+                "-fx-border-radius: 25;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-padding: 12 24;" +
+                "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.4), 20, 0, 0, 10);" +
+                "-fx-cursor: hand;"
+            );
+            
+            // Hover effects
+            requestBtn.setOnMouseEntered(e -> {
+                SoundManager.getInstance().playButtonHover();
+                requestBtn.setStyle(requestBtn.getStyle() + 
+                    "-fx-scale-x: 1.05; -fx-scale-y: 1.05;" +
+                    "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.6), 25, 0, 0, 12);"
+                );
+            });
+            
+            requestBtn.setOnMouseExited(e -> {
+                requestBtn.setStyle(
+                    "-fx-background-color: linear-gradient(to bottom, #4CAF50, #388E3C);" +
+                    "-fx-text-fill: white;" +
+                    "-fx-font-size: 16px;" +
+                    "-fx-font-weight: 700;" +
+                    "-fx-background-radius: 25;" +
+                    "-fx-border-radius: 25;" +
+                    "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                    "-fx-padding: 12 24;" +
+                    "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.4), 20, 0, 0, 10);" +
+                    "-fx-cursor: hand;"
+                );
+            });
+            
+            requestBtn.setOnAction(e -> {
+                SoundManager.getInstance().playButtonClick();
+                showRequestMissionDialog();
+            });
         }
         
         return requestBtn;
@@ -282,16 +510,6 @@ public class ChildDashboard extends BaseDashboard {
         alert.showAndWait();
     }
     
-    /**
-     * Apply child-specific theme styling
-     */
-    private void applyChildTheme() {
-        root.setStyle(
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-            // Bright, cheerful gradient background
-            "-fx-background-color: linear-gradient(to bottom right, #87CEEB, #98FB98, #F0E68C);"
-        );
-    }
     
     @Override
     public void navigateToSection(String section) {
@@ -303,7 +521,8 @@ public class ChildDashboard extends BaseDashboard {
         // Handle section-specific logic
         switch (section.toLowerCase()) {
             case "home":
-                // Already showing home content
+                // Show home dashboard content
+                showHomePage();
                 break;
                 
             case "tasks":
@@ -322,7 +541,7 @@ public class ChildDashboard extends BaseDashboard {
                 
             case "shop":
                 // Navigate to shop (if available)
-                showShopInterface();
+                showShopPage();
                 break;
                 
             case "profile":
@@ -359,29 +578,30 @@ public class ChildDashboard extends BaseDashboard {
     }
     
     /**
-     * Show shop interface
+     * Show shop page
      */
-    private void showShopInterface() {
-        Alert dialog = new Alert(Alert.AlertType.INFORMATION);
-        dialog.setTitle("Adventure Shop");
-        dialog.setHeaderText("🛒 SmartCoin Shop");
-        dialog.setContentText(
-            "Welcome to the Adventure Shop!\n\n" +
-            "Spend your hard-earned SmartCoins on:\n" +
-            "• Cool avatar accessories\n" +
-            "• Special badges\n" +
-            "• Adventure tools\n" +
-            "• Learning modules\n\n" +
-            "Shop features coming soon!"
-        );
+    private void showShopPage() {
+        // Create shop page if not exists
+        if (shopPage == null) {
+            shopPage = new ShopPage(currentUser);
+        }
         
-        dialog.getDialogPane().setStyle(
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-            "-fx-background-color: rgba(255, 255, 255, 0.95);" +
-            "-fx-background-radius: 16;"
-        );
+        // Replace main content with shop page
+        BorderPane mainLayout = (BorderPane) ((StackPane) root).getChildren().get(2);
+        mainLayout.setCenter(shopPage.getRoot());
         
-        dialog.showAndWait();
+        System.out.println("Shop page displayed");
+    }
+    
+    /**
+     * Show home page (main dashboard)
+     */
+    private void showHomePage() {
+        // Replace content with main dashboard
+        BorderPane mainLayout = (BorderPane) ((StackPane) root).getChildren().get(2);
+        mainLayout.setCenter(mainContent);
+        
+        System.out.println("Home page displayed");
     }
     
     /**

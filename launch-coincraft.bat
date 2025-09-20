@@ -4,6 +4,7 @@ echo CoinCraft Launcher - JavaFX Auto-Setup
 echo ==============================================
 echo.
 
+
 echo Checking for JavaFX...
 REM Prefer user-provided JavaFX 21 path
 if exist "D:\openjfx-21.0.8_windows-x64_bin-sdk\javafx-sdk-21.0.8\lib" (
@@ -25,7 +26,13 @@ if exist "D:\openjfx-21.0.8_windows-x64_bin-sdk\javafx-sdk-21.0.8\lib" (
 echo Starting CoinCraft with JavaFX...
 echo.
 set MAIN_CLASS=com.coincraft.CoinCraftApplication
-set CLASSPATH=target\classes
+REM Build Maven dependencies classpath
+for /f "delims=" %%i in ('mvn dependency:build-classpath -Dmdep.outputFile=classpath.tmp -q') do set MAVEN_CLASSPATH=%%i
+if exist classpath.tmp (
+    set /p MAVEN_CLASSPATH=<classpath.tmp
+    del classpath.tmp
+)
+set CLASSPATH=target\classes;%MAVEN_CLASSPATH%
 
 REM Prefer Java 23+ for JavaFX 25 (class file version 67); Java 21 for JavaFX 21
 set "JAVA23=C:\Program Files\Java\jdk-23\bin\java.exe"

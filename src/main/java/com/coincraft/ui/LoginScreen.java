@@ -15,6 +15,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -35,6 +36,7 @@ public class LoginScreen {
     private StackPane root;
     private TextField emailField;
     private PasswordField passwordField;
+    private ComboBox<String> roleSelector;
     private Button loginButton;
     private Button googleSignInButton;
     private Label statusLabel;
@@ -67,7 +69,7 @@ public class LoginScreen {
         }
         
         // Set animated GIF background
-        String backgroundImage = getClass().getResource("/images/bd565dcc0a556add0b0a0ed6b26d686e.gif").toExternalForm();
+        String backgroundImage = getClass().getResource("/images/588a44195922117.66168b374ece8-ezgif.com-webp-to-gif-converter.gif").toExternalForm();
         root.setStyle(
             "-fx-background-image: url('" + backgroundImage + "');" +
             "-fx-background-size: cover;" +
@@ -161,7 +163,7 @@ public class LoginScreen {
         
         // Email field
         VBox emailSection = new VBox(8);
-        Label emailLabel = new Label("Email");
+        Label emailLabel = new Label("Email / Adventure ID");
         emailLabel.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
@@ -170,7 +172,7 @@ public class LoginScreen {
         );
         
         emailField = new TextField();
-        emailField.setPromptText("Enter your email");
+        emailField.setPromptText("Enter email or Adventure ID");
         emailField.setPrefWidth(340);
         emailField.setPrefHeight(48);
         emailField.setStyle(
@@ -245,6 +247,9 @@ public class LoginScreen {
         
         passwordSection.getChildren().addAll(passwordLabel, passwordField, forgotContainer);
         
+        // Role selector
+        VBox roleSection = createRoleSelector();
+        
         // Gaming-style login button
         loginButton = new Button("🚀 START ADVENTURE");
         loginButton.setPrefWidth(340);
@@ -317,7 +322,7 @@ public class LoginScreen {
         divider.getChildren().addAll(leftLine, orLabel, rightLine);
         
         // Google Sign-in button
-        googleSignInButton = new Button("🔍 SIGN IN WITH GOOGLE");
+        googleSignInButton = new Button("🔐 SIGN IN WITH GOOGLE");
         googleSignInButton.setPrefWidth(340);
         googleSignInButton.setPrefHeight(48);
         googleSignInButton.setStyle(
@@ -393,7 +398,7 @@ public class LoginScreen {
         
         signupSection.getChildren().addAll(noAccountLabel, signupLabel);
         
-        form.getChildren().addAll(emailSection, passwordSection, loginButton, divider, googleSignInButton);
+        form.getChildren().addAll(emailSection, passwordSection, roleSection, loginButton, divider, googleSignInButton);
         card.getChildren().addAll(header, form, signupSection);
         
         return card;
@@ -426,6 +431,26 @@ public class LoginScreen {
                         // Load user data
                         User user = firebaseService.loadUser(userId);
                         if (user != null) {
+                            // Set the user role based on selection (override Firebase data for demo)
+                            UserRole selectedRole = getSelectedUserRole();
+                            user.setRole(selectedRole);
+                            
+                            // Adjust user properties based on role
+                            if (selectedRole == UserRole.PARENT) {
+                                user.setName(user.getName() + " (Merchant)");
+                                if (user.getSmartCoinBalance() < 100) {
+                                    user.setSmartCoinBalance(500); // Merchants start with more
+                                }
+                            } else if (selectedRole == UserRole.TEACHER) {
+                                user.setName(user.getName() + " (Teacher)");
+                                if (user.getSmartCoinBalance() < 50) {
+                                    user.setSmartCoinBalance(200);
+                                }
+                            } else if (selectedRole == UserRole.ADMIN) {
+                                user.setName(user.getName() + " (Admin)");
+                                user.setSmartCoinBalance(1000);
+                            }
+                            
                             SoundManager.getInstance().playAdventureStart();
                             showStatus("🎉 Adventure started! Welcome, " + user.getName() + "!", true);
                             
@@ -458,9 +483,62 @@ public class LoginScreen {
         }).start();
     }
     
+    private VBox createRoleSelector() {
+        VBox roleSection = new VBox(8);
+        
+        Label roleLabel = new Label("I am a:");
+        roleLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: white;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        roleSelector = new ComboBox<>();
+        roleSelector.getItems().addAll("Adventurer (Child)", "Merchant (Parent)", "Teacher", "Admin");
+        roleSelector.setValue("Merchant (Parent)"); // Default to Merchant for easier testing
+        roleSelector.setPrefWidth(340);
+        roleSelector.setPrefHeight(40);
+        roleSelector.setStyle(
+            "-fx-background-color: rgba(255, 255, 255, 0.9);" +
+            "-fx-text-fill: black;" +
+            "-fx-font-size: 14px;" +
+            "-fx-border-color: rgba(255, 255, 255, 0.8);" +
+            "-fx-border-width: 2;" +
+            "-fx-border-radius: 8;" +
+            "-fx-background-radius: 8;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        // Add change listener for role selection
+        roleSelector.valueProperty().addListener((obs, oldVal, newVal) -> {
+            // Role selection changed - could add sound effect here if needed
+        });
+        
+        roleSection.getChildren().addAll(roleLabel, roleSelector);
+        return roleSection;
+    }
+    
+    private UserRole getSelectedUserRole() {
+        String selected = roleSelector.getValue();
+        switch (selected) {
+            case "Merchant (Parent)":
+                return UserRole.PARENT;
+            case "Teacher":
+                return UserRole.TEACHER;
+            case "Admin":
+                return UserRole.ADMIN;
+            case "Adventurer (Child)":
+            default:
+                return UserRole.CHILD;
+        }
+    }
+    
     private void handleGoogleSignIn() {
         showStatus("Signing in with Google...", true);
         googleSignInButton.setDisable(true);
+        
+        UserRole selectedRole = getSelectedUserRole();
         
         // Simulate Google OAuth flow (in a real app, this would open browser/WebView)
         new Thread(() -> {
@@ -469,17 +547,44 @@ public class LoginScreen {
                 
                 Platform.runLater(() -> {
                     try {
-                        // For now, create a demo Google user
-                        // In production, this would handle actual Google OAuth response
-                        User googleUser = new User("google_user_123", "Google User", UserRole.CHILD, 10);
-                        googleUser.setEmail("user@gmail.com");
-                        googleUser.setSmartCoinBalance(50);
-                        googleUser.setLevel(1);
-                        googleUser.setDailyStreaks(1);
-                        googleUser.setLastLogin(java.time.LocalDateTime.now());
+                        // Create Google user based on selected role
+                        User googleUser;
+                        
+                        if (selectedRole == UserRole.PARENT) {
+                            // Create merchant user with real Google account name
+                            googleUser = new User("google_merchant_123", "John Smith", UserRole.PARENT, 1);
+                            googleUser.setEmail("john.smith@gmail.com");
+                            googleUser.setSmartCoinBalance(500); // Merchants have different balance
+                            googleUser.setLevel(1); // Merchants don't have levels like adventurers
+                            googleUser.setLastLogin(java.time.LocalDateTime.now());
+                        } else if (selectedRole == UserRole.TEACHER) {
+                            // Create teacher user
+                            googleUser = new User("google_teacher_123", "Ms. Smith", UserRole.TEACHER, 1);
+                            googleUser.setEmail("teacher@gmail.com");
+                            googleUser.setSmartCoinBalance(100);
+                            googleUser.setLevel(1);
+                            googleUser.setLastLogin(java.time.LocalDateTime.now());
+                        } else if (selectedRole == UserRole.ADMIN) {
+                            // Create admin user
+                            googleUser = new User("google_admin_123", "Admin User", UserRole.ADMIN, 1);
+                            googleUser.setEmail("admin@gmail.com");
+                            googleUser.setSmartCoinBalance(1000);
+                            googleUser.setLevel(1);
+                            googleUser.setLastLogin(java.time.LocalDateTime.now());
+                        } else {
+                            // Create adventurer user (default)
+                            googleUser = new User("google_adventurer_123", "Emma Wilson", UserRole.CHILD, 10);
+                            googleUser.setEmail("adventurer@gmail.com");
+                            googleUser.setSmartCoinBalance(50);
+                            googleUser.setLevel(1);
+                            googleUser.setDailyStreaks(1);
+                            googleUser.setLastLogin(java.time.LocalDateTime.now());
+                        }
                         
                         SoundManager.getInstance().playSuccess();
-                        showStatus("Google sign-in successful! Welcome!", true);
+                        String roleMessage = selectedRole == UserRole.PARENT ? "merchant" : 
+                                           selectedRole == UserRole.CHILD ? "adventurer" : selectedRole.name().toLowerCase();
+                        showStatus("Google sign-in successful! Welcome " + roleMessage + "!", true);
                         
                         // Small delay before transitioning
                         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {

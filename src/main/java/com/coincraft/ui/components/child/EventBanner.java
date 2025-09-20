@@ -25,13 +25,15 @@ public class EventBanner {
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(10));
         root.setStyle(
-            "-fx-background-color: linear-gradient(to right, #E91E63, #9C27B0);" +
-            "-fx-background-radius: 12;" +
-            "-fx-border-radius: 12;" +
-            "-fx-effect: dropshadow(gaussian, rgba(233,30,99,0.3), 6, 0, 0, 3);"
+            "-fx-background-color: rgba(233, 30, 99, 0.9);" +
+            "-fx-background-radius: 16;" +
+            "-fx-border-radius: 16;" +
+            "-fx-border-color: rgba(255, 255, 255, 0.3);" +
+            "-fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 10);"
         );
         
-        Label eventTitle = new Label("🎉 WEEKEND CHALLENGE");
+        Label eventTitle = new Label("🎊 WEEKEND CHALLENGE");
         eventTitle.setStyle(
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
@@ -53,7 +55,7 @@ public class EventBanner {
         );
         eventDesc.setMaxWidth(432);
         
-        Label timeLeft = new Label("⏰ 2 days left");
+        Label timeLeft = new Label("⏳ 2 days left");
         timeLeft.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-text-fill: rgba(255,255,255,0.8);" +

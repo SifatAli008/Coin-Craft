@@ -21,47 +21,46 @@ public class ChildLeaderboard {
     }
     
     private void initializeUI() {
-        root = new VBox(8);
+        root = new VBox(12);
         root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(10));
+        root.setPadding(new Insets(0));
         
-        // Perfect rank display for 452px card
-        Label rankLabel = new Label("🏅 You're Rank #3 this week!");
+        // Compact rank display with better styling
+        Label rankLabel = new Label("👑 Rank #3");
         rankLabel.setStyle(
-            "-fx-font-size: 17px;" +
+            "-fx-font-size: 16px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #FF9800;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-            "-fx-text-alignment: center;" +
-            "-fx-wrap-text: true;"
+            "-fx-text-alignment: center;"
         );
-        rankLabel.setMaxWidth(432);
         
-        // Perfect top players for 452px card
-        VBox playersBox = new VBox(8);
+        // Compact top players list
+        VBox playersBox = new VBox(4);
         playersBox.setAlignment(Pos.CENTER);
         
-        String[] players = {"🥇 Alex - 150 coins", "🥈 Sam - 125 coins", "🥉 You - 100 coins"};
+        String[] players = {"🥇 Alex - 150", "🥈 Sam - 125", "🥉 You - 100"};
         for (String player : players) {
             Label playerLabel = new Label(player);
             playerLabel.setStyle(
-                "-fx-font-size: 15px;" +
+                "-fx-font-size: 12px;" +
                 "-fx-font-weight: 500;" +
                 "-fx-text-fill: #333333;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-text-alignment: center;"
             );
             playersBox.getChildren().add(playerLabel);
         }
         
-        Label motivationLabel = new Label("Keep adventuring to climb higher! 🚀");
+        // Compact motivation text
+        Label motivationLabel = new Label("Climb higher! 🚀");
         motivationLabel.setStyle(
-            "-fx-font-size: 13px;" +
+            "-fx-font-size: 11px;" +
+            "-fx-font-weight: 500;" +
             "-fx-text-fill: #4CAF50;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-            "-fx-text-alignment: center;" +
-            "-fx-wrap-text: true;"
+            "-fx-text-alignment: center;"
         );
-        motivationLabel.setMaxWidth(432);
         
         root.getChildren().addAll(rankLabel, playersBox, motivationLabel);
     }

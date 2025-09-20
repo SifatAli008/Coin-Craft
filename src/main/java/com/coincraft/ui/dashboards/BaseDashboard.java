@@ -6,7 +6,7 @@ import com.coincraft.ui.routing.RoleGuard;
 
 import animatefx.animation.FadeIn;
 import javafx.scene.Parent;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 
 /**
@@ -14,7 +14,7 @@ import javafx.scene.text.Font;
  * Provides common functionality and maintains game theme consistency
  */
 public abstract class BaseDashboard {
-    protected BorderPane root;
+    protected Pane root;
     protected User currentUser;
     
     public BaseDashboard(User user) {
@@ -197,19 +197,19 @@ public abstract class BaseDashboard {
     }
     
     /**
-     * Create a compact standardized game-themed card container
+     * Create a clean modern card container
      * @return Styled VBox container
      */
     protected javafx.scene.layout.VBox createGameCard() {
-        javafx.scene.layout.VBox card = new javafx.scene.layout.VBox(10);
+        javafx.scene.layout.VBox card = new javafx.scene.layout.VBox(16);
         card.setStyle(
             "-fx-background-color: rgba(255, 255, 255, 0.85);" +
-            "-fx-background-radius: 12;" +
-            "-fx-border-radius: 12;" +
-            "-fx-border-color: rgba(255, 255, 255, 0.6);" +
-            "-fx-border-width: 2;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 12, 0, 0, 6);" +
-            "-fx-padding: 12;"
+            "-fx-background-radius: 16;" +
+            "-fx-border-radius: 16;" +
+            "-fx-border-color: rgba(255, 255, 255, 0.4);" +
+            "-fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 10);" +
+            "-fx-padding: 24;"
         );
         return card;
     }

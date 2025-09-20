@@ -68,6 +68,10 @@ public class User {
     public int getSmartCoinBalance() { return smartCoinBalance; }
     public void setSmartCoinBalance(int smartCoinBalance) { this.smartCoinBalance = smartCoinBalance; }
     
+    // Convenience method for getSmartCoinBalance (alias for compatibility)
+    public int getSmartCoins() { return smartCoinBalance; }
+    public void setSmartCoins(int smartCoins) { this.smartCoinBalance = smartCoins; }
+    
     public int getExperiencePoints() { return experiencePoints; }
     public void setExperiencePoints(int experiencePoints) { this.experiencePoints = experiencePoints; }
     
