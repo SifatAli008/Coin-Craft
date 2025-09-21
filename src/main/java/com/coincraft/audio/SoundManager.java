@@ -164,13 +164,21 @@ public class SoundManager {
     }
     
     /**
-     * Start background music
+     * Start background music (ensures single instance)
      */
     public void startBackgroundMusic() {
         if (backgroundMusicPlayer != null && musicEnabled) {
             try {
+                // Always stop any existing music first to prevent overlaps
+                if (backgroundMusicPlayer.getStatus() == MediaPlayer.Status.PLAYING ||
+                    backgroundMusicPlayer.getStatus() == MediaPlayer.Status.PAUSED) {
+                    backgroundMusicPlayer.stop();
+                    LOGGER.info("Stopped existing background music to prevent overlap");
+                }
+                
+                // Start fresh music instance
                 backgroundMusicPlayer.play();
-                LOGGER.info("Background music started");
+                LOGGER.info("Background music started (single instance)");
             } catch (Exception e) {
                 LOGGER.warning("Error starting background music: " + e.getMessage());
             }
@@ -206,13 +214,21 @@ public class SoundManager {
     }
     
     /**
-     * Resume background music
+     * Resume background music (ensures single instance)
      */
     public void resumeBackgroundMusic() {
         if (backgroundMusicPlayer != null && musicEnabled) {
             try {
+                // Always stop any existing music first to prevent overlaps
+                if (backgroundMusicPlayer.getStatus() == MediaPlayer.Status.PLAYING ||
+                    backgroundMusicPlayer.getStatus() == MediaPlayer.Status.PAUSED) {
+                    backgroundMusicPlayer.stop();
+                    LOGGER.info("Stopped existing background music to prevent overlap");
+                }
+                
+                // Start fresh music instance
                 backgroundMusicPlayer.play();
-                LOGGER.info("Background music resumed");
+                LOGGER.info("Background music resumed (single instance)");
             } catch (Exception e) {
                 LOGGER.warning("Error resuming background music: " + e.getMessage());
             }
@@ -252,6 +268,38 @@ public class SoundManager {
      */
     public boolean isMusicEnabled() {
         return musicEnabled;
+    }
+    
+    /**
+     * Check if background music is currently playing
+     */
+    public boolean isMusicPlaying() {
+        return backgroundMusicPlayer != null && 
+               backgroundMusicPlayer.getStatus() == MediaPlayer.Status.PLAYING;
+    }
+    
+    /**
+     * Ensure single music instance - stop all and start fresh
+     */
+    public void ensureSingleMusicInstance() {
+        if (backgroundMusicPlayer != null) {
+            try {
+                // Force stop any existing music
+                backgroundMusicPlayer.stop();
+                LOGGER.info("Forced stop of background music to ensure single instance");
+                
+                // Small delay to ensure stop is processed
+                Thread.sleep(100);
+                
+                // Start fresh if music is enabled
+                if (musicEnabled) {
+                    backgroundMusicPlayer.play();
+                    LOGGER.info("Started single background music instance");
+                }
+            } catch (Exception e) {
+                LOGGER.warning("Error ensuring single music instance: " + e.getMessage());
+            }
+        }
     }
     
     /**

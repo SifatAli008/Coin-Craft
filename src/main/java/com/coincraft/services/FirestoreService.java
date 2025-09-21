@@ -470,4 +470,51 @@ public class FirestoreService {
         
         return users;
     }
+    
+    /**
+     * Get all tasks from Firestore
+     */
+    public List<Task> getAllTasks() {
+        List<Task> tasks = new ArrayList<>();
+        try {
+            String url = config.getFirestoreUrl() + "/tasks";
+            
+            Request request = new Request.Builder()
+                    .url(url)
+                    .addHeader("Authorization", "Bearer " + idToken)
+                    .get()
+                    .build();
+            
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String responseBody = response.body().string();
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
+                    
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> documents = (List<Map<String, Object>>) responseMap.get("documents");
+                    
+                    if (documents != null) {
+                        for (Map<String, Object> doc : documents) {
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> fields = (Map<String, Object>) doc.get("fields");
+                            Task task = convertFirestoreToTask(fields);
+                            if (task != null) {
+                                tasks.add(task);
+                            }
+                        }
+                    }
+                    
+                    LOGGER.info("Successfully loaded " + tasks.size() + " tasks from Firestore");
+                } else {
+                    LOGGER.warning("Failed to load tasks from Firestore: " + response.code());
+                }
+            }
+            
+        } catch (Exception e) {
+            LOGGER.severe("Error loading tasks from Firestore: " + e.getMessage());
+        }
+        
+        return tasks;
+    }
 }

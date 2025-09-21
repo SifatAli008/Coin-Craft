@@ -109,8 +109,8 @@ public class RegistrationScreen {
         root.getChildren().addAll(darkOverlay, centerContainer);
         try { new FadeIn(root).play(); } catch (Throwable ignored) {}
         
-        // Continue background music (should already be playing from LoginScreen)
-        SoundManager.getInstance().resumeBackgroundMusic();
+        // Ensure single background music instance
+        SoundManager.getInstance().ensureSingleMusicInstance();
     }
     
     private VBox createRegistrationCard() {

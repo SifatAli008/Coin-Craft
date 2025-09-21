@@ -35,8 +35,8 @@ public abstract class BaseDashboard {
         // Start animations
         startAnimations();
         
-        // Continue background music
-        SoundManager.getInstance().resumeBackgroundMusic();
+        // Ensure single music instance to prevent overlaps
+        SoundManager.getInstance().ensureSingleMusicInstance();
     }
     
     /**

@@ -109,8 +109,8 @@ public class LoginScreen {
         root.getChildren().addAll(darkOverlay, centerContainer);
         try { new FadeIn(root).play(); } catch (Throwable ignored) {}
         
-        // Start background music
-        SoundManager.getInstance().startBackgroundMusic();
+        // Ensure single background music instance
+        SoundManager.getInstance().ensureSingleMusicInstance();
     }
     
     private VBox createLoginCard() {
@@ -450,6 +450,13 @@ public class LoginScreen {
         loginButton.setText("🌟 LAUNCHING...");
         loginButton.setDisable(true);
         
+        // Check if admin role is selected and handle admin authentication
+        UserRole selectedRole = getSelectedUserRole();
+        if (selectedRole == UserRole.ADMIN) {
+            handleAdminLogin(email, password);
+            return;
+        }
+        
         // Authenticate in background thread
         new Thread(() -> {
             try {
@@ -465,7 +472,6 @@ public class LoginScreen {
                         User user = firebaseService.loadUser(userId);
                         if (user != null) {
                             // Set the user role based on selection (override Firebase data for demo)
-                            UserRole selectedRole = getSelectedUserRole();
                             user.setRole(selectedRole);
                             
                             // Adjust user properties based on role
@@ -514,6 +520,83 @@ public class LoginScreen {
                 });
             }
         }).start();
+    }
+    
+    private void handleAdminLogin(String usernameOrEmail, String password) {
+        System.out.println("Admin login attempt - Username/Email: " + usernameOrEmail + ", Password: " + password);
+        
+        // Admin credentials - supports multiple authentication methods
+        final String ADMIN_USERNAME = "Admin";
+        final String ADMIN_PASSWORD = "Admin";
+        final String ADMIN_EMAIL = "admin@coincraft.com";
+        final String ADMIN_EMAIL_PASSWORD = "admin123";
+        
+        boolean isValidAdmin = false;
+        
+        // Method 1: Username/Password
+        if (ADMIN_USERNAME.equals(usernameOrEmail) && ADMIN_PASSWORD.equals(password)) {
+            isValidAdmin = true;
+            System.out.println("Admin authenticated via Method 1: Username/Password");
+        }
+        // Method 2: Email/Password
+        else if (ADMIN_EMAIL.equals(usernameOrEmail) && ADMIN_EMAIL_PASSWORD.equals(password)) {
+            isValidAdmin = true;
+            System.out.println("Admin authenticated via Method 2: Email/Password");
+        }
+        // Method 3: Email/Admin Password (for flexibility)
+        else if (ADMIN_EMAIL.equals(usernameOrEmail) && ADMIN_PASSWORD.equals(password)) {
+            isValidAdmin = true;
+            System.out.println("Admin authenticated via Method 3: Email/Admin Password");
+        }
+        // Method 4: Gmail domains with admin password
+        else if (usernameOrEmail.toLowerCase().endsWith("@gmail.com") && ADMIN_PASSWORD.equals(password)) {
+            isValidAdmin = true;
+            System.out.println("Admin authenticated via Method 4: Gmail");
+        }
+        // Method 5: Any email ending with @coincraft.com
+        else if (usernameOrEmail.toLowerCase().endsWith("@coincraft.com") && 
+                (ADMIN_PASSWORD.equals(password) || ADMIN_EMAIL_PASSWORD.equals(password))) {
+            isValidAdmin = true;
+            System.out.println("Admin authenticated via Method 5: Company email");
+        }
+        
+        // Reset button state
+        loginButton.setDisable(false);
+        loginButton.setText("🚀 START ADVENTURE");
+        
+        if (isValidAdmin) {
+            System.out.println("Admin authentication successful, creating admin user...");
+            // Create admin user
+            User adminUser = new User();
+            adminUser.setUserId("admin-001");
+            adminUser.setName("Administrator");
+            adminUser.setEmail(usernameOrEmail.contains("@") ? usernameOrEmail : ADMIN_EMAIL);
+            adminUser.setRole(UserRole.ADMIN);
+            adminUser.setAge(30);
+            adminUser.setSmartCoinBalance(1000);
+            adminUser.setLevel(10); // Max level for admin
+            adminUser.setLastLogin(java.time.LocalDateTime.now());
+            
+            System.out.println("Admin user created: " + adminUser.getName() + " with role: " + adminUser.getRole());
+            
+            SoundManager.getInstance().playAdventureStart();
+            showStatus("🎉 Admin access granted! Welcome, Administrator!", true);
+            
+            // Small delay for better UX before transitioning
+            Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+                System.out.println("Calling login success callback for admin user...");
+                if (callback != null) {
+                    callback.onLoginSuccess(adminUser);
+                } else {
+                    System.err.println("ERROR: Login callback is null!");
+                }
+            }));
+            timeline.play();
+        } else {
+            System.out.println("Admin authentication failed for: " + usernameOrEmail + "/" + password);
+            SoundManager.getInstance().playError();
+            showStatus("❌ Invalid admin credentials. Try: Admin/Admin or admin@coincraft.com/admin123", false);
+        }
     }
     
     private VBox createRoleSelector() {

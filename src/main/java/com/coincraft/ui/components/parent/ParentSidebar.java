@@ -10,7 +10,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.VBox;
 
 /**
@@ -34,8 +34,8 @@ public class ParentSidebar {
     
     // Control buttons
     private Button logoutButton;
-    private Button musicToggleButton;
-    private boolean musicEnabled = true;
+    private Slider volumeSlider;
+    private Label volumeLabel;
     
     public ParentSidebar(User user, Consumer<String> navigationCallback) {
         this.currentUser = user;
@@ -169,54 +169,54 @@ public class ParentSidebar {
         controlSection.setAlignment(Pos.CENTER);
         controlSection.setPadding(new Insets(16, 0, 8, 0));
         
-        // Music Toggle Button
-        musicToggleButton = new Button("🎵 Music ON");
-        musicToggleButton.setPrefWidth(160);
-        musicToggleButton.setPrefHeight(35);
-        musicToggleButton.setStyle(
-            "-fx-background-color: #4CAF50;" +
-            "-fx-text-fill: white;" +
-            "-fx-font-size: 11px;" +
+        // Volume Controller
+        VBox volumeContainer = new VBox(4);
+        volumeContainer.setAlignment(Pos.CENTER);
+        
+        // Volume Label
+        double currentVolume = SoundManager.getInstance().getMusicVolume() * 100;
+        volumeLabel = new Label("🎵 Volume: " + Math.round(currentVolume) + "%");
+        volumeLabel.setStyle(
+            "-fx-font-size: 10px;" +
+            "-fx-text-fill: #4CAF50;" +
             "-fx-font-weight: 600;" +
-            "-fx-background-radius: 6;" +
-            "-fx-border-radius: 6;" +
-            "-fx-cursor: hand;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        musicToggleButton.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
-            musicToggleButton.setStyle(
-                "-fx-background-color: #2E7D32;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 11px;" +
-                "-fx-font-weight: 600;" +
-                "-fx-background-radius: 6;" +
-                "-fx-border-radius: 6;" +
-                "-fx-cursor: hand;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-                "-fx-scale-x: 1.05; -fx-scale-y: 1.05;"
-            );
-        });
+        // Volume Slider
+        volumeSlider = new Slider(0, 100, SoundManager.getInstance().getMusicVolume() * 100);
+        volumeSlider.setPrefWidth(160);
+        volumeSlider.setPrefHeight(20);
+        volumeSlider.setShowTickLabels(false);
+        volumeSlider.setShowTickMarks(false);
+        volumeSlider.setStyle(
+            "-fx-background-color: transparent;" +
+            "-fx-control-inner-background: #E0E0E0;" +
+            "-fx-accent: #4CAF50;" +
+            "-fx-focus-color: transparent;" +
+            "-fx-faint-focus-color: transparent;"
+        );
         
-        musicToggleButton.setOnMouseExited(e -> {
-            String bgColor = musicEnabled ? "#4CAF50" : "#9E9E9E";
-            musicToggleButton.setStyle(
-                "-fx-background-color: " + bgColor + ";" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 11px;" +
+        // Update volume when slider changes
+        volumeSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            double volume = newVal.doubleValue() / 100.0;
+            SoundManager.getInstance().setMusicVolume(volume);
+            volumeLabel.setText("🎵 Volume: " + Math.round(newVal.doubleValue()) + "%");
+            
+            // Change color based on volume level
+            String color = volume > 0.7 ? "#4CAF50" : volume > 0.3 ? "#FF9800" : "#9E9E9E";
+            volumeLabel.setStyle(
+                "-fx-font-size: 10px;" +
+                "-fx-text-fill: " + color + ";" +
                 "-fx-font-weight: 600;" +
-                "-fx-background-radius: 6;" +
-                "-fx-border-radius: 6;" +
-                "-fx-cursor: hand;" +
                 "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
             );
         });
         
-        musicToggleButton.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
-            toggleMusic();
-        });
+        // Play hover sound on slider interaction
+        volumeSlider.setOnMouseEntered(e -> SoundManager.getInstance().playButtonHover());
+        
+        volumeContainer.getChildren().addAll(volumeLabel, volumeSlider);
         
         // Logout Button
         logoutButton = new Button("🚪 Logout");
@@ -266,42 +266,8 @@ public class ParentSidebar {
             handleLogout();
         });
         
-        controlSection.getChildren().addAll(musicToggleButton, logoutButton);
+        controlSection.getChildren().addAll(volumeContainer, logoutButton);
         root.getChildren().add(controlSection);
-    }
-    
-    private void toggleMusic() {
-        musicEnabled = !musicEnabled;
-        
-        if (musicEnabled) {
-            SoundManager.getInstance().resumeBackgroundMusic();
-            musicToggleButton.setText("🎵 Music ON");
-            musicToggleButton.setStyle(
-                "-fx-background-color: #4CAF50;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 11px;" +
-                "-fx-font-weight: 600;" +
-                "-fx-background-radius: 6;" +
-                "-fx-border-radius: 6;" +
-                "-fx-cursor: hand;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
-            );
-            System.out.println("🎵 Background music enabled");
-        } else {
-            SoundManager.getInstance().pauseBackgroundMusic();
-            musicToggleButton.setText("🔇 Music OFF");
-            musicToggleButton.setStyle(
-                "-fx-background-color: #9E9E9E;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 11px;" +
-                "-fx-font-weight: 600;" +
-                "-fx-background-radius: 6;" +
-                "-fx-border-radius: 6;" +
-                "-fx-cursor: hand;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
-            );
-            System.out.println("🔇 Background music disabled");
-        }
     }
     
     private void handleLogout() {

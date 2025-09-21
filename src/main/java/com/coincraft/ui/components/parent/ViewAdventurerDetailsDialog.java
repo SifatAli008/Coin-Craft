@@ -106,11 +106,11 @@ public class ViewAdventurerDetailsDialog {
         );
         
         Label titleLabel = new Label("⚔️ " + adventurer.getName());
-        titleLabel.setFont(Font.font("Minecraft", FontWeight.BOLD, 24));
+        titleLabel.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 24));
         titleLabel.setStyle("-fx-text-fill: white;");
         
         Label subtitleLabel = new Label("Adventure ID: " + adventurer.getUserId());
-        subtitleLabel.setFont(Font.font("Minecraft", 14));
+        subtitleLabel.setFont(Font.font("Ancient Medium", 14));
         subtitleLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.9);");
         
         headerSection.getChildren().addAll(titleLabel, subtitleLabel);
@@ -121,7 +121,7 @@ public class ViewAdventurerDetailsDialog {
         VBox detailsSection = new VBox(15);
         
         Label sectionTitle = new Label("📋 Adventure Details");
-        sectionTitle.setFont(Font.font("Minecraft", FontWeight.BOLD, 16));
+        sectionTitle.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 16));
         sectionTitle.setStyle("-fx-text-fill: #333333;");
         
         GridPane detailsGrid = new GridPane();
@@ -170,7 +170,7 @@ public class ViewAdventurerDetailsDialog {
         VBox statsSection = new VBox(15);
         
         Label sectionTitle = new Label("📊 Adventure Statistics");
-        sectionTitle.setFont(Font.font("Minecraft", FontWeight.BOLD, 16));
+        sectionTitle.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 16));
         sectionTitle.setStyle("-fx-text-fill: #333333;");
         
         GridPane statsGrid = new GridPane();
@@ -231,7 +231,7 @@ public class ViewAdventurerDetailsDialog {
         VBox notesSection = new VBox(15);
         
         Label sectionTitle = new Label("📝 Adventure Notes");
-        sectionTitle.setFont(Font.font("Minecraft", FontWeight.BOLD, 16));
+        sectionTitle.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 16));
         sectionTitle.setStyle("-fx-text-fill: #333333;");
         
         notesArea = new TextArea();
