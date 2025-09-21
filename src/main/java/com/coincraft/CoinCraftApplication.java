@@ -150,6 +150,7 @@ public class CoinCraftApplication extends Application {
         });
     }
     
+    
     private void loadStyles(Scene scene) {
         try {
             scene.getStylesheets().add(

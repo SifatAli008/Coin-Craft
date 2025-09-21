@@ -67,8 +67,8 @@ public class MainDashboard {
             updateUI(); // Use provided user data
         }
         
-        // Continue background music from login screens
-        SoundManager.getInstance().resumeBackgroundMusic();
+        // Ensure single music instance to prevent overlaps
+        SoundManager.getInstance().ensureSingleMusicInstance();
     }
     
     private void initializeUI() {

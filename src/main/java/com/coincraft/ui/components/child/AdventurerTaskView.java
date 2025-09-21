@@ -91,18 +91,17 @@ public class AdventurerTaskView {
     private void createTaskList() {
         VBox listContainer = new VBox(16);
         listContainer.setStyle(
-            "-fx-background-color: rgba(255, 255, 255, 0.9);" +
-            "-fx-background-radius: 12;" +
-            "-fx-padding: 20;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 5);"
+            "-fx-background-color: transparent;" +
+            "-fx-padding: 0;"
         );
         
         Label listTitle = new Label("📋 Your Active Quests");
         listTitle.setStyle(
-            "-fx-font-size: 20px;" +
+            "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
-            "-fx-text-fill: #1976D2;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-text-fill: #1e293b;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-padding: 0 0 16 0;"
         );
         
         taskListContainer = new VBox(12);
@@ -123,15 +122,8 @@ public class AdventurerTaskView {
         taskListContainer.getChildren().clear();
         
         if (assignedTasks.isEmpty()) {
-            Label emptyLabel = new Label("📝 No quests assigned yet. Check back later for new adventures!");
-            emptyLabel.setStyle(
-                "-fx-font-size: 16px;" +
-                "-fx-text-fill: #666666;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-                "-fx-padding: 40;" +
-                "-fx-alignment: center;"
-            );
-            taskListContainer.getChildren().add(emptyLabel);
+            VBox emptyState = createEmptyState();
+            taskListContainer.getChildren().add(emptyState);
             return;
         }
         
@@ -143,16 +135,124 @@ public class AdventurerTaskView {
         updateStats();
     }
     
+    private VBox createEmptyState() {
+        VBox emptyState = new VBox(20);
+        emptyState.setAlignment(Pos.CENTER);
+        emptyState.setPadding(new Insets(60, 40, 60, 40));
+        emptyState.setStyle(
+            "-fx-background-color: rgba(248, 250, 252, 0.9);" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
+            "-fx-border-color: rgba(226, 232, 240, 0.8);" +
+            "-fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);"
+        );
+        
+        // Large adventure icon
+        Label adventureIcon = new Label("🗺️");
+        adventureIcon.setStyle(
+            "-fx-font-size: 64px;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);"
+        );
+        
+        // Main message
+        Label mainMessage = new Label("Ready for Your Next Adventure?");
+        mainMessage.setStyle(
+            "-fx-font-size: 24px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #1e293b;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-text-alignment: center;"
+        );
+        mainMessage.setWrapText(true);
+        
+        // Subtitle
+        Label subtitle = new Label("No quests assigned yet, but exciting adventures are coming your way!");
+        subtitle.setStyle(
+            "-fx-font-size: 16px;" +
+            "-fx-text-fill: #64748b;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-text-alignment: center;"
+        );
+        subtitle.setWrapText(true);
+        
+        // Tips section
+        VBox tipsSection = new VBox(12);
+        tipsSection.setAlignment(Pos.CENTER);
+        tipsSection.setPadding(new Insets(20, 0, 0, 0));
+        
+        Label tipsTitle = new Label("💡 While You Wait:");
+        tipsTitle.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #475569;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        VBox tipsList = new VBox(8);
+        tipsList.setAlignment(Pos.CENTER_LEFT);
+        
+        String[] tips = {
+            "🏆 Check your achievements in the sidebar",
+            "📊 View your progress on the leaderboard", 
+            "🔥 Keep your daily streak alive",
+            "💰 Save up your SmartCoins for the shop"
+        };
+        
+        for (String tip : tips) {
+            Label tipLabel = new Label(tip);
+            tipLabel.setStyle(
+                "-fx-font-size: 13px;" +
+                "-fx-text-fill: #64748b;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-padding: 4 0;"
+            );
+            tipsList.getChildren().add(tipLabel);
+        }
+        
+        tipsSection.getChildren().addAll(tipsTitle, tipsList);
+        
+        // Motivational call to action
+        VBox ctaSection = new VBox(8);
+        ctaSection.setAlignment(Pos.CENTER);
+        ctaSection.setPadding(new Insets(20, 0, 0, 0));
+        
+        Label ctaLabel = new Label("🚀 Ask your parent to assign you some quests to get started!");
+        ctaLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #059669;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-text-alignment: center;" +
+            "-fx-background-color: rgba(16, 185, 129, 0.1);" +
+            "-fx-background-radius: 6;" +
+            "-fx-padding: 12 16;"
+        );
+        ctaLabel.setWrapText(true);
+        
+        ctaSection.getChildren().add(ctaLabel);
+        
+        emptyState.getChildren().addAll(
+            adventureIcon,
+            mainMessage,
+            subtitle,
+            tipsSection,
+            ctaSection
+        );
+        
+        return emptyState;
+    }
+    
     private VBox createTaskCard(Task task) {
         VBox card = new VBox(12);
-        card.setPadding(new Insets(16));
+        card.setPadding(new Insets(18));
         card.setStyle(
-            "-fx-background-color: white;" +
-            "-fx-background-radius: 8;" +
+            "-fx-background-color: rgba(248, 250, 252, 0.9);" +
+            "-fx-background-radius: 10;" +
             "-fx-border-color: " + getTaskBorderColor(task) + ";" +
-            "-fx-border-width: 2;" +
-            "-fx-border-radius: 8;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);"
+            "-fx-border-width: 1;" +
+            "-fx-border-radius: 10;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 8, 0, 0, 3);"
         );
         
         // Header row

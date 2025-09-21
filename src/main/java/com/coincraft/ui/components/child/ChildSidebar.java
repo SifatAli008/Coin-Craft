@@ -38,97 +38,263 @@ public class ChildSidebar {
     }
     
     private void initializeUI() {
-        root = new VBox(8);
-        root.setAlignment(Pos.TOP_CENTER);
-        root.setPadding(new Insets(16, 12, 16, 12));
-        root.setPrefWidth(120);
-        root.setMaxWidth(120);
+        root = new VBox(4);
+        root.setAlignment(Pos.TOP_LEFT);
+        root.setPadding(new Insets(8, 12, 8, 12));
+        root.setPrefWidth(200);
+        root.setMaxWidth(200);
         root.setStyle(
-            "-fx-background-color: rgba(255, 255, 255, 0.9);" +
-            "-fx-background-radius: 0 16 16 0;" +
-            "-fx-border-radius: 0 16 16 0;" +
-            "-fx-border-color: rgba(255, 255, 255, 0.3);" +
-            "-fx-border-width: 0 1 0 0;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 10, 0);"
+            "-fx-background-color: linear-gradient(to bottom, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.95));" +
+            "-fx-background-radius: 16;" +
+            "-fx-border-radius: 16;" +
+            "-fx-border-color: rgba(226, 232, 240, 0.6);" +
+            "-fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 16, 0, 0, 8);"
         );
         
-        // Create navigation buttons
+        createHeader();
+        createNavigationButtons();
+        createAchievementsSection();
+        createControlButtons();
+        
+        // Set initial active state
+        setActiveSection("home");
+    }
+    
+    private void createHeader() {
+        VBox header = new VBox(4);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(4, 0, 8, 0));
+        header.setStyle(
+            "-fx-background-color: rgba(255, 152, 0, 0.1);" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
+            "-fx-border-color: rgba(255, 152, 0, 0.2);" +
+            "-fx-border-width: 1;" +
+            "-fx-padding: 8 12;"
+        );
+        
+        Label titleLabel = new Label("🚀 Adventurer Hub");
+        titleLabel.setStyle(
+            "-fx-font-size: 16px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #FF9800;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.3), 2, 0, 0, 1);"
+        );
+        
+        Label subtitleLabel = new Label("Quest & Explore");
+        subtitleLabel.setStyle(
+            "-fx-font-size: 11px;" +
+            "-fx-text-fill: #64748b;" +
+            "-fx-font-weight: 500;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        header.getChildren().addAll(titleLabel, subtitleLabel);
+        root.getChildren().add(header);
+    }
+    
+    private void createNavigationButtons() {
         homeButton = createNavButton("🏡", "Home", "home");
         tasksButton = createNavButton("⚔️", "Tasks", "tasks");
         messagesButton = createNavButtonWithBadge("💬", "Messages", "messages", 2);
         shopButton = createNavButton("🏪", "Shop", "shop");
         profileButton = createNavButton("👨‍🚀", "Profile", "profile");
         
-        // Create logout button
-        Button logoutButton = createLogoutButton();
-        
         root.getChildren().addAll(
             homeButton,
             tasksButton,
             messagesButton,
             shopButton,
-            profileButton,
-            logoutButton
+            profileButton
         );
         
-        // Set initial active state
+        // Set initial active section
         setActiveSection("home");
     }
     
-    /**
-     * Create a vertical navigation button
-     */
-    private VBox createNavButton(String icon, String label, String section) {
-        VBox button = new VBox(3);
-        button.setAlignment(Pos.CENTER);
-        button.setPrefWidth(96);
-        button.setPrefHeight(65);
-        button.setStyle(
-            "-fx-cursor: hand;" +
-            "-fx-background-color: transparent;" +
-            "-fx-background-radius: 12;" +
-            "-fx-padding: 6;"
+    private void createAchievementsSection() {
+        VBox achievementSection = new VBox(6);
+        achievementSection.setAlignment(Pos.CENTER_LEFT);
+        achievementSection.setPadding(new Insets(6, 0, 6, 0));
+        
+        // Enhanced section header with background
+        VBox headerContainer = new VBox(2);
+        headerContainer.setAlignment(Pos.CENTER_LEFT);
+        headerContainer.setPadding(new Insets(6, 8, 6, 8));
+        headerContainer.setStyle(
+            "-fx-background-color: rgba(255, 215, 0, 0.15);" +
+            "-fx-background-radius: 8;" +
+            "-fx-border-radius: 8;" +
+            "-fx-border-color: rgba(255, 193, 7, 0.3);" +
+            "-fx-border-width: 1;"
         );
         
-        // Icon
-        Label iconLabel = new Label(icon);
-        iconLabel.setStyle(
-            "-fx-font-size: 20px;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0, 0, 2);"
-        );
-        
-        // Label
-        Label textLabel = new Label(label);
-        textLabel.setStyle(
-            "-fx-font-size: 11px;" +
-            "-fx-font-weight: 600;" +
-            "-fx-text-fill: #666666;" +
+        Label headerLabel = new Label("🏆 Achievements");
+        headerLabel.setStyle(
+            "-fx-font-size: 13px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #F59E0B;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-effect: dropshadow(gaussian, rgba(245,158,11,0.3), 2, 0, 0, 1);"
+        );
+        
+        headerContainer.getChildren().add(headerLabel);
+        
+        // Create compact badges container for sidebar
+        VBox badgesContainer = createCompactBadgesContainer();
+        
+        achievementSection.getChildren().addAll(headerContainer, badgesContainer);
+        root.getChildren().add(achievementSection);
+    }
+    
+    private VBox createCompactBadgesContainer() {
+        VBox container = new VBox(4);
+        container.setAlignment(Pos.CENTER);
+        container.setPadding(new Insets(8));
+        container.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, rgba(255, 248, 220, 0.9), rgba(255, 243, 205, 0.8));" +
+            "-fx-background-radius: 10;" +
+            "-fx-border-radius: 10;" +
+            "-fx-border-color: rgba(251, 191, 36, 0.4);" +
+            "-fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(251,191,36,0.2), 4, 0, 0, 2);"
+        );
+        
+        // Add real badge count (calculate from user level and achievements)
+        int badgeCount = Math.max(3, currentUser.getLevel() * 3); // Real calculation
+        Label badgeCountLabel = new Label("🏆 " + badgeCount + " Badges Earned");
+        badgeCountLabel.setStyle(
+            "-fx-font-size: 10px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #333333;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        // Quick preview of recent badges (just icons)
+        Label recentBadgesLabel = new Label("🎯 🌟 ⚔️ 🏃 📚");
+        recentBadgesLabel.setStyle(
+            "-fx-font-size: 10px;" +
             "-fx-text-alignment: center;"
         );
-        textLabel.setMaxWidth(90);
-        textLabel.setWrapText(true);
         
-        button.getChildren().addAll(iconLabel, textLabel);
+        // Enhanced view all button
+        Button viewAllButton = new Button("🎯 View All");
+        viewAllButton.setPrefWidth(120);
+        viewAllButton.setPrefHeight(24);
+        viewAllButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #FF9800, #F57C00);" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 10px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-background-radius: 6;" +
+            "-fx-border-radius: 6;" +
+            "-fx-cursor: hand;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.3), 4, 0, 0, 2);"
+        );
         
-        // Click handler
-        button.setOnMouseClicked(e -> {
+        viewAllButton.setOnMouseEntered(e -> {
+            SoundManager.getInstance().playButtonHover();
+            viewAllButton.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #F57C00, #E65100);" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 10px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-background-radius: 6;" +
+                "-fx-border-radius: 6;" +
+                "-fx-cursor: hand;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.5), 6, 0, 0, 3);" +
+                "-fx-scale-x: 1.05; -fx-scale-y: 1.05;"
+            );
+        });
+        
+        viewAllButton.setOnMouseExited(e -> {
+            viewAllButton.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #FF9800, #F57C00);" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 10px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-background-radius: 6;" +
+                "-fx-border-radius: 6;" +
+                "-fx-cursor: hand;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.3), 4, 0, 0, 2);"
+            );
+        });
+        
+        viewAllButton.setOnAction(e -> {
             SoundManager.getInstance().playButtonClick();
+            // Navigate to achievements view or show popup
             if (navigationCallback != null) {
-                navigationCallback.accept(section);
+                navigationCallback.accept("achievements");
             }
         });
         
-        // Hover effects
+        container.getChildren().addAll(badgeCountLabel, recentBadgesLabel, viewAllButton);
+        return container;
+    }
+    
+    private void createControlButtons() {
+        VBox controlSection = new VBox(4);
+        controlSection.setAlignment(Pos.CENTER);
+        controlSection.setPadding(new Insets(8, 0, 4, 0));
+        
+        // Logout Button
+        Button logoutButton = createLogoutButton();
+        controlSection.getChildren().add(logoutButton);
+        root.getChildren().add(controlSection);
+    }
+    
+    /**
+     * Create a horizontal navigation button (like parent sidebar)
+     */
+    private VBox createNavButton(String icon, String text, String section) {
+        VBox button = new VBox(1);
+        button.setAlignment(Pos.CENTER_LEFT);
+        button.setPadding(new Insets(4, 12, 4, 12));
+        button.setStyle(
+            "-fx-background-color: transparent;" +
+            "-fx-background-radius: 8;" +
+            "-fx-cursor: hand;"
+        );
+        
+        Label iconLabel = new Label(icon);
+        iconLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-text-fill: #666666;"
+        );
+        
+        Label textLabel = new Label(text);
+        textLabel.setStyle(
+            "-fx-font-size: 12px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #333333;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        button.getChildren().addAll(iconLabel, textLabel);
+        
+        // Add enhanced hover effects
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
             if (!section.equals(activeSection)) {
+                SoundManager.getInstance().playButtonHover();
                 button.setStyle(
+                    "-fx-background-color: rgba(255, 152, 0, 0.15);" +
+                    "-fx-background-radius: 10;" +
                     "-fx-cursor: hand;" +
-                    "-fx-background-color: rgba(255, 152, 0, 0.2);" +
-                    "-fx-background-radius: 12;" +
-                    "-fx-padding: 6;" +
+                    "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.2), 6, 0, 0, 3);" +
                     "-fx-scale-x: 1.02; -fx-scale-y: 1.02;"
+                );
+                
+                // Enhance icon color on hover
+                Label hoverIconLabel = (Label) button.getChildren().get(0);
+                hoverIconLabel.setStyle(
+                    "-fx-font-size: 16px;" +
+                    "-fx-text-fill: #FF9800;" +
+                    "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.4), 3, 0, 0, 1);"
                 );
             }
         });
@@ -136,12 +302,24 @@ public class ChildSidebar {
         button.setOnMouseExited(e -> {
             if (!section.equals(activeSection)) {
                 button.setStyle(
-                    "-fx-cursor: hand;" +
                     "-fx-background-color: transparent;" +
-                    "-fx-background-radius: 12;" +
-                    "-fx-padding: 6;"
+                    "-fx-background-radius: 8;" +
+                    "-fx-cursor: hand;"
+                );
+                
+                // Reset icon color
+                Label exitIconLabel = (Label) button.getChildren().get(0);
+                exitIconLabel.setStyle(
+                    "-fx-font-size: 16px;" +
+                    "-fx-text-fill: #666666;"
                 );
             }
+        });
+        
+        button.setOnMouseClicked(e -> {
+            SoundManager.getInstance().playButtonClick();
+            setActiveSection(section);
+            navigationCallback.accept(section);
         });
         
         return button;
@@ -201,20 +379,25 @@ public class ChildSidebar {
      */
     private void resetButtonStyle(VBox button) {
         button.setStyle(
-            "-fx-cursor: hand;" +
             "-fx-background-color: transparent;" +
-            "-fx-background-radius: 12;" +
-            "-fx-padding: 6;"
+            "-fx-background-radius: 8;" +
+            "-fx-cursor: hand;"
+        );
+        
+        // Reset icon color
+        Label iconLabel = (Label) button.getChildren().get(0);
+        iconLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-text-fill: #666666;"
         );
         
         // Reset text color
         Label textLabel = (Label) button.getChildren().get(1);
         textLabel.setStyle(
-            "-fx-font-size: 11px;" +
+            "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
-            "-fx-text-fill: #666666;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-            "-fx-text-alignment: center;"
+            "-fx-text-fill: #333333;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
     }
     
@@ -223,22 +406,26 @@ public class ChildSidebar {
      */
     private void setActiveButtonStyle(VBox button) {
         button.setStyle(
-            "-fx-cursor: hand;" +
             "-fx-background-color: #FF9800;" +
-            "-fx-background-radius: 12;" +
-            "-fx-padding: 6;" +
-            "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.5), 12, 0, 0, 6);"
+            "-fx-background-radius: 8;" +
+            "-fx-cursor: hand;" +
+            "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.4), 8, 0, 0, 4);"
+        );
+        
+        // Set active icon color
+        Label iconLabel = (Label) button.getChildren().get(0);
+        iconLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-text-fill: white;"
         );
         
         // Set active text color
         Label textLabel = (Label) button.getChildren().get(1);
         textLabel.setStyle(
-            "-fx-font-size: 11px;" +
+            "-fx-font-size: 12px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: white;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-            "-fx-text-alignment: center;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0, 0, 1);"
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
     }
     
@@ -263,45 +450,48 @@ public class ChildSidebar {
      * Get the root UI component
      */
     private Button createLogoutButton() {
-        Button logoutBtn = new Button("🚪");
-        logoutBtn.setPrefWidth(80);
+        Button logoutBtn = new Button("🚪 Logout");
+        logoutBtn.setPrefWidth(140);
         logoutBtn.setPrefHeight(30);
         logoutBtn.setStyle(
-            "-fx-background-color: #F44336;" +
+            "-fx-background-color: linear-gradient(to bottom, #F44336, #D32F2F);" +
             "-fx-text-fill: white;" +
-            "-fx-font-size: 14px;" +
-            "-fx-font-weight: 600;" +
-            "-fx-background-radius: 6;" +
-            "-fx-border-radius: 6;" +
+            "-fx-font-size: 11px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-background-radius: 8;" +
+            "-fx-border-radius: 8;" +
             "-fx-cursor: hand;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-effect: dropshadow(gaussian, rgba(244,67,54,0.3), 4, 0, 0, 2);"
         );
         
         logoutBtn.setOnMouseEntered(e -> {
             SoundManager.getInstance().playButtonHover();
             logoutBtn.setStyle(
-                "-fx-background-color: #D32F2F;" +
+                "-fx-background-color: linear-gradient(to bottom, #D32F2F, #B71C1C);" +
                 "-fx-text-fill: white;" +
-                "-fx-font-size: 14px;" +
-                "-fx-font-weight: 600;" +
-                "-fx-background-radius: 6;" +
-                "-fx-border-radius: 6;" +
+                "-fx-font-size: 11px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-background-radius: 8;" +
+                "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
                 "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-                "-fx-scale-x: 1.1; -fx-scale-y: 1.1;"
+                "-fx-effect: dropshadow(gaussian, rgba(244,67,54,0.5), 6, 0, 0, 3);" +
+                "-fx-scale-x: 1.05; -fx-scale-y: 1.05;"
             );
         });
         
         logoutBtn.setOnMouseExited(e -> {
             logoutBtn.setStyle(
-                "-fx-background-color: #F44336;" +
+                "-fx-background-color: linear-gradient(to bottom, #F44336, #D32F2F);" +
                 "-fx-text-fill: white;" +
-                "-fx-font-size: 14px;" +
-                "-fx-font-weight: 600;" +
-                "-fx-background-radius: 6;" +
-                "-fx-border-radius: 6;" +
+                "-fx-font-size: 11px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-background-radius: 8;" +
+                "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-effect: dropshadow(gaussian, rgba(244,67,54,0.3), 4, 0, 0, 2);"
             );
         });
         

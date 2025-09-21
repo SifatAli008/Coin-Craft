@@ -102,11 +102,11 @@ public class AdventureMessagingPortal {
         );
         
         Label titleLabel = new Label("💬 Adventure Messaging Portal");
-        titleLabel.setFont(Font.font("Minecraft", FontWeight.BOLD, 20));
+        titleLabel.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 20));
         titleLabel.setStyle("-fx-text-fill: white;");
         
         Label subtitleLabel = new Label("Communicate with " + adventurer.getName() + " (Adventure ID: " + adventurer.getUserId() + ")");
-        subtitleLabel.setFont(Font.font("Minecraft", 12));
+        subtitleLabel.setFont(Font.font("Ancient Medium", 12));
         subtitleLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.9);");
         
         headerSection.getChildren().addAll(titleLabel, subtitleLabel);
@@ -117,7 +117,7 @@ public class AdventureMessagingPortal {
         VBox messageHistorySection = new VBox(10);
         
         Label sectionTitle = new Label("📜 Message History");
-        sectionTitle.setFont(Font.font("Minecraft", FontWeight.BOLD, 14));
+        sectionTitle.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 14));
         sectionTitle.setStyle("-fx-text-fill: #333333;");
         
         messageHistoryArea = new TextArea();
@@ -143,7 +143,7 @@ public class AdventureMessagingPortal {
         messageInputSection.setAlignment(Pos.CENTER_LEFT);
         
         Label inputLabel = new Label("💬 New Message:");
-        inputLabel.setFont(Font.font("Minecraft", FontWeight.BOLD, 12));
+        inputLabel.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 12));
         inputLabel.setStyle("-fx-text-fill: #333333;");
         
         messageInputField = new TextField();
