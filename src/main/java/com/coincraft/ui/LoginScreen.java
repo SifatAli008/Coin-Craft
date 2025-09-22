@@ -6,6 +6,8 @@ import java.util.logging.Logger;
 import com.coincraft.models.User;
 import com.coincraft.models.UserRole;
 import com.coincraft.services.FirebaseService;
+import com.coincraft.services.GoogleOAuthService;
+import com.coincraft.services.FirebaseAuthService;
 
 import animatefx.animation.FadeIn;
 import javafx.animation.KeyFrame;
@@ -46,6 +48,8 @@ public class LoginScreen {
     private Label emailLabel;
     
     private final LoginCallback callback;
+    private GoogleOAuthService googleOAuthService;
+    private FirebaseAuthService firebaseAuthService;
     
     public interface LoginCallback {
         void onLoginSuccess(User user);
@@ -55,6 +59,12 @@ public class LoginScreen {
     
     public LoginScreen(LoginCallback callback) {
         this.callback = callback;
+        try {
+            this.googleOAuthService = new GoogleOAuthService();
+            this.firebaseAuthService = new FirebaseAuthService(new com.coincraft.services.FirebaseConfig());
+        } catch (Exception e) {
+            LOGGER.severe("Failed to initialize Google OAuth service: " + e.getMessage());
+        }
         initializeUI();
     }
     
@@ -738,7 +748,73 @@ public class LoginScreen {
         showStatus("Signing in with Google...", true);
         googleSignInButton.setDisable(true);
         
-        // Simulate Google OAuth flow (in a real app, this would open browser/WebView)
+        // Use real Google OAuth authentication
+        if (googleOAuthService != null) {
+            googleOAuthService.authenticateUser()
+                .thenAccept(googleUserInfo -> {
+                    Platform.runLater(() -> {
+                        try {
+                            // Authenticate with Firebase using Google user info
+                            FirebaseAuthService.AuthResult authResult = 
+                                firebaseAuthService.signInWithGoogleUserInfo(googleUserInfo);
+                            
+                            if (authResult.isSuccess()) {
+                                // Create CoinCraft user from Google and Firebase data
+                                User coinCraftUser = new User();
+                                coinCraftUser.setName(googleUserInfo.getName());
+                                coinCraftUser.setEmail(googleUserInfo.getEmail());
+                                coinCraftUser.setRole(selectedRole);
+                                coinCraftUser.setAge(selectedRole == UserRole.PARENT ? 35 : 25);
+                                coinCraftUser.setSmartCoinBalance(1000);
+                                coinCraftUser.setLevel(1);
+                                coinCraftUser.setExperiencePoints(0);
+                                coinCraftUser.setFirebaseUid(authResult.getUserId());
+                                coinCraftUser.setLastLogin(java.time.LocalDateTime.now());
+                                
+                                String roleMessage = selectedRole == UserRole.PARENT ? "merchant" : 
+                                                   selectedRole.name().toLowerCase();
+                                showStatus("Google sign-in successful! Welcome " + roleMessage + "!", true);
+                                
+                                // Small delay before transitioning
+                                Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+                                    if (callback != null) {
+                                        callback.onLoginSuccess(coinCraftUser);
+                                    }
+                                }));
+                                timeline.play();
+                                
+                            } else {
+                                googleSignInButton.setDisable(false);
+                                showStatus("Google sign-in failed: " + authResult.getErrorMessage(), false);
+                                LOGGER.severe("Google sign-in failed: " + authResult.getErrorMessage());
+                            }
+                            
+                        } catch (Exception e) {
+                            googleSignInButton.setDisable(false);
+                            showStatus("Google sign-in failed: " + e.getMessage(), false);
+                            LOGGER.severe(() -> "Google sign-in error: " + e.getMessage());
+                        }
+                    });
+                })
+                .exceptionally(throwable -> {
+                    Platform.runLater(() -> {
+                        googleSignInButton.setDisable(false);
+                        showStatus("Google sign-in failed: " + throwable.getMessage(), false);
+                        LOGGER.severe("Google sign-in error: " + throwable.getMessage());
+                    });
+                    return null;
+                });
+        } else {
+            // Fallback to mock implementation if Google OAuth service is not available
+            showStatus("Google OAuth service not available. Using fallback.", false);
+            handleGoogleSignInFallback(selectedRole);
+        }
+    }
+    
+    /**
+     * Fallback Google sign-in implementation for when OAuth service is not available
+     */
+    private void handleGoogleSignInFallback(UserRole selectedRole) {
         new Thread(() -> {
             try {
                 Thread.sleep(2000); // Simulate network delay
@@ -776,7 +852,7 @@ public class LoginScreen {
                         
                         String roleMessage = selectedRole == UserRole.PARENT ? "merchant" : 
                                            selectedRole == UserRole.CHILD ? "adventurer" : selectedRole.name().toLowerCase();
-                        showStatus("Google sign-in successful! Welcome " + roleMessage + "!", true);
+                        showStatus("Google sign-in successful! Welcome " + roleMessage + "! (Demo Mode)", true);
                         
                         // Small delay before transitioning
                         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
