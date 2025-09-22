@@ -130,9 +130,10 @@ public class ParentLoginTest extends Application {
                 }
                 
                 @Override
-                public void onNavigateToSignUp() {
-                    System.out.println("Navigate to sign up");
+                public void onNavigateToParentRegistration() {
+                    System.out.println("Parent registration navigation from test");
                 }
+                
             });
             
             Scene loginScene = new Scene(loginScreen.getRoot(), 1200, 800);

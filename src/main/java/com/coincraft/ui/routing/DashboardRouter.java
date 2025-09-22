@@ -104,9 +104,29 @@ public class DashboardRouter {
     }
     
     /**
+     * Clean up current dashboard and music state before switching
+     */
+    public void cleanupCurrentDashboard() {
+        if (currentDashboard != null) {
+            // Stop centralized music during dashboard cleanup
+            try {
+                com.coincraft.audio.CentralizedMusicManager musicManager = com.coincraft.audio.CentralizedMusicManager.getInstance();
+                musicManager.stop();
+                System.out.println("Cleaned up current dashboard, stopped centralized music");
+            } catch (Exception e) {
+                System.out.println("Warning: Could not stop music during dashboard cleanup: " + e.getMessage());
+            }
+        }
+        currentDashboard = null;
+    }
+    
+    /**
      * Logout and clear current session
      */
     public void logout() {
+        // Clean up current dashboard first
+        cleanupCurrentDashboard();
+        
         // Clear Firebase authentication state
         com.coincraft.services.FirebaseService firebaseService = com.coincraft.services.FirebaseService.getInstance();
         if (firebaseService != null) {
@@ -114,6 +134,5 @@ public class DashboardRouter {
         }
         
         currentUser = null;
-        currentDashboard = null;
     }
 }

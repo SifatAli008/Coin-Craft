@@ -2,10 +2,9 @@ package com.coincraft.ui.components.child;
 
 import java.util.function.Consumer;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.ui.components.CentralizedMusicController;
 import com.coincraft.models.User;
 
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -196,7 +195,6 @@ public class ChildSidebar {
         );
         
         viewAllButton.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
             viewAllButton.setStyle(
                 "-fx-background-color: linear-gradient(to bottom, #F57C00, #E65100);" +
                 "-fx-text-fill: white;" +
@@ -226,7 +224,6 @@ public class ChildSidebar {
         });
         
         viewAllButton.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
             // Navigate to achievements view or show popup
             if (navigationCallback != null) {
                 navigationCallback.accept("achievements");
@@ -238,13 +235,17 @@ public class ChildSidebar {
     }
     
     private void createControlButtons() {
-        VBox controlSection = new VBox(4);
+        VBox controlSection = new VBox(8);
         controlSection.setAlignment(Pos.CENTER);
         controlSection.setPadding(new Insets(8, 0, 4, 0));
         
+        // Centralized Music Controller
+        CentralizedMusicController musicController = new CentralizedMusicController();
+        
         // Logout Button
         Button logoutButton = createLogoutButton();
-        controlSection.getChildren().add(logoutButton);
+        
+        controlSection.getChildren().addAll(musicController.getRoot(), logoutButton);
         root.getChildren().add(controlSection);
     }
     
@@ -280,7 +281,6 @@ public class ChildSidebar {
         // Add enhanced hover effects
         button.setOnMouseEntered(e -> {
             if (!section.equals(activeSection)) {
-                SoundManager.getInstance().playButtonHover();
                 button.setStyle(
                     "-fx-background-color: rgba(255, 152, 0, 0.15);" +
                     "-fx-background-radius: 10;" +
@@ -317,7 +317,6 @@ public class ChildSidebar {
         });
         
         button.setOnMouseClicked(e -> {
-            SoundManager.getInstance().playButtonClick();
             setActiveSection(section);
             navigationCallback.accept(section);
         });
@@ -364,14 +363,14 @@ public class ChildSidebar {
      * Get button for section
      */
     private VBox getButtonForSection(String section) {
-        switch (section) {
-            case "home": return homeButton;
-            case "tasks": return tasksButton;
-            case "messages": return messagesButton;
-            case "shop": return shopButton;
-            case "profile": return profileButton;
-            default: return null;
-        }
+        return switch (section) {
+            case "home" -> homeButton;
+            case "tasks" -> tasksButton;
+            case "messages" -> messagesButton;
+            case "shop" -> shopButton;
+            case "profile" -> profileButton;
+            default -> null;
+        };
     }
     
     /**
@@ -466,7 +465,6 @@ public class ChildSidebar {
         );
         
         logoutBtn.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
             logoutBtn.setStyle(
                 "-fx-background-color: linear-gradient(to bottom, #D32F2F, #B71C1C);" +
                 "-fx-text-fill: white;" +
@@ -496,7 +494,6 @@ public class ChildSidebar {
         });
         
         logoutBtn.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
             handleAdventurerLogout();
         });
         
@@ -506,69 +503,11 @@ public class ChildSidebar {
     private void handleAdventurerLogout() {
         System.out.println("🚪 Adventurer logout requested");
         
-        // Clear authentication state and session data
-        com.coincraft.ui.routing.DashboardRouter.getInstance().logout();
+        // Get the current stage
+        javafx.stage.Stage currentStage = (javafx.stage.Stage) root.getScene().getWindow();
         
-        Platform.runLater(() -> {
-            try {
-                // Get the current stage
-                javafx.stage.Stage currentStage = (javafx.stage.Stage) root.getScene().getWindow();
-                
-                // Create new login screen
-                com.coincraft.ui.LoginScreen loginScreen = new com.coincraft.ui.LoginScreen(new com.coincraft.ui.LoginScreen.LoginCallback() {
-                    @Override
-                    public void onLoginSuccess(com.coincraft.models.User user) {
-                        // Create new dashboard based on user role
-                        com.coincraft.ui.routing.DashboardRouter router = com.coincraft.ui.routing.DashboardRouter.getInstance();
-                        javafx.scene.Scene dashboardScene = new javafx.scene.Scene(router.routeToDashboard(user), 1200, 800);
-                        
-                        // Load styles
-                        try {
-                            dashboardScene.getStylesheets().add(
-                                getClass().getResource("/styles/coincraft-styles.css").toExternalForm()
-                            );
-                        } catch (Exception ex) {
-                            System.out.println("Could not load CSS styles: " + ex.getMessage());
-                        }
-                        
-                        currentStage.setScene(dashboardScene);
-                        currentStage.setTitle("CoinCraft - " + user.getName() + " (" + user.getRole() + ")");
-                    }
-                    
-                    @Override
-                    public void onLoginFailed(String error) {
-                        System.err.println("Login failed: " + error);
-                    }
-                    
-                    @Override
-                    public void onNavigateToSignUp() {
-                        System.out.println("Navigate to sign up requested");
-                    }
-                });
-                
-                // Create login scene
-                javafx.scene.Scene loginScene = new javafx.scene.Scene(loginScreen.getRoot(), 1200, 800);
-                
-                // Load styles
-                try {
-                    loginScene.getStylesheets().add(
-                        getClass().getResource("/styles/coincraft-styles.css").toExternalForm()
-                    );
-                } catch (Exception ex) {
-                    System.out.println("Could not load CSS styles: " + ex.getMessage());
-                }
-                
-                // Set login scene
-                currentStage.setScene(loginScene);
-                currentStage.setTitle("CoinCraft - Login");
-                
-                System.out.println("✅ Adventurer logged out successfully - returned to login");
-                
-            } catch (Exception ex) {
-                System.out.println("Error during adventurer logout: " + ex.getMessage());
-                ex.printStackTrace();
-            }
-        });
+        // Use NavigationUtil for clean logout handling
+        com.coincraft.ui.NavigationUtil.handleLogout(currentStage);
     }
     
     public VBox getRoot() {

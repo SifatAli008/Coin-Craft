@@ -3,7 +3,6 @@ package com.coincraft.ui.dashboards;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.coincraft.audio.SoundManager;
 import com.coincraft.models.Task;
 import com.coincraft.models.User;
 import com.coincraft.services.FirebaseService;
@@ -464,7 +463,7 @@ public class ChildDashboard extends BaseDashboard {
             
             // Hover effects
             requestBtn.setOnMouseEntered(e -> {
-                SoundManager.getInstance().playButtonHover();
+                // TODO: Implement button hover sound via CentralizedMusicManager if needed
                 requestBtn.setStyle(requestBtn.getStyle() + 
                     "-fx-scale-x: 1.05; -fx-scale-y: 1.05;" +
                     "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.6), 25, 0, 0, 12);"
@@ -487,7 +486,7 @@ public class ChildDashboard extends BaseDashboard {
             });
             
             requestBtn.setOnAction(e -> {
-                SoundManager.getInstance().playButtonClick();
+                // TODO: Implement button click sound via CentralizedMusicManager if needed
                 showRequestMissionDialog();
             });
         }
@@ -541,7 +540,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-background-radius: 16;"
         );
         
-        SoundManager.getInstance().playError();
+        // TODO: Implement error sound via CentralizedMusicManager if needed
         alert.showAndWait();
     }
     
@@ -1385,7 +1384,7 @@ public class ChildDashboard extends BaseDashboard {
         
         // Hover effects
         avatarBtn.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            // TODO: Implement button hover sound via CentralizedMusicManager if needed
             avatarBtn.setStyle(
                 "-fx-background-color: rgba(139, 92, 246, 0.2);" +
                 "-fx-background-radius: 12;" +
@@ -1413,7 +1412,7 @@ public class ChildDashboard extends BaseDashboard {
         });
         
         avatarBtn.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
+            // TODO: Implement button click sound via CentralizedMusicManager if needed
             // TODO: Implement avatar selection logic
             System.out.println("Selected avatar: " + avatar + " (" + label + ")");
         });
@@ -1566,7 +1565,7 @@ public class ChildDashboard extends BaseDashboard {
         
         // Hover effects
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            // TODO: Implement button hover sound via CentralizedMusicManager if needed
             button.setStyle(
                 "-fx-background-color: " + color + ";" +
                 "-fx-background-radius: 12;" +
@@ -1609,7 +1608,7 @@ public class ChildDashboard extends BaseDashboard {
         });
         
         button.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
+            // TODO: Implement button click sound via CentralizedMusicManager if needed
             System.out.println("Opening: " + title);
         });
         
@@ -1781,7 +1780,7 @@ public class ChildDashboard extends BaseDashboard {
         
         // Add premium hover effects with micro-interactions
         card.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            // TODO: Implement button hover sound via CentralizedMusicManager if needed
             card.setStyle(
                 "-fx-background-color: linear-gradient(145deg, " + color + " 0%, derive(" + color + ", -20%) 100%);" +
                 "-fx-border-color: derive(" + color + ", 30%);" +
@@ -1838,7 +1837,7 @@ public class ChildDashboard extends BaseDashboard {
         });
         
         card.setOnMouseClicked(e -> {
-            SoundManager.getInstance().playButtonClick();
+            // TODO: Implement button click sound via CentralizedMusicManager if needed
             action.run();
         });
         

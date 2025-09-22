@@ -25,7 +25,7 @@ public class PixelButton extends Button {
         // Add retro sound effects
         setOnMousePressed(e -> {
             isPressed = true;
-            PixelAudio.click();
+            // PixelAudio removed
             updatePressedState();
         });
         
@@ -63,7 +63,7 @@ public class PixelButton extends Button {
     public static PixelButton createPrimary(String text, Runnable action) {
         PixelButton button = new PixelButton(text);
         button.setOnAction(e -> {
-            PixelAudio.success();
+            // PixelAudio removed
             if (action != null) {
                 action.run();
             }
@@ -78,7 +78,7 @@ public class PixelButton extends Button {
         PixelButton button = new PixelButton(text);
         button.getStyleClass().add("pixel-button-secondary");
         button.setOnAction(e -> {
-            PixelAudio.click();
+            // PixelAudio removed
             if (action != null) {
                 action.run();
             }

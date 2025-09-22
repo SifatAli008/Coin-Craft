@@ -2,7 +2,7 @@ package com.coincraft.ui;
 
 import java.util.logging.Logger;
 
-import com.coincraft.audio.SoundManager;
+// import com.coincraft.audio.SoundManager; // Removed - using CentralizedMusicManager now
 import com.coincraft.models.User;
 import com.coincraft.models.UserRole;
 import com.coincraft.services.FirebaseService;
@@ -44,15 +44,13 @@ public class LoginScreen {
     // Additional UI references for dynamic updates
     private HBox dividerElement;
     private Label emailLabel;
-    private Label signupLabel;
-    private boolean isNavigatingToSignUp = false;
     
     private final LoginCallback callback;
     
     public interface LoginCallback {
         void onLoginSuccess(User user);
         void onLoginFailed(String error);
-        void onNavigateToSignUp();
+        void onNavigateToParentRegistration();
     }
     
     public LoginScreen(LoginCallback callback) {
@@ -90,8 +88,8 @@ public class LoginScreen {
         darkOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         darkOverlay.setMouseTransparent(true); // Allow clicks to pass through
         
-        // Create main login card with status label container
-        VBox centerContainer = new VBox(20);
+        // Create main login card with status label container (reduced spacing)
+        VBox centerContainer = new VBox(12);
         centerContainer.setAlignment(Pos.CENTER);
         centerContainer.setMaxWidth(420);
         
@@ -110,13 +108,13 @@ public class LoginScreen {
         try { new FadeIn(root).play(); } catch (Throwable ignored) {}
         
         // Ensure single background music instance
-        SoundManager.getInstance().ensureSingleMusicInstance();
+        // Music will be started when dashboard loads
     }
     
     private VBox createLoginCard() {
-        VBox card = new VBox(24);
+        VBox card = new VBox(16);  // Reduced from 24 to 16
         card.setAlignment(Pos.CENTER);
-        card.setPadding(new Insets(40));
+        card.setPadding(new Insets(30));  // Reduced from 40 to 30
         card.setPrefWidth(420);
         card.setMaxWidth(420);
         card.setStyle(
@@ -128,17 +126,17 @@ public class LoginScreen {
             "-fx-border-radius: 20;"
         );
         
-        // Header section
-        VBox header = new VBox(8);
+        // Header section (reduced spacing)
+        VBox header = new VBox(6);  // Reduced from 8 to 6
         header.setAlignment(Pos.CENTER);
         
-        // Gaming-style title with pixel accent
-        VBox titleSection = new VBox(4);
+        // Gaming-style title with pixel accent (reduced spacing)
+        VBox titleSection = new VBox(2);  // Reduced from 4 to 2
         titleSection.setAlignment(Pos.CENTER);
         
-        Label gameLabel = new Label("Wealcome to Coincraft");
+        Label gameLabel = new Label("Welcome to Coincraft");
         gameLabel.setStyle(
-            "-fx-font-size: 16px;" +
+            "-fx-font-size: 14px;" +  // Reduced from 16px to 14px
             "-fx-font-weight: bold;" +
             "-fx-text-fill: #FF9800;" +
             "-fx-font-family: 'Minecraft', 'Courier New', monospace;"
@@ -146,7 +144,7 @@ public class LoginScreen {
         
         Label titleLabel = new Label("CoinCraft");
         titleLabel.setStyle(
-            "-fx-font-size: 28px;" +
+            "-fx-font-size: 24px;" +  // Reduced from 28px to 24px
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #000000;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
@@ -154,7 +152,7 @@ public class LoginScreen {
         
         Label subtitleLabel = new Label("Level up your money skills");
         subtitleLabel.setStyle(
-            "-fx-font-size: 16px;" +
+            "-fx-font-size: 14px;" +  // Reduced from 16px to 14px
             "-fx-text-fill: #000000;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
@@ -163,13 +161,13 @@ public class LoginScreen {
         
         header.getChildren().add(titleSection);
         
-        // Form section
-        VBox form = new VBox(20);
+        // Form section (reduced spacing)
+        VBox form = new VBox(14);  // Reduced from 20 to 14
         form.setAlignment(Pos.CENTER);
         
-        // Email field
-        VBox emailSection = new VBox(8);
-        Label emailLabel = new Label("Email / Adventure ID");
+        // Email field (reduced spacing)
+        VBox emailSection = new VBox(6);  // Reduced from 8 to 6
+        Label emailLabel = new Label("Email / Adventure Username");
         emailLabel.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
@@ -178,9 +176,9 @@ public class LoginScreen {
         );
         
         emailField = new TextField();
-        emailField.setPromptText("Enter email or Adventure ID");
+        emailField.setPromptText("Enter email or Adventure Username");
         emailField.setPrefWidth(340);
-        emailField.setPrefHeight(48);
+        emailField.setPrefHeight(42);  // Reduced from 48 to 42
         emailField.setStyle(
             "-fx-background-color: #FFFFFF;" +
             "-fx-border-color: #000000;" +
@@ -193,7 +191,6 @@ public class LoginScreen {
         );
         emailField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
-                SoundManager.getInstance().playInputClick();
                 emailField.setStyle(emailField.getStyle() + "-fx-border-color: #FF9800; -fx-border-width: 2;");
             } else {
                 emailField.setStyle(emailField.getStyle().replace("-fx-border-color: #FF9800; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
@@ -202,8 +199,8 @@ public class LoginScreen {
         
         emailSection.getChildren().addAll(emailLabel, emailField);
         
-        // Password field
-        VBox passwordSection = new VBox(8);
+        // Password field (reduced spacing)
+        VBox passwordSection = new VBox(6);  // Reduced from 8 to 6
         
         Label passwordLabel = new Label("Password");
         passwordLabel.setStyle(
@@ -215,7 +212,7 @@ public class LoginScreen {
         
         passwordField = new PasswordField();
         passwordField.setPrefWidth(340);
-        passwordField.setPrefHeight(48);
+        passwordField.setPrefHeight(42);  // Reduced from 48 to 42
         passwordField.setStyle(
             "-fx-background-color: #FFFFFF;" +
             "-fx-border-color: #000000;" +
@@ -228,7 +225,6 @@ public class LoginScreen {
         );
         passwordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
-                SoundManager.getInstance().playInputClick();
                 passwordField.setStyle(passwordField.getStyle() + "-fx-border-color: #FF9800; -fx-border-width: 2;");
             } else {
                 passwordField.setStyle(passwordField.getStyle().replace("-fx-border-color: #FF9800; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
@@ -259,7 +255,7 @@ public class LoginScreen {
         // Gaming-style login button
         loginButton = new Button("🚀 START ADVENTURE");
         loginButton.setPrefWidth(340);
-        loginButton.setPrefHeight(48);
+        loginButton.setPrefHeight(42);  // Reduced from 48 to 42
         loginButton.setStyle(
             "-fx-background-color: #FF9800;" +
             "-fx-text-fill: white;" +
@@ -272,7 +268,6 @@ public class LoginScreen {
             "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.4), 8, 0, 0, 2);"
         );
         loginButton.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
             loginButton.setStyle(
                 "-fx-background-color: #000000;" +
                 "-fx-text-fill: white;" +
@@ -300,7 +295,6 @@ public class LoginScreen {
             );
         });
         loginButton.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
             handleLogin();
         });
         
@@ -343,7 +337,6 @@ public class LoginScreen {
             "-fx-effect: dropshadow(gaussian, rgba(66,133,244,0.4), 8, 0, 0, 2);"
         );
         googleSignInButton.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
             googleSignInButton.setStyle(
                 "-fx-background-color: #3367d6;" +
                 "-fx-text-fill: white;" +
@@ -371,61 +364,56 @@ public class LoginScreen {
             );
         });
         googleSignInButton.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
             handleGoogleSignIn();
         });
         
-        // Sign up link
-        HBox signupSection = new HBox(4);
-        signupSection.setAlignment(Pos.CENTER);
+        // Info section for new users
+        VBox infoSection = new VBox(12);
+        infoSection.setAlignment(Pos.CENTER);
         
-        Label noAccountLabel = new Label("Don't have an account?");
-        noAccountLabel.setStyle(
-            "-fx-font-size: 14px;" +
-            "-fx-text-fill: #000000;" +
+        Label infoLabel = new Label("New adventurers: Ask your parent/guardian to create your account from their dashboard");
+        infoLabel.setStyle(
+            "-fx-font-size: 12px;" +
+            "-fx-text-fill: #666666;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-text-alignment: center;"
+        );
+        infoLabel.setWrapText(true);
+        infoLabel.setMaxWidth(340);
+        
+        // Parent registration section
+        VBox parentRegSection = new VBox(4);
+        parentRegSection.setAlignment(Pos.CENTER);
+        
+        Label parentLabel = new Label("New parent/guardian?");
+        parentLabel.setStyle(
+            "-fx-font-size: 12px;" +
+            "-fx-text-fill: #666666;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        signupLabel = new Label("Sign up");
-        signupLabel.setStyle(
+        Label parentRegLink = new Label("Create Parent Account");
+        parentRegLink.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #4CAF50;" +
             "-fx-font-weight: 700;" +
             "-fx-underline: true;" +
             "-fx-cursor: hand;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
-        signupLabel.setOnMouseClicked(e -> {
-            if (isNavigatingToSignUp) {
-                return; // Prevent multiple rapid clicks
-            }
-            
-            SoundManager.getInstance().playButtonClick();
-            System.out.println("Navigate to sign up requested");
+        parentRegLink.setOnMouseClicked(e -> {
+            System.out.println("Navigate to parent registration requested");
             
             if (callback != null) {
-                isNavigatingToSignUp = true;
-                signupLabel.setStyle(
-                    "-fx-font-size: 14px;" +
-                    "-fx-text-fill: #CCCCCC;" +
-                    "-fx-font-weight: 700;" +
-                    "-fx-underline: true;" +
-                    "-fx-cursor: default;" +
-                    "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
-                );
-                
-                // Add a small delay to prevent rapid clicking
-                Timeline timeline = new Timeline(new KeyFrame(Duration.millis(200), ev -> {
-                    callback.onNavigateToSignUp();
-                }));
-                timeline.play();
+                callback.onNavigateToParentRegistration();
             }
         });
         
-        signupSection.getChildren().addAll(noAccountLabel, signupLabel);
+        parentRegSection.getChildren().addAll(parentLabel, parentRegLink);
+        infoSection.getChildren().addAll(infoLabel, parentRegSection);
         
         form.getChildren().addAll(emailSection, passwordSection, roleSection, loginButton, divider, googleSignInButton);
-        card.getChildren().addAll(header, form, signupSection);
+        card.getChildren().addAll(header, form, infoSection);
         
         // Store references to UI elements for dynamic updates
         this.dividerElement = divider;
@@ -438,11 +426,13 @@ public class LoginScreen {
     }
     
     private void handleLogin() {
-        String email = emailField.getText().trim();
+        String emailOrAdventureId = emailField.getText().trim();
         String password = passwordField.getText();
         
-        if (email.isEmpty() || password.isEmpty()) {
-            showStatus("Please enter both email and password", false);
+        if (emailOrAdventureId.isEmpty() || password.isEmpty()) {
+            UserRole selectedRole = getSelectedUserRole();
+            String fieldName = (selectedRole == UserRole.CHILD) ? "Adventure Username and password" : "email and password";
+            showStatus("Please enter both " + fieldName, false);
             return;
         }
         
@@ -453,15 +443,52 @@ public class LoginScreen {
         // Check if admin role is selected and handle admin authentication
         UserRole selectedRole = getSelectedUserRole();
         if (selectedRole == UserRole.ADMIN) {
-            handleAdminLogin(email, password);
+            handleAdminLogin(emailOrAdventureId, password);
             return;
+        }
+        
+        // Handle Adventure Username authentication for child users
+        final String email;
+        final boolean isAdventurerLogin;
+        if (selectedRole == UserRole.CHILD) {
+            // For adventurers, we'll use direct username authentication
+            if (!emailOrAdventureId.contains("@")) {
+                isAdventurerLogin = true;
+                email = emailOrAdventureId; // Keep original for username auth
+                LOGGER.info(() -> "Adventure Username login attempt: " + emailOrAdventureId);
+            } else {
+                // Still support email format for backwards compatibility
+                isAdventurerLogin = false;
+                email = emailOrAdventureId.toLowerCase();
+            }
+        } else {
+            isAdventurerLogin = false;
+            email = emailOrAdventureId;
         }
         
         // Authenticate in background thread
         new Thread(() -> {
             try {
                 FirebaseService firebaseService = FirebaseService.getInstance();
-                String userId = firebaseService.authenticateUser(email, password);
+                
+                // Ensure Firebase is initialized
+                if (!firebaseService.isInitialized()) {
+                    LOGGER.info("Firebase not initialized, initializing now...");
+                    firebaseService.initialize();
+                }
+                String userId;
+                
+                if (isAdventurerLogin) {
+                    // Use Adventure Username authentication
+                    LOGGER.info("Attempting adventurer login with username: " + email);
+                    userId = firebaseService.verifyAdventurerCredentials(email, password);
+                    LOGGER.info("Adventurer authentication result - userId: " + (userId != null ? userId : "null"));
+                } else {
+                    // Use regular email authentication
+                    LOGGER.info("Attempting regular email login with email: " + email);
+                    userId = firebaseService.authenticateUser(email, password);
+                    LOGGER.info("Email authentication result - userId: " + (userId != null ? userId : "null"));
+                }
                 
                 Platform.runLater(() -> {
                     loginButton.setDisable(false);
@@ -469,28 +496,41 @@ public class LoginScreen {
                     
                     if (userId != null) {
                         // Load user data
+                        LOGGER.info("Loading user data for userId: " + userId);
                         User user = firebaseService.loadUser(userId);
+                        LOGGER.info("User load result: " + (user != null ? "SUCCESS - " + user.getName() + " (" + user.getRole() + ")" : "FAILED - user is null"));
                         if (user != null) {
-                            // Set the user role based on selection (override Firebase data for demo)
-                            user.setRole(selectedRole);
+                            // SECURITY: Validate that the selected role matches the user's registered role
+                            UserRole userActualRole = user.getRole();
                             
-                            // Adjust user properties based on role
-                            if (selectedRole == UserRole.PARENT) {
+                            if (userActualRole == null) {
+                                showStatus("❌ Account not properly registered. Please contact support.", false);
+                                return;
+                            }
+                            
+                            // Verify role matches selection (prevent unauthorized role access)
+                            if (!userActualRole.equals(selectedRole)) {
+                                showStatus("❌ Role mismatch. You are registered as " + userActualRole + 
+                                         " but selected " + selectedRole + ". Please select the correct role.", false);
+                                return;
+                            }
+                            
+                            // Role-specific setup (only after validation)
+                            if (userActualRole == UserRole.PARENT) {
                                 user.setName(user.getName() + " (Merchant)");
                                 if (user.getSmartCoinBalance() < 100) {
                                     user.setSmartCoinBalance(500); // Merchants start with more
                                 }
-                            } else if (selectedRole == UserRole.TEACHER) {
+                            } else if (userActualRole == UserRole.TEACHER) {
                                 user.setName(user.getName() + " (Teacher)");
                                 if (user.getSmartCoinBalance() < 50) {
                                     user.setSmartCoinBalance(200);
                                 }
-                            } else if (selectedRole == UserRole.ADMIN) {
-                                user.setName(user.getName() + " (Admin)");
-                                user.setSmartCoinBalance(1000);
+                            } else if (userActualRole == UserRole.CHILD) {
+                                user.setName(user.getName() + " (Adventurer)");
+                                // Children keep their existing balance
                             }
                             
-                            SoundManager.getInstance().playAdventureStart();
                             showStatus("🎉 Adventure started! Welcome, " + user.getName() + "!", true);
                             
                             // Small delay for better UX before transitioning
@@ -501,12 +541,18 @@ public class LoginScreen {
                             }));
                             timeline.play();
                         } else {
-                            SoundManager.getInstance().playError();
-                            showStatus("❌ Could not load your profile. Please try again.", false);
+                            String errorMsg = isAdventurerLogin ? 
+                                "❌ Could not load adventurer profile. Please try again or contact support." :
+                                "❌ Could not load your profile. Please try again.";
+                            showStatus(errorMsg, false);
+                            LOGGER.warning("Failed to load user profile for userId: " + userId + ", isAdventurerLogin: " + isAdventurerLogin);
                         }
                     } else {
-                        SoundManager.getInstance().playError();
-                        showStatus("❌ Invalid credentials. Check your email and password.", false);
+                        String errorMsg = isAdventurerLogin ? 
+                            "❌ Invalid Adventure Username or password. Please check and try again." :
+                            "❌ Invalid credentials. Check your email and password.";
+                        showStatus(errorMsg, false);
+                        LOGGER.warning("Authentication failed for: " + email + ", isAdventurerLogin: " + isAdventurerLogin);
                     }
                 });
                 
@@ -514,7 +560,6 @@ public class LoginScreen {
                 Platform.runLater(() -> {
                     loginButton.setDisable(false);
                     loginButton.setText("🚀 START ADVENTURE");
-                    SoundManager.getInstance().playError();
                     showStatus("⚠️ Connection error: " + e.getMessage(), false);
                     LOGGER.severe(() -> "Login error: " + e.getMessage());
                 });
@@ -579,7 +624,6 @@ public class LoginScreen {
             
             System.out.println("Admin user created: " + adminUser.getName() + " with role: " + adminUser.getRole());
             
-            SoundManager.getInstance().playAdventureStart();
             showStatus("🎉 Admin access granted! Welcome, Administrator!", true);
             
             // Small delay for better UX before transitioning
@@ -594,7 +638,6 @@ public class LoginScreen {
             timeline.play();
         } else {
             System.out.println("Admin authentication failed for: " + usernameOrEmail + "/" + password);
-            SoundManager.getInstance().playError();
             showStatus("❌ Invalid admin credentials. Try: Admin/Admin or admin@coincraft.com/admin123", false);
         }
     }
@@ -661,8 +704,8 @@ public class LoginScreen {
         
         if (selectedRole == UserRole.CHILD) {
             // For adventurers (children): hide Google sign-in, update labels
-            emailLabel.setText("Adventure ID");
-            emailField.setPromptText("Enter your Adventure ID");
+            emailLabel.setText("Adventure Username");
+            emailField.setPromptText("Enter your Adventure Username");
             
             // Hide Google sign-in option for children
             dividerElement.setVisible(false);
@@ -688,8 +731,7 @@ public class LoginScreen {
         
         // Prevent children from using Google sign-in
         if (selectedRole == UserRole.CHILD) {
-            SoundManager.getInstance().playError();
-            showStatus("❌ Adventurers must use Adventure ID and password to log in!", false);
+            showStatus("❌ Adventurers must use Adventure Username and password to log in!", false);
             return;
         }
         
@@ -732,7 +774,6 @@ public class LoginScreen {
                             throw new IllegalStateException("Children cannot use Google authentication");
                         }
                         
-                        SoundManager.getInstance().playSuccess();
                         String roleMessage = selectedRole == UserRole.PARENT ? "merchant" : 
                                            selectedRole == UserRole.CHILD ? "adventurer" : selectedRole.name().toLowerCase();
                         showStatus("Google sign-in successful! Welcome " + roleMessage + "!", true);
@@ -747,7 +788,6 @@ public class LoginScreen {
                         
                     } catch (Exception e) {
                         googleSignInButton.setDisable(false);
-                        SoundManager.getInstance().playError();
                         showStatus("Google sign-in failed: " + e.getMessage(), false);
                         LOGGER.severe(() -> "Google sign-in error: " + e.getMessage());
                     }

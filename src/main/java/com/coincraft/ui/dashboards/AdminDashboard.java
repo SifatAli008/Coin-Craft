@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import com.coincraft.models.User;
+import com.coincraft.ui.components.CentralizedMusicController;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -260,10 +260,50 @@ public class AdminDashboard extends BaseDashboard {
         );
         refreshButton.setOnAction(e -> refreshData());
         
+        // Logout button
+        Button logoutButton = new Button("🚪 Logout");
+        logoutButton.setStyle(
+            "-fx-background-color: #e74c3c;" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 12px;" +
+            "-fx-padding: 8 15 8 15;" +
+            "-fx-background-radius: 5;" +
+            "-fx-cursor: hand;"
+        );
+        logoutButton.setOnMouseEntered(e -> {
+            logoutButton.setStyle(
+                "-fx-background-color: #c0392b;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 12px;" +
+                "-fx-padding: 8 15 8 15;" +
+                "-fx-background-radius: 5;" +
+                "-fx-cursor: hand;" +
+                "-fx-scale-x: 1.05; -fx-scale-y: 1.05;"
+            );
+        });
+        logoutButton.setOnMouseExited(e -> {
+            logoutButton.setStyle(
+                "-fx-background-color: #e74c3c;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 12px;" +
+                "-fx-padding: 8 15 8 15;" +
+                "-fx-background-radius: 5;" +
+                "-fx-cursor: hand;"
+            );
+        });
+        logoutButton.setOnAction(e -> handleAdminLogout());
+        
         VBox titleBox = new VBox(5);
         titleBox.getChildren().addAll(title, welcome);
         
-        header.getChildren().addAll(titleBox, spacer, refreshButton);
+        // Music Controller for Admin
+        CentralizedMusicController musicController = new CentralizedMusicController();
+        
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        buttonBox.getChildren().addAll(musicController.getRoot(), refreshButton, logoutButton);
+        
+        header.getChildren().addAll(titleBox, spacer, buttonBox);
         return header;
     }
     
@@ -667,6 +707,19 @@ public class AdminDashboard extends BaseDashboard {
     private void refreshData() {
         System.out.println("Refreshing admin dashboard data...");
         loadCleanData();
+    }
+    
+    /**
+     * Handle admin logout
+     */
+    private void handleAdminLogout() {
+        System.out.println("🚪 Admin logout requested");
+        
+        // Get the current stage
+        javafx.stage.Stage currentStage = (javafx.stage.Stage) root.getScene().getWindow();
+        
+        // Use NavigationUtil for clean logout handling
+        com.coincraft.ui.NavigationUtil.handleLogout(currentStage);
     }
     
     private void exportData() {

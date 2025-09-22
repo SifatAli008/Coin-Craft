@@ -2,7 +2,7 @@ package com.coincraft.ui;
 
 import java.util.logging.Logger;
 
-import com.coincraft.audio.SoundManager;
+// import com.coincraft.audio.SoundManager; // Removed - using CentralizedMusicManager now
 import com.coincraft.models.Badge;
 import com.coincraft.models.BadgeLevel;
 import com.coincraft.models.User;
@@ -67,8 +67,7 @@ public class MainDashboard {
             updateUI(); // Use provided user data
         }
         
-        // Ensure single music instance to prevent overlaps
-        SoundManager.getInstance().ensureSingleMusicInstance();
+        // Music is handled by BaseDashboard - no need to start here
     }
     
     private void initializeUI() {
@@ -271,7 +270,6 @@ public class MainDashboard {
         );
         
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
             button.setStyle(button.getStyle() + "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
         });
         
@@ -280,7 +278,6 @@ public class MainDashboard {
         });
         
         button.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
             handleActionButton(text);
         });
         
@@ -308,7 +305,6 @@ public class MainDashboard {
         
         button.setOnMouseEntered(e -> {
             if (!selected) {
-                SoundManager.getInstance().playButtonHover();
                 button.setStyle(
                     "-fx-background-color: rgba(255,255,255,0.95);" +
                     "-fx-text-fill: #1e293b;" +
@@ -332,7 +328,6 @@ public class MainDashboard {
         });
         
         button.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
             handleNavigation(text);
         });
         
@@ -1194,7 +1189,6 @@ public class MainDashboard {
         );
         
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
             button.setStyle(button.getStyle() + "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
         });
         
@@ -1203,7 +1197,6 @@ public class MainDashboard {
         });
         
         button.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
             handleGameAction(text);
         });
         
@@ -1213,15 +1206,12 @@ public class MainDashboard {
     private void handleActionButton(String action) {
         switch (action) {
             case "❓ HELP":
-                SoundManager.getInstance().playSuccess();
                 showInfoDialog("Help", "Welcome to CoinCraft! Use the navigation to explore different areas and complete quests to earn SmartCoins!");
                 break;
             case "⚙️ SETTINGS":
-                SoundManager.getInstance().playButtonClick();
                 showInfoDialog("Settings", "Settings panel coming soon! You'll be able to adjust sound, music, and game preferences.");
                 break;
             case "🚪 LOGOUT":
-                SoundManager.getInstance().playButtonClick();
                 showInfoDialog("Logout", "Logout functionality coming soon!");
                 break;
             case "🎵 MUSIC":
@@ -1253,14 +1243,8 @@ public class MainDashboard {
     }
     
     private void toggleMusic() {
-        SoundManager soundManager = SoundManager.getInstance();
-        if (soundManager.isMusicEnabled()) {
-            soundManager.setMusicEnabled(false);
-            showInfoDialog("Music", "🔇 Background music disabled");
-        } else {
-            soundManager.setMusicEnabled(true);
-            showInfoDialog("Music", "🎵 Background music enabled");
-        }
+        // Music toggle functionality moved to CentralizedMusicController
+        showInfoDialog("Music", "🎵 Music controls are available in the sidebar");
     }
     
     private void showInfoDialog(String title, String message) {

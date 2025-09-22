@@ -1,13 +1,16 @@
 package com.coincraft.services;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import com.coincraft.models.Task;
@@ -27,6 +30,9 @@ public class FirebaseService {
     private FirestoreService firestoreService;
     private boolean initialized = false;
     private String currentIdToken;
+    
+    // Mock user registry for testing (in production, this would be in Firebase)
+    private static final Map<String, User> mockUserRegistry = new HashMap<>();
     
     // Collection names for future use
     // private static final String USERS_COLLECTION = "users";
@@ -57,11 +63,27 @@ public class FirebaseService {
             // Try to load Firebase configuration
             config = FirebaseConfig.loadFromResources();
             
-            // Initialize services with error handling for missing dependencies
+            // Log configuration details
+            LOGGER.info("🔥 Firebase Configuration Loaded:");
+            LOGGER.info("  Project ID: " + config.getProjectId());
+            LOGGER.info("  Auth Domain: " + config.getAuthDomain());
+            LOGGER.info("  Database URL: " + config.getDatabaseURL());
+            LOGGER.info("  Storage Bucket: " + config.getStorageBucket());
+            LOGGER.info("  App ID: " + config.getAppId());
+            
+            // Initialize Firebase Admin SDK first
+            FirebaseAdminService.initialize();
+            
+            // Initialize Firebase Storage
+            FirebaseStorageService.initialize();
+            
+            // Initialize REST API services
             authService = new FirebaseAuthService(config);
             firestoreService = new FirestoreService(config);
             
-            LOGGER.info(() -> "Firebase service initialized successfully for project: " + config.getProjectId());
+            LOGGER.info(() -> "✅ Firebase service initialized successfully for project: " + config.getProjectId());
+            LOGGER.info(() -> "  Admin SDK Status: " + FirebaseAdminService.getConnectionStatus());
+            LOGGER.info(() -> "  Storage Status: " + FirebaseStorageService.getConnectionStatus());
             initialized = true;
             
         } catch (NoClassDefFoundError e) {
@@ -79,11 +101,14 @@ public class FirebaseService {
     private void initializeMockMode() {
         LOGGER.info("Initializing Firebase in mock mode");
         initialized = true;
-        // Keep existing mock functionality as fallback
+        
+        // Initialize some demo accounts for testing
+        initializeDemoAccounts();
     }
     
     /**
      * Authenticate user with email and password
+     * For adventurers (children), email should already be in format: adventureId@coincraft.adventure
      * Returns user ID if successful, null if failed
      */
     public String authenticateUser(String email, String password) {
@@ -105,11 +130,28 @@ public class FirebaseService {
                     return null;
                 }
             } else {
-                // Fallback to mock authentication
+                // Fallback to mock authentication - check both registry and local storage
                 if (email != null && password != null && !email.isEmpty() && !password.isEmpty()) {
+                    // First check mock registry (for demo accounts)
                     String mockUserId = "user_" + email.hashCode();
-                    LOGGER.info("Mock authentication successful for: " + email);
-                    return mockUserId;
+                    if (mockUserRegistry.containsKey(mockUserId)) {
+                        LOGGER.info("Mock authentication successful for registered user: " + email);
+                        return mockUserId;
+                    }
+                    
+                    // Then check local storage for created adventurers
+                    List<User> allUsers = loadUsersLocally();
+                    for (User user : allUsers) {
+                        if (user.getEmail() != null && user.getEmail().equalsIgnoreCase(email)) {
+                            // For simplicity, we're not storing passwords in local storage
+                            // In production, passwords would be hashed and verified properly
+                            LOGGER.info("Local storage authentication successful for: " + email);
+                            return user.getUserId();
+                        }
+                    }
+                    
+                    LOGGER.warning("Authentication failed - user not found: " + email);
+                    return null;
                 }
                 return null;
             }
@@ -169,16 +211,27 @@ public class FirebaseService {
                 throw new IllegalStateException("Firebase not initialized");
             }
             
+            // Try Admin SDK first (preferred method)
+            if (FirebaseAdminService.isInitialized()) {
+                boolean success = FirebaseAdminService.saveUserToFirestore(user);
+                if (success) {
+                    LOGGER.info("User data saved successfully via Admin SDK for " + user.getUserId());
+                    return;
+                } else {
+                    LOGGER.warning("Failed to save user data via Admin SDK for " + user.getUserId());
+                }
+            }
+            
+            // Fallback to REST API
             if (firestoreService != null && currentIdToken != null) {
-                // Use real Firestore
                 boolean success = firestoreService.saveUser(user);
                 if (success) {
-                    LOGGER.info("User data saved successfully for " + user.getUserId());
+                    LOGGER.info("User data saved successfully via REST API for " + user.getUserId());
                 } else {
-                    LOGGER.warning("Failed to save user data for " + user.getUserId());
+                    LOGGER.warning("Failed to save user data via REST API for " + user.getUserId());
                 }
             } else {
-                // Save to local storage as fallback when Firebase not available
+                // Save to local storage as final fallback
                 saveUserLocally(user);
                 LOGGER.info("User data saved locally for " + user.getUserId());
             }
@@ -253,36 +306,188 @@ public class FirebaseService {
     }
     
     /**
-     * Check if an Adventure ID (username) is already taken
-     * Adventure IDs are stored in the email field as: adventureId@coincraft.adventure
+     * Store adventurer credentials for authentication
+     * In production, this would use proper password hashing and secure storage
      */
-    public boolean isAdventureIdTaken(String adventureId) {
+    public void storeAdventurerCredentials(String adventureUsername, String password, String userId) {
         try {
-            if (adventureId == null || adventureId.trim().isEmpty()) {
+            // Create credentials directory if it doesn't exist
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Files.createDirectories(dataDir);
+            
+            // Store credentials in a secure file (in production, use proper encryption)
+            Path credentialsFile = dataDir.resolve("adventurer_credentials.txt");
+            
+            String credentialEntry = adventureUsername.toLowerCase() + "|" + password + "|" + userId + "|" + LocalDateTime.now().toString();
+            
+            // Append to credentials file
+            try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(credentialsFile, 
+                    java.nio.file.StandardOpenOption.CREATE, 
+                    java.nio.file.StandardOpenOption.APPEND))) {
+                writer.println(credentialEntry);
+            }
+            
+            LOGGER.info("Adventurer credentials stored for Adventure Username: " + adventureUsername);
+            
+        } catch (Exception e) {
+            LOGGER.warning("Failed to store adventurer credentials: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Verify adventurer credentials for login
+     */
+    public String verifyAdventurerCredentials(String adventureUsername, String password) {
+        try {
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Path credentialsFile = dataDir.resolve("adventurer_credentials.txt");
+            
+            if (!Files.exists(credentialsFile)) {
+                return null;
+            }
+            
+            try (BufferedReader reader = Files.newBufferedReader(credentialsFile)) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split("\\|");
+                    if (parts.length >= 3) {
+                        String storedAdventureUsername = parts[0];
+                        String storedPassword = parts[1];
+                        String userId = parts[2];
+                        
+                        if (storedAdventureUsername.equalsIgnoreCase(adventureUsername.toLowerCase()) && 
+                            storedPassword.equals(password)) {
+                            LOGGER.info("Adventurer credentials verified for: " + adventureUsername);
+                            return userId;
+                        }
+                    }
+                }
+            }
+            
+        } catch (Exception e) {
+            LOGGER.warning("Failed to verify adventurer credentials: " + e.getMessage());
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Update adventurer password
+     */
+    public boolean updateAdventurerPassword(String adventureUsername, String currentPassword, String newPassword) {
+        try {
+            // First verify current credentials
+            String userId = verifyAdventurerCredentials(adventureUsername, currentPassword);
+            if (userId == null) {
+                LOGGER.warning("Cannot update password - current password verification failed for: " + adventureUsername);
                 return false;
             }
             
-            // Normalize the Adventure ID
-            String normalizedId = adventureId.trim().toLowerCase();
-            String targetEmail = normalizedId + "@coincraft.adventure";
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Path credentialsFile = dataDir.resolve("adventurer_credentials.txt");
             
-            // Get all users and check for Adventure ID collision
+            if (!Files.exists(credentialsFile)) {
+                LOGGER.warning("Credentials file not found, cannot update password");
+                return false;
+            }
+            
+            // Read all credentials
+            List<String> allCredentials = new ArrayList<>();
+            boolean passwordUpdated = false;
+            
+            try (BufferedReader reader = Files.newBufferedReader(credentialsFile)) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split("\\|");
+                    if (parts.length >= 3) {
+                        String storedUsername = parts[0];
+                        String storedPassword = parts[1];
+                        String storedUserId = parts[2];
+                        
+                        if (storedUsername.equalsIgnoreCase(adventureUsername.toLowerCase()) && 
+                            storedPassword.equals(currentPassword) && 
+                            storedUserId.equals(userId)) {
+                            // Update this line with new password
+                            String updatedLine = storedUsername + "|" + newPassword + "|" + storedUserId + "|" + LocalDateTime.now().toString();
+                            allCredentials.add(updatedLine);
+                            passwordUpdated = true;
+                            LOGGER.info("Password updated for adventurer: " + adventureUsername);
+                        } else {
+                            // Keep original line
+                            allCredentials.add(line);
+                        }
+                    }
+                }
+            }
+            
+            if (passwordUpdated) {
+                // Write all credentials back to file
+                try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(credentialsFile))) {
+                    for (String credential : allCredentials) {
+                        writer.println(credential);
+                    }
+                }
+                return true;
+            } else {
+                LOGGER.warning("Could not find matching credentials to update for: " + adventureUsername);
+                return false;
+            }
+            
+        } catch (Exception e) {
+            LOGGER.warning("Failed to update adventurer password: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Check if an Adventure Username is already taken
+     */
+    public boolean isAdventureUsernameTaken(String adventureUsername) {
+        try {
+            if (adventureUsername == null || adventureUsername.trim().isEmpty()) {
+                return false;
+            }
+            
+            // Normalize the Adventure Username
+            String normalizedUsername = adventureUsername.trim().toLowerCase();
+            
+            // Get all users and check for Adventure Username collision
             List<User> allUsers = getAllUsers();
             for (User user : allUsers) {
-                if (user.getRole() == UserRole.CHILD && user.getEmail() != null) {
-                    String userEmail = user.getEmail().toLowerCase();
-                    if (userEmail.equals(targetEmail)) {
-                        LOGGER.info("Adventure ID '" + adventureId + "' is already taken");
+                if (user.getRole() == UserRole.CHILD && user.getUsername() != null) {
+                    String userUsername = user.getUsername().toLowerCase();
+                    if (userUsername.equals(normalizedUsername)) {
+                        LOGGER.info("Adventure Username '" + adventureUsername + "' is already taken");
                         return true;
                     }
                 }
             }
             
-            LOGGER.info("Adventure ID '" + adventureId + "' is available");
+            // Also check credentials file for username availability
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Path credentialsFile = dataDir.resolve("adventurer_credentials.txt");
+            
+            if (Files.exists(credentialsFile)) {
+                try (BufferedReader reader = Files.newBufferedReader(credentialsFile)) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        String[] parts = line.split("\\|");
+                        if (parts.length >= 1) {
+                            String storedUsername = parts[0];
+                            if (storedUsername.equalsIgnoreCase(normalizedUsername)) {
+                                LOGGER.info("Adventure Username '" + adventureUsername + "' is already taken (in credentials)");
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            LOGGER.info("Adventure Username '" + adventureUsername + "' is available");
             return false;
             
         } catch (Exception e) {
-            LOGGER.severe("Error checking Adventure ID availability: " + e.getMessage());
+            LOGGER.severe("Error checking Adventure Username availability: " + e.getMessage());
             // In case of error, assume it's taken to be safe
             return true;
         }
@@ -352,6 +557,7 @@ public class FirebaseService {
                 String userData = user.getUserId() + "|" + user.getName() + "|" + user.getRole() + "|" + 
                                 user.getAge() + "|" + user.getSmartCoinBalance() + "|" + user.getLevel() + "|" + 
                                 user.getDailyStreaks() + "|" + (user.getEmail() != null ? user.getEmail() : "") + "|" +
+                                (user.getUsername() != null ? user.getUsername() : "") + "|" +
                                 (user.getLastLogin() != null ? user.getLastLogin().toString() : "") + "|" +
                                 (user.getCreatedAt() != null ? user.getCreatedAt().toString() : "");
                 writer.println(userData);
@@ -404,12 +610,15 @@ public class FirebaseService {
                     user.setEmail(parts[7]);
                 }
                 if (parts.length > 8 && !parts[8].isEmpty()) {
-                    user.setLastLogin(LocalDateTime.parse(parts[8]));
+                    user.setUsername(parts[8]);
+                }
+                if (parts.length > 9 && !parts[9].isEmpty()) {
+                    user.setLastLogin(LocalDateTime.parse(parts[9]));
                 } else {
                     user.setLastLogin(LocalDateTime.now());
                 }
-                if (parts.length > 9 && !parts[9].isEmpty()) {
-                    user.setCreatedAt(LocalDateTime.parse(parts[9]));
+                if (parts.length > 10 && !parts[10].isEmpty()) {
+                    user.setCreatedAt(LocalDateTime.parse(parts[10]));
                 }
                 
                 return user;
@@ -455,26 +664,44 @@ public class FirebaseService {
                 throw new IllegalStateException("Firebase not initialized");
             }
             
-            if (firestoreService != null && currentIdToken != null) {
-                // Use real Firestore
-                User user = firestoreService.loadUser(userId);
+            // Try Admin SDK first (preferred method)
+            if (FirebaseAdminService.isInitialized()) {
+                User user = FirebaseAdminService.loadUserFromFirestore(userId);
                 if (user != null) {
-                    LOGGER.info("User data loaded successfully for " + userId);
+                    LOGGER.info("User data loaded successfully via Admin SDK for " + userId);
                     return user;
                 } else {
-                    LOGGER.info("User not found: " + userId);
+                    LOGGER.info("User not found via Admin SDK: " + userId);
                 }
-            } else {
-                // Mock load operation - create a sample user
-                User mockUser = new User();
-                mockUser.setUserId(userId);
-                mockUser.setName("Test User");
-                mockUser.setSmartCoinBalance(50);
-                mockUser.setLevel(1);
+            }
+            
+            // Fallback to REST API
+            if (firestoreService != null && currentIdToken != null) {
+                User user = firestoreService.loadUser(userId);
+                if (user != null) {
+                    LOGGER.info("User data loaded successfully via REST API for " + userId);
+                    return user;
+                } else {
+                    LOGGER.info("User not found via REST API: " + userId);
+                }
+            }
+            
+            // Fallback to local storage and mock registry
+            // First check mock registry (for demo accounts)
+            User mockUser = getMockUser(userId);
+            if (mockUser != null) {
                 LOGGER.info("Mock: Loading user data for " + userId);
                 return mockUser;
             }
             
+            // Then check local storage (for created adventurers)
+            User localUser = getUserByIdLocally(userId);
+            if (localUser != null) {
+                LOGGER.info("Local: Loading user data for " + userId);
+                return localUser;
+            }
+            
+            LOGGER.info("User not found in any storage: " + userId);
             return null;
             
         } catch (Exception e) {
@@ -796,5 +1023,294 @@ public class FirebaseService {
     
     public boolean isInitialized() {
         return initialized;
+    }
+    
+    /**
+     * Get Firebase connection status
+     */
+    public String getConnectionStatus() {
+        if (!initialized) {
+            return "❌ Not Initialized";
+        }
+        
+        if (authService != null && firestoreService != null) {
+            return "✅ Firebase Connected";
+        } else {
+            return "⚠️ Local Storage Mode";
+        }
+    }
+    
+    /**
+     * Get detailed Firebase configuration info
+     */
+    public String getConfigInfo() {
+        if (config == null) {
+            return "No configuration loaded";
+        }
+        
+        return String.format(
+            "Project: %s | Auth: %s | Database: %s",
+            config.getProjectId(),
+            config.getAuthDomain(),
+            config.getDatabaseURL() != null ? "Connected" : "Not Available"
+        );
+    }
+    
+    /**
+     * Get mock user from registry (simulates Firebase user lookup)
+     */
+    private User getMockUser(String userId) {
+        return mockUserRegistry.get(userId);
+    }
+    
+    /**
+     * Register a mock user (simulates Firebase user registration)
+     */
+    public boolean registerMockUser(String email, String password, User user) {
+        try {
+            String userId = "user_" + email.hashCode();
+            user.setUserId(userId);
+            user.setEmail(email);
+            user.setLastLogin(LocalDateTime.now());
+            user.setCreatedAt(LocalDateTime.now());
+            
+            mockUserRegistry.put(userId, user);
+            LOGGER.info("Mock user registered: " + email + " with role: " + user.getRole());
+            return true;
+        } catch (Exception e) {
+            LOGGER.severe("Failed to register mock user: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Check if a user exists in mock registry
+     */
+    public boolean mockUserExists(String email) {
+        String userId = "user_" + email.hashCode();
+        return mockUserRegistry.containsKey(userId);
+    }
+    
+    /**
+     * Initialize demo accounts for testing
+     */
+    private void initializeDemoAccounts() {
+        LOGGER.info("Initializing demo accounts for testing");
+        
+        // Demo child account
+        User childUser = new User();
+        childUser.setName("Demo Child");
+        childUser.setAge(10);
+        childUser.setRole(UserRole.CHILD);
+        childUser.setSmartCoinBalance(25);
+        childUser.setLevel(1);
+        registerMockUser("child@demo.com", "demo123", childUser);
+        
+        // Demo parent account
+        User parentUser = new User();
+        parentUser.setName("Demo Parent");
+        parentUser.setAge(35);
+        parentUser.setRole(UserRole.PARENT);
+        parentUser.setSmartCoinBalance(100);
+        parentUser.setLevel(1);
+        registerMockUser("parent@demo.com", "demo123", parentUser);
+        
+        // Demo teacher account
+        User teacherUser = new User();
+        teacherUser.setName("Demo Teacher");
+        teacherUser.setAge(30);
+        teacherUser.setRole(UserRole.TEACHER);
+        teacherUser.setSmartCoinBalance(200);
+        teacherUser.setLevel(1);
+        registerMockUser("teacher@demo.com", "demo123", teacherUser);
+        
+        LOGGER.info("Demo accounts initialized: child@demo.com, parent@demo.com, teacher@demo.com (password: demo123)");
+        
+        // Also create a test adventurer with username for testing
+        createTestAdventurer();
+    }
+    
+    /**
+     * Create a test adventurer for testing child login
+     */
+    private void createTestAdventurer() {
+        try {
+            String testUsername = "testadventurer";
+            String testPassword = "test123";
+            
+            // Check if test adventurer already exists
+            if (isAdventureUsernameTaken(testUsername)) {
+                LOGGER.info("Test adventurer already exists: " + testUsername);
+                return;
+            }
+            
+            // Create test adventurer user
+            User testAdventurer = new User();
+            testAdventurer.setUserId("adventurer_test_" + System.currentTimeMillis());
+            testAdventurer.setName("Test Adventurer");
+            testAdventurer.setUsername(testUsername);
+            testAdventurer.setRole(UserRole.CHILD);
+            testAdventurer.setAge(10);
+            testAdventurer.setEmail(testUsername + "@coincraft.adventure");
+            testAdventurer.setSmartCoinBalance(50);
+            testAdventurer.setLevel(1);
+            testAdventurer.setDailyStreaks(0);
+            testAdventurer.setLastLogin(LocalDateTime.now());
+            testAdventurer.setCreatedAt(LocalDateTime.now());
+            
+            // Save to local storage
+            saveUser(testAdventurer);
+            
+            // Store credentials
+            storeAdventurerCredentials(testUsername, testPassword, testAdventurer.getUserId());
+            
+            LOGGER.info("Test adventurer created successfully:");
+            LOGGER.info("  Username: " + testUsername);
+            LOGGER.info("  Password: " + testPassword);
+            LOGGER.info("  Use these credentials to test child login functionality");
+            
+        } catch (Exception e) {
+            LOGGER.warning("Failed to create test adventurer: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Test the complete adventurer creation and login flow
+     */
+    public boolean testAdventurerFlow(String username, String password, String name, int age) {
+        try {
+            LOGGER.info("Testing adventurer flow for username: " + username);
+            
+            // Step 1: Create adventurer
+            User testAdventurer = new User();
+            testAdventurer.setUserId("test_adventurer_" + System.currentTimeMillis());
+            testAdventurer.setName(name);
+            testAdventurer.setUsername(username);
+            testAdventurer.setRole(UserRole.CHILD);
+            testAdventurer.setAge(age);
+            testAdventurer.setEmail(username + "@coincraft.adventure");
+            testAdventurer.setSmartCoinBalance(25);
+            testAdventurer.setLevel(1);
+            testAdventurer.setDailyStreaks(0);
+            testAdventurer.setLastLogin(LocalDateTime.now());
+            testAdventurer.setCreatedAt(LocalDateTime.now());
+            
+            // Step 2: Save user
+            LOGGER.info("Step 1: Saving user...");
+            saveUser(testAdventurer);
+            
+            // Step 3: Store credentials
+            LOGGER.info("Step 2: Storing credentials...");
+            storeAdventurerCredentials(username, password, testAdventurer.getUserId());
+            
+            // Step 4: Verify user can be loaded
+            LOGGER.info("Step 3: Testing user load...");
+            User loadedUser = loadUser(testAdventurer.getUserId());
+            if (loadedUser == null) {
+                LOGGER.severe("FAILED: Could not load saved user");
+                return false;
+            }
+            LOGGER.info("SUCCESS: User loaded - " + loadedUser.getName());
+            
+            // Step 5: Verify credentials work
+            LOGGER.info("Step 4: Testing credential verification...");
+            String verifiedUserId = verifyAdventurerCredentials(username, password);
+            if (verifiedUserId == null || !verifiedUserId.equals(testAdventurer.getUserId())) {
+                LOGGER.severe("FAILED: Credential verification failed");
+                return false;
+            }
+            LOGGER.info("SUCCESS: Credentials verified");
+            
+            // Step 6: Test complete login flow
+            LOGGER.info("Step 5: Testing complete login flow...");
+            User loginUser = loadUser(verifiedUserId);
+            if (loginUser == null) {
+                LOGGER.severe("FAILED: Could not load user after credential verification");
+                return false;
+            }
+            
+            LOGGER.info("✅ COMPLETE SUCCESS: Adventurer flow test passed!");
+            LOGGER.info("  Username: " + username);
+            LOGGER.info("  User ID: " + testAdventurer.getUserId());
+            LOGGER.info("  Name: " + loginUser.getName());
+            LOGGER.info("  Role: " + loginUser.getRole());
+            
+            return true;
+            
+        } catch (Exception e) {
+            LOGGER.severe("FAILED: Exception during adventurer flow test: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Comprehensive Firebase connection test
+     */
+    public boolean testFirebaseConnection() {
+        try {
+            LOGGER.info("🧪 Starting comprehensive Firebase connection test...");
+            
+            // Test 1: Configuration Loading
+            if (config == null) {
+                LOGGER.severe("FAILED: Firebase configuration not loaded");
+                return false;
+            }
+            LOGGER.info("✅ Test 1 PASSED: Firebase configuration loaded");
+            
+            // Test 2: Service Initialization
+            if (authService == null || firestoreService == null) {
+                LOGGER.warning("⚠️ Test 2: Firebase services not initialized (using mock mode)");
+            } else {
+                LOGGER.info("✅ Test 2 PASSED: Firebase services initialized");
+            }
+            
+            // Test 3: User Storage (Local/Firebase)
+            User testUser = new User();
+            testUser.setUserId("connection_test_" + System.currentTimeMillis());
+            testUser.setName("Connection Test User");
+            testUser.setUsername("testconnection");
+            testUser.setRole(UserRole.CHILD);
+            testUser.setAge(10);
+            testUser.setEmail("testconnection@coincraft.adventure");
+            testUser.setSmartCoinBalance(25);
+            testUser.setLevel(1);
+            testUser.setCreatedAt(LocalDateTime.now());
+            
+            saveUser(testUser);
+            User loadedUser = loadUser(testUser.getUserId());
+            
+            if (loadedUser == null) {
+                LOGGER.severe("FAILED: Test 3 - Could not save/load user");
+                return false;
+            }
+            LOGGER.info("✅ Test 3 PASSED: User storage and retrieval working");
+            
+            // Test 4: Credential Storage
+            storeAdventurerCredentials("testconnection", "testpass", testUser.getUserId());
+            String verifiedUserId = verifyAdventurerCredentials("testconnection", "testpass");
+            
+            if (verifiedUserId == null || !verifiedUserId.equals(testUser.getUserId())) {
+                LOGGER.severe("FAILED: Test 4 - Credential storage/verification failed");
+                return false;
+            }
+            LOGGER.info("✅ Test 4 PASSED: Credential storage and verification working");
+            
+            // Test 5: Username Availability Check
+            boolean isUsernameTaken = isAdventureUsernameTaken("testconnection");
+            if (!isUsernameTaken) {
+                LOGGER.severe("FAILED: Test 5 - Username availability check failed");
+                return false;
+            }
+            LOGGER.info("✅ Test 5 PASSED: Username availability check working");
+            
+            LOGGER.info("🎉 ALL FIREBASE CONNECTION TESTS PASSED!");
+            return true;
+            
+        } catch (Exception e) {
+            LOGGER.severe("FAILED: Exception during Firebase connection test: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 }

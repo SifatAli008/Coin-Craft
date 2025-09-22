@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Parents can read their children's data (if parentId is set)
+      allow read: if request.auth != null && 
+        resource.data.parentId == request.auth.uid;
+      
+      // Allow creating new users during registration
+      allow create: if request.auth != null && 
+        request.auth.uid == userId &&
+        validateUserData(request.resource.data);
+    }
+    
+    // Tasks collection - users can read/write tasks assigned to them or by them
+    match /tasks/{taskId} {
+      allow read, write: if request.auth != null && 
+        (resource.data.assignedTo == request.auth.uid ||
+         resource.data.assignedBy == request.auth.uid);
+      
+      // Allow creating new tasks
+      allow create: if request.auth != null && 
+        request.resource.data.assignedBy == request.auth.uid &&
+        validateTaskData(request.resource.data);
+      
+      // Parents can read tasks assigned to their children
+      allow read: if request.auth != null && 
+        resource.data.parentId == request.auth.uid;
+    }
+    
+    // Badges collection - read-only for authenticated users
+    match /badges/{badgeId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only updated by server functions
+    }
+    
+    // Leaderboard collection - read-only for authenticated users
+    match /leaderboard/{userId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only updated by server functions
+    }
+    
+    // Avatar items collection - read-only for authenticated users
+    match /avatarItems/{itemId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only updated by server functions
+    }
+    
+    // User progress collection - users can read/write their own progress
+    match /userProgress/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Parents can read their children's progress
+      allow read: if request.auth != null && 
+        resource.data.parentId == request.auth.uid;
+    }
+    
+    // Family groups collection - parents can manage their family
+    match /families/{familyId} {
+      allow read, write: if request.auth != null && 
+        resource.data.parentId == request.auth.uid;
+      
+      // Allow creating new family groups
+      allow create: if request.auth != null && 
+        request.resource.data.parentId == request.auth.uid;
+    }
+    
+    // Validation helper functions
+    function validateUserData(data) {
+      return data.keys().hasAll(['name', 'role', 'age']) &&
+             data.role in ['CHILD', 'PARENT', 'TEACHER', 'ADMIN'] &&
+             data.age is int &&
+             data.age >= 7 &&
+             data.age <= 100;
+    }
+    
+    function validateTaskData(data) {
+      return data.keys().hasAll(['title', 'description', 'assignedBy']) &&
+             data.title is string &&
+             data.description is string &&
+             data.assignedBy is string;
+    }
+    
+    // Admin operations - only for users with admin role
+    match /admin/{document=**} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.role == 'ADMIN';
+    }
+    
+    // System collections - only server functions can write
+    match /system/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only server functions
+    }
+  }
+}

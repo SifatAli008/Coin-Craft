@@ -30,12 +30,12 @@ public class AddAdventurerDialog {
     private VBox root;
     private TextField adventurerNameField;
     private ComboBox<String> ageComboBox;
-    private TextField adventureIdField;
+    private TextField adventureUsernameField;
     private PasswordField passwordField;
     private PasswordField confirmPasswordField;
     private Button createButton;
     private Button cancelButton;
-    private Label adventureIdStatusLabel;
+    private Label adventureUsernameStatusLabel;
     
     private final Consumer<User> onAdventurerCreated;
     
@@ -137,28 +137,28 @@ public class AddAdventurerDialog {
         
         firstRow.getChildren().addAll(nameSection, ageSection);
         
-        // Second Row: Adventure ID (full width)
-        VBox idSection = createFormSection("⚔️ Adventure ID", "Create a unique username for your adventurer");
-        adventureIdField = new TextField();
-        adventureIdField.setPromptText("e.g., brave_emma or quest_master");
-        adventureIdField.setPrefWidth(400);
-        styleTextField(adventureIdField);
+        // Second Row: Adventure Username (full width)
+        VBox usernameSection = createFormSection("⚔️ Adventure Username", "Create a unique username for your adventurer");
+        adventureUsernameField = new TextField();
+        adventureUsernameField.setPromptText("e.g., brave_emma or quest_master");
+        adventureUsernameField.setPrefWidth(400);
+        styleTextField(adventureUsernameField);
         
-        // Add real-time validation for Adventure ID
-        adventureIdField.textProperty().addListener((observable, oldValue, newValue) -> {
-            validateAdventureIdRealTime(newValue);
+        // Add real-time validation for Adventure Username
+        adventureUsernameField.textProperty().addListener((observable, oldValue, newValue) -> {
+            validateAdventureUsernameRealTime(newValue);
         });
         
-        // Add status label for Adventure ID validation feedback
-        adventureIdStatusLabel = new Label();
-        adventureIdStatusLabel.setStyle(
+        // Add status label for Adventure Username validation feedback
+        adventureUsernameStatusLabel = new Label();
+        adventureUsernameStatusLabel.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
             "-fx-padding: 4 0 0 0;"
         );
-        adventureIdStatusLabel.setVisible(false);
+        adventureUsernameStatusLabel.setVisible(false);
         
-        idSection.getChildren().addAll(adventureIdField, adventureIdStatusLabel);
+        usernameSection.getChildren().addAll(adventureUsernameField, adventureUsernameStatusLabel);
         
         // Third Row: Password and Confirm Password (inline)
         HBox passwordRow = new HBox(16);
@@ -180,7 +180,7 @@ public class AddAdventurerDialog {
         
         passwordRow.getChildren().addAll(passwordSection, confirmSection);
         
-        form.getChildren().addAll(firstRow, idSection, passwordRow);
+        form.getChildren().addAll(firstRow, usernameSection, passwordRow);
         root.getChildren().add(form);
     }
     
@@ -373,7 +373,7 @@ public class AddAdventurerDialog {
         // Validate inputs
         String name = adventurerNameField.getText().trim();
         String ageSelection = ageComboBox.getValue();
-        String adventureId = adventureIdField.getText().trim();
+        String adventureUsername = adventureUsernameField.getText().trim();
         String password = passwordField.getText();
         String confirmPassword = confirmPasswordField.getText();
         
@@ -388,26 +388,26 @@ public class AddAdventurerDialog {
             return;
         }
         
-        if (adventureId.isEmpty()) {
-            showError("Please create an Adventure ID");
+        if (adventureUsername.isEmpty()) {
+            showError("Please create an Adventure Username");
             return;
         }
         
-        if (adventureId.length() < 3) {
-            showError("Adventure ID must be at least 3 characters long");
+        if (adventureUsername.length() < 3) {
+            showError("Adventure Username must be at least 3 characters long");
             return;
         }
         
         // Check for invalid characters
-        if (!adventureId.matches("^[a-zA-Z0-9_]+$")) {
-            showError("Adventure ID can only contain letters, numbers, and underscores");
+        if (!adventureUsername.matches("^[a-zA-Z0-9_]+$")) {
+            showError("Adventure Username can only contain letters, numbers, and underscores");
             return;
         }
         
-        // Check if Adventure ID is already taken
+        // Check if Adventure Username is already taken
         FirebaseService firebaseService = FirebaseService.getInstance();
-        if (firebaseService.isAdventureIdTaken(adventureId)) {
-            showError("Adventure ID '" + adventureId + "' is already taken. Please choose a different one.");
+        if (firebaseService.isAdventureUsernameTaken(adventureUsername)) {
+            showError("Adventure Username '" + adventureUsername + "' is already taken. Please choose a different one.");
             return;
         }
         
@@ -426,86 +426,140 @@ public class AddAdventurerDialog {
             return;
         }
         
-        // Extract age from selection
-        int age = Integer.parseInt(ageSelection.split(" ")[0]);
+        try {
+            // Extract age from selection
+            int age = Integer.parseInt(ageSelection.split(" ")[0]);
+            
+            // Create new adventurer user
+            User newAdventurer = new User();
+            newAdventurer.setUserId("adventurer_" + System.currentTimeMillis());
+            newAdventurer.setName(name);
+            newAdventurer.setUsername(adventureUsername); // Set the adventure username
+            newAdventurer.setRole(UserRole.CHILD);
+            newAdventurer.setAge(age);
+            newAdventurer.setEmail(adventureUsername + "@coincraft.adventure"); // Use Adventure Username as email base
+            newAdventurer.setSmartCoinBalance(25); // Starting balance for new adventurers
+            newAdventurer.setLevel(1);
+            newAdventurer.setDailyStreaks(0);
+            newAdventurer.setLastLogin(java.time.LocalDateTime.now());
+            newAdventurer.setCreatedAt(java.time.LocalDateTime.now()); // Set creation timestamp
         
-        // Create new adventurer user
-        User newAdventurer = new User();
-        newAdventurer.setUserId("adventurer_" + System.currentTimeMillis());
-        newAdventurer.setName(name);
-        newAdventurer.setRole(UserRole.CHILD);
-        newAdventurer.setAge(age);
-        newAdventurer.setEmail(adventureId + "@coincraft.adventure"); // Use Adventure ID as email base
-        newAdventurer.setSmartCoinBalance(25); // Starting balance for new adventurers
-        newAdventurer.setLevel(1);
-        newAdventurer.setDailyStreaks(0);
-        newAdventurer.setLastLogin(java.time.LocalDateTime.now());
-        newAdventurer.setCreatedAt(java.time.LocalDateTime.now()); // Set creation timestamp
+        // Ensure Firebase is initialized before saving
+        if (!firebaseService.isInitialized()) {
+            System.out.println("🔍 DEBUG: Firebase not initialized, initializing now...");
+            firebaseService.initialize();
+        }
         
-        // Save to Firebase (reuse the firebaseService variable)
+        // Save to Firebase/Local storage
+        System.out.println("🔍 DEBUG: Saving adventurer to Firebase/Local storage...");
         firebaseService.saveUser(newAdventurer);
         
-        // Debug: Check if user was saved
-        System.out.println("🔍 DEBUG: Attempting to save adventurer to Firebase/Local storage...");
+        // Store Adventure Username and password mapping for authentication
+        System.out.println("🔍 DEBUG: Storing adventurer credentials...");
+        firebaseService.storeAdventurerCredentials(adventureUsername, password, newAdventurer.getUserId());
+        
+        // Verify the adventurer was saved correctly
+        User savedAdventurer = firebaseService.loadUser(newAdventurer.getUserId());
+        if (savedAdventurer != null) {
+            System.out.println("✅ DEBUG: Adventurer successfully saved and verified!");
+            System.out.println("✅ DEBUG: Saved adventurer name: " + savedAdventurer.getName());
+            System.out.println("✅ DEBUG: Saved adventurer username: " + savedAdventurer.getUsername());
+            System.out.println("✅ DEBUG: Saved adventurer role: " + savedAdventurer.getRole());
+        } else {
+            System.out.println("⚠️ DEBUG: Warning - Could not verify adventurer was saved!");
+        }
+        
+        // Verify credentials were stored correctly
+        String verifiedUserId = firebaseService.verifyAdventurerCredentials(adventureUsername, password);
+        if (verifiedUserId != null && verifiedUserId.equals(newAdventurer.getUserId())) {
+            System.out.println("✅ DEBUG: Adventurer credentials successfully stored and verified!");
+            
+            // Run complete flow test to ensure everything works
+            System.out.println("🧪 DEBUG: Running complete adventurer flow test...");
+            boolean flowTestPassed = firebaseService.testAdventurerFlow(adventureUsername, password, name, age);
+            if (flowTestPassed) {
+                System.out.println("✅ DEBUG: Complete adventurer flow test PASSED!");
+            } else {
+                System.out.println("❌ DEBUG: Complete adventurer flow test FAILED!");
+            }
+        } else {
+            System.out.println("⚠️ DEBUG: Warning - Could not verify adventurer credentials!");
+        }
+        
         System.out.println("🔍 DEBUG: Firebase initialized: " + firebaseService.isInitialized());
         
-        // Store Adventure ID and password securely
+        // Store Adventure Username and password securely
         System.out.println("=".repeat(50));
         System.out.println("🎉 NEW ADVENTURER CREATED:");
         System.out.println("Name: " + name);
         System.out.println("Age: " + age + " years old");
-        System.out.println("Adventure ID: " + adventureId);
+        System.out.println("Adventure Username: " + adventureUsername);
         System.out.println("Password: " + password + " (stored securely)");
         System.out.println("Starting Balance: 25 SmartCoins");
         System.out.println("✅ Saved to Firebase!");
         System.out.println("=".repeat(50));
         
         // Show success message
-        showSuccess(name, adventureId, password);
+        showSuccess(name, adventureUsername, password);
         
         // Callback to parent dashboard
         if (onAdventurerCreated != null) {
             onAdventurerCreated.accept(newAdventurer);
         }
         
-        // Close dialog after a delay
-        javafx.animation.Timeline timeline = new javafx.animation.Timeline(
-            new javafx.animation.KeyFrame(javafx.util.Duration.seconds(3), e -> dialogStage.close())
-        );
-        timeline.play();
+            // Close dialog after a delay
+            javafx.animation.Timeline timeline = new javafx.animation.Timeline(
+                new javafx.animation.KeyFrame(javafx.util.Duration.seconds(3), e -> dialogStage.close())
+            );
+            timeline.play();
+            
+        } catch (Exception e) {
+            // Handle any errors during adventurer creation
+            SoundManager.getInstance().playError();
+            System.err.println("❌ ERROR: Failed to create adventurer: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Show error to user
+            showError("Failed to create adventurer: " + e.getMessage() + 
+                     "\n\nPlease try again or contact support if the problem persists.");
+            
+            // Re-enable the create button
+            createButton.setText("⚔️ CREATE ADVENTURER");
+            createButton.setDisable(false);
+        }
     }
     
     /**
-     * Validates Adventure ID in real-time as user types
+     * Validates Adventure Username in real-time as user types
      */
-    private void validateAdventureIdRealTime(String adventureId) {
-        if (adventureId == null || adventureId.trim().isEmpty()) {
-            adventureIdStatusLabel.setVisible(false);
+    private void validateAdventureUsernameRealTime(String adventureUsername) {
+        if (adventureUsername == null || adventureUsername.trim().isEmpty()) {
+            adventureUsernameStatusLabel.setVisible(false);
             return;
         }
         
-        String trimmedId = adventureId.trim();
+        String trimmedUsername = adventureUsername.trim();
         
         // Check basic requirements first
-        if (trimmedId.length() < 3) {
-            showAdventureIdStatus("⚠️ Must be at least 3 characters", false);
+        if (trimmedUsername.length() < 3) {
+            showAdventureUsernameStatus("⚠️ Must be at least 3 characters", false);
             return;
         }
         
         // Check for invalid characters
-        if (!trimmedId.matches("^[a-zA-Z0-9_]+$")) {
-            showAdventureIdStatus("⚠️ Only letters, numbers, and underscores allowed", false);
+        if (!trimmedUsername.matches("^[a-zA-Z0-9_]+$")) {
+            showAdventureUsernameStatus("⚠️ Only letters, numbers, and underscores allowed", false);
             return;
         }
         
-        // Check if Adventure ID is taken (with debouncing to avoid excessive calls)
+        // Check if Adventure Username is taken (with debouncing to avoid excessive calls)
         javafx.animation.Timeline timeline = new javafx.animation.Timeline(
             new javafx.animation.KeyFrame(javafx.util.Duration.millis(500), e -> {
                 FirebaseService firebaseService = FirebaseService.getInstance();
-                if (firebaseService.isAdventureIdTaken(trimmedId)) {
-                    showAdventureIdStatus("❌ This Adventure ID is already taken", false);
+                if (firebaseService.isAdventureUsernameTaken(trimmedUsername)) {
+                    showAdventureUsernameStatus("❌ This Adventure Username is already taken", false);
                 } else {
-                    showAdventureIdStatus("✅ Adventure ID is available!", true);
+                    showAdventureUsernameStatus("✅ Adventure Username is available!", true);
                 }
             })
         );
@@ -513,17 +567,17 @@ public class AddAdventurerDialog {
     }
     
     /**
-     * Shows status message for Adventure ID validation
+     * Shows status message for Adventure Username validation
      */
-    private void showAdventureIdStatus(String message, boolean isSuccess) {
-        adventureIdStatusLabel.setText(message);
-        adventureIdStatusLabel.setStyle(
+    private void showAdventureUsernameStatus(String message, boolean isSuccess) {
+        adventureUsernameStatusLabel.setText(message);
+        adventureUsernameStatusLabel.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
             "-fx-padding: 4 0 0 0;" +
             "-fx-text-fill: " + (isSuccess ? "#10b981;" : "#ef4444;")
         );
-        adventureIdStatusLabel.setVisible(true);
+        adventureUsernameStatusLabel.setVisible(true);
     }
     
     private void showError(String message) {
@@ -537,17 +591,23 @@ public class AddAdventurerDialog {
         alert.showAndWait();
     }
     
-    private void showSuccess(String name, String adventureId, String password) {
+    private void showSuccess(String name, String adventureUsername, String password) {
         SoundManager.getInstance().playSuccess();
         
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("🎉 Adventurer Created!");
+        alert.setTitle("🎉 Adventurer Created Successfully!");
         alert.setHeaderText("Welcome to CoinCraft, " + name + "!");
         alert.setContentText(
-            "Adventure ID: " + adventureId + "\n" +
-            "Password: " + password + "\n\n" +
-            "Your adventurer can now log in using these credentials to access their Adventure Dashboard!\n\n" +
-            "Starting with 25 SmartCoins to begin their financial learning journey."
+            "✅ Adventure Username: " + adventureUsername + "\n" +
+            "✅ Password: " + password + "\n\n" +
+            "🚀 HOW YOUR CHILD CAN LOG IN:\n" +
+            "1. On the login screen, select 'Child' role\n" +
+            "2. Enter Adventure Username: " + adventureUsername + "\n" +
+            "3. Enter Password: " + password + "\n" +
+            "4. Click 'START ADVENTURE'\n\n" +
+            "💰 Starting with 25 SmartCoins\n" +
+            "🎯 Ready to begin their financial learning journey!\n\n" +
+            "📝 Write down these credentials for your child."
         );
         alert.initOwner(dialogStage);
         alert.showAndWait();

@@ -1,6 +1,6 @@
 package com.coincraft.ui.dashboards;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.User;
 import com.coincraft.ui.routing.RoleGuard;
 
@@ -35,8 +35,10 @@ public abstract class BaseDashboard {
         // Start animations
         startAnimations();
         
-        // Ensure single music instance to prevent overlaps
-        SoundManager.getInstance().ensureSingleMusicInstance();
+        // Initialize centralized music system to prevent overlaps
+        // This ensures only one background music track plays across all dashboards
+        System.out.println("🎵 BaseDashboard initializing centralized music for " + user.getRole() + " dashboard");
+        CentralizedMusicManager.getInstance().play();
     }
     
     /**
@@ -160,7 +162,7 @@ public abstract class BaseDashboard {
         );
         
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            // Note: Button hover sounds can be implemented via CentralizedMusicManager if needed
             button.setStyle(
                 "-fx-background-color: " + hoverColor + ";" +
                 "-fx-text-fill: white;" +
@@ -191,7 +193,9 @@ public abstract class BaseDashboard {
             );
         });
         
-        button.setOnAction(e -> SoundManager.getInstance().playButtonClick());
+        button.setOnAction(e -> {
+            // Note: Button click sounds can be implemented via CentralizedMusicManager if needed
+        });
         
         return button;
     }

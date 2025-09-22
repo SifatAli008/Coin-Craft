@@ -97,7 +97,9 @@ launch-coincraft.bat.bak
 
 # Security - Never commit sensitive files
 firebase-config.json
+firebase-service-account.json
 *.key
 *.pem
 *.p12
 secrets.properties
+service-account-*.json

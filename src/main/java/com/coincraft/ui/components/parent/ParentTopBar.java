@@ -169,6 +169,7 @@ public class ParentTopBar {
         root.getChildren().add(statsSection);
     }
     
+    
     private void createNotificationArea() {
         VBox notificationArea = new VBox(4);
         notificationArea.setAlignment(Pos.CENTER_RIGHT);
