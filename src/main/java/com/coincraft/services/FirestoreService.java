@@ -1,13 +1,22 @@
 package com.coincraft.services;
 
-import com.coincraft.models.User;
-import com.coincraft.models.Task;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
+
+import com.coincraft.models.Task;
+import com.coincraft.models.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Firestore database service using REST API
@@ -248,6 +257,7 @@ public class FirestoreService {
         
         addStringField(fields, "userId", user.getUserId());
         addStringField(fields, "name", user.getName());
+        addStringField(fields, "username", user.getUsername());
         addStringField(fields, "role", user.getRole().name());
         addIntegerField(fields, "age", user.getAge());
         addIntegerField(fields, "level", user.getLevel());
@@ -271,6 +281,7 @@ public class FirestoreService {
             
             user.setUserId(getStringValue(fields, "userId"));
             user.setName(getStringValue(fields, "name"));
+            user.setUsername(getStringValue(fields, "username"));
             user.setAge(getIntegerValue(fields, "age"));
             user.setLevel(getIntegerValue(fields, "level"));
             user.setSmartCoinBalance(getIntegerValue(fields, "smartCoinBalance"));

@@ -39,9 +39,10 @@ public class GoogleParentLoginDemo extends Application {
             }
             
             @Override
-            public void onNavigateToSignUp() {
-                System.out.println("Navigate to sign up requested");
+            public void onNavigateToParentRegistration() {
+                System.out.println("Parent registration navigation from demo");
             }
+            
         });
         
         // Set up the scene

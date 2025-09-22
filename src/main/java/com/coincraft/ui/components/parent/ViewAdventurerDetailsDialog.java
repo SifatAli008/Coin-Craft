@@ -2,6 +2,7 @@ package com.coincraft.ui.components.parent;
 
 import com.coincraft.models.User;
 import com.coincraft.services.FirebaseService;
+import com.coincraft.audio.SoundManager;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,6 +16,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 /**
  * Dialog for viewing and editing detailed adventurer information
@@ -24,7 +26,7 @@ public class ViewAdventurerDetailsDialog {
     private Stage dialog;
     private User adventurer;
     private TextField nameField;
-    private TextField adventureIdField;
+    private TextField adventureUsernameField;
     private Spinner<Integer> ageSpinner;
     private TextField emailField;
     private TextField smartCoinField;
@@ -33,6 +35,7 @@ public class ViewAdventurerDetailsDialog {
     private TextArea notesArea;
     private Label lastLoginLabel;
     private Label createdAtLabel;
+    private Button changePasswordBtn;
     
     public ViewAdventurerDetailsDialog(Stage parentStage, User adventurer) {
         this.adventurer = adventurer;
@@ -46,8 +49,8 @@ public class ViewAdventurerDetailsDialog {
         dialog.initStyle(StageStyle.DECORATED);
         dialog.setTitle("⚔️ Adventure Details - " + adventurer.getName());
         dialog.setResizable(true);
-        dialog.setWidth(800);
-        dialog.setHeight(700);
+        dialog.setWidth(850);
+        dialog.setHeight(750);
         
         // Create main content
         VBox mainContent = createMainContent();
@@ -109,7 +112,8 @@ public class ViewAdventurerDetailsDialog {
         titleLabel.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 24));
         titleLabel.setStyle("-fx-text-fill: white;");
         
-        Label subtitleLabel = new Label("Adventure ID: " + adventurer.getUserId());
+        String usernameDisplay = adventurer.getUsername() != null ? adventurer.getUsername() : "No Username Set";
+        Label subtitleLabel = new Label("Adventure Username: " + usernameDisplay);
         subtitleLabel.setFont(Font.font("Ancient Medium", 14));
         subtitleLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.9);");
         
@@ -142,13 +146,31 @@ public class ViewAdventurerDetailsDialog {
         nameField.setPrefWidth(200);
         detailsGrid.add(nameField, 1, 0);
         
-        // Adventure ID field
-        detailsGrid.add(new Label("Adventure ID:"), 0, 1);
-        adventureIdField = new TextField(adventurer.getUserId());
-        adventureIdField.setPrefWidth(200);
-        adventureIdField.setEditable(false); // Don't allow changing ID
-        adventureIdField.setStyle("-fx-background-color: #f5f5f5;");
-        detailsGrid.add(adventureIdField, 1, 1);
+        // Adventure Username field
+        detailsGrid.add(new Label("Adventure Username:"), 0, 1);
+        String usernameValue = adventurer.getUsername() != null ? adventurer.getUsername() : "";
+        adventureUsernameField = new TextField(usernameValue);
+        adventureUsernameField.setPrefWidth(200);
+        adventureUsernameField.setEditable(false); // Don't allow changing username directly
+        adventureUsernameField.setStyle("-fx-background-color: #f5f5f5;");
+        detailsGrid.add(adventureUsernameField, 1, 1);
+        
+        // Change Password button (next to username)
+        changePasswordBtn = new Button("🔐 Change Password");
+        changePasswordBtn.setPrefWidth(150);
+        changePasswordBtn.setPrefHeight(32);
+        changePasswordBtn.setStyle(
+            "-fx-background-color: #FF9800;" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 12px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-background-radius: 6;" +
+            "-fx-border-radius: 6;" +
+            "-fx-cursor: hand;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        changePasswordBtn.setOnAction(e -> openChangePasswordDialog());
+        detailsGrid.add(changePasswordBtn, 2, 1);
         
         // Age field
         detailsGrid.add(new Label("Age:"), 0, 2);
@@ -156,10 +178,12 @@ public class ViewAdventurerDetailsDialog {
         ageSpinner.setPrefWidth(100);
         detailsGrid.add(ageSpinner, 1, 2);
         
-        // Email field
+        // Email field (auto-generated, read-only)
         detailsGrid.add(new Label("Email:"), 0, 3);
         emailField = new TextField(adventurer.getEmail() != null ? adventurer.getEmail() : "");
         emailField.setPrefWidth(250);
+        emailField.setEditable(false);
+        emailField.setStyle("-fx-background-color: #f5f5f5;");
         detailsGrid.add(emailField, 1, 3);
         
         detailsSection.getChildren().addAll(sectionTitle, detailsGrid);
@@ -327,7 +351,7 @@ public class ViewAdventurerDetailsDialog {
             // Update adventurer information
             adventurer.setName(nameField.getText().trim());
             adventurer.setAge(ageSpinner.getValue());
-            adventurer.setEmail(emailField.getText().trim().isEmpty() ? null : emailField.getText().trim());
+            // Email is auto-generated and read-only, so we don't update it from the field
             
             // Save to Firebase
             FirebaseService firebaseService = FirebaseService.getInstance();
@@ -350,6 +374,213 @@ public class ViewAdventurerDetailsDialog {
             alert.setContentText("Could not save the changes: " + e.getMessage());
             alert.showAndWait();
         }
+    }
+    
+    private void openChangePasswordDialog() {
+        SoundManager.getInstance().playButtonClick();
+        
+        // Create custom change password dialog
+        Dialog<ButtonType> passwordDialog = new Dialog<>();
+        passwordDialog.setTitle("🔐 Change Adventure Password");
+        passwordDialog.setHeaderText("Change password for " + adventurer.getName());
+        passwordDialog.initOwner(dialog);
+        passwordDialog.initModality(Modality.WINDOW_MODAL);
+        
+        // Create dialog content
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: #f8f9fa;");
+        
+        // Current password field
+        Label currentPasswordLabel = new Label("Current Password:");
+        currentPasswordLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #333333;");
+        PasswordField currentPasswordField = new PasswordField();
+        currentPasswordField.setPromptText("Enter current password");
+        currentPasswordField.setPrefWidth(300);
+        stylePasswordField(currentPasswordField);
+        
+        // New password field
+        Label newPasswordLabel = new Label("New Password:");
+        newPasswordLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #333333;");
+        PasswordField newPasswordField = new PasswordField();
+        newPasswordField.setPromptText("Enter new password (min 4 characters)");
+        newPasswordField.setPrefWidth(300);
+        stylePasswordField(newPasswordField);
+        
+        // Confirm new password field
+        Label confirmPasswordLabel = new Label("Confirm New Password:");
+        confirmPasswordLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #333333;");
+        PasswordField confirmPasswordField = new PasswordField();
+        confirmPasswordField.setPromptText("Confirm new password");
+        confirmPasswordField.setPrefWidth(300);
+        stylePasswordField(confirmPasswordField);
+        
+        // Password requirements label
+        Label requirementsLabel = new Label("• Password must be at least 4 characters long\n• Make it memorable for your adventurer");
+        requirementsLabel.setStyle("-fx-text-fill: #666666; -fx-font-size: 12px;");
+        requirementsLabel.setWrapText(true);
+        
+        content.getChildren().addAll(
+            currentPasswordLabel, currentPasswordField,
+            newPasswordLabel, newPasswordField,
+            confirmPasswordLabel, confirmPasswordField,
+            requirementsLabel
+        );
+        
+        passwordDialog.getDialogPane().setContent(content);
+        
+        // Add buttons
+        ButtonType changeButtonType = new ButtonType("🔐 Change Password", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("❌ Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        passwordDialog.getDialogPane().getButtonTypes().addAll(changeButtonType, cancelButtonType);
+        
+        // Style the buttons
+        Button changeButton = (Button) passwordDialog.getDialogPane().lookupButton(changeButtonType);
+        Button cancelButton = (Button) passwordDialog.getDialogPane().lookupButton(cancelButtonType);
+        
+        styleDialogButton(changeButton, "#4CAF50");
+        styleDialogButton(cancelButton, "#757575");
+        
+        // Disable change button initially
+        changeButton.setDisable(true);
+        
+        // Add validation
+        Runnable validateFields = () -> {
+            boolean isValid = !currentPasswordField.getText().isEmpty() &&
+                            !newPasswordField.getText().isEmpty() &&
+                            !confirmPasswordField.getText().isEmpty() &&
+                            newPasswordField.getText().length() >= 4 &&
+                            newPasswordField.getText().equals(confirmPasswordField.getText());
+            changeButton.setDisable(!isValid);
+        };
+        
+        currentPasswordField.textProperty().addListener((obs, old, text) -> validateFields.run());
+        newPasswordField.textProperty().addListener((obs, old, text) -> validateFields.run());
+        confirmPasswordField.textProperty().addListener((obs, old, text) -> validateFields.run());
+        
+        // Handle the result
+        Optional<ButtonType> result = passwordDialog.showAndWait();
+        
+        if (result.isPresent() && result.get() == changeButtonType) {
+            handlePasswordChange(
+                currentPasswordField.getText(),
+                newPasswordField.getText(),
+                confirmPasswordField.getText()
+            );
+        }
+    }
+    
+    private void stylePasswordField(PasswordField field) {
+        field.setStyle(
+            "-fx-background-color: white;" +
+            "-fx-border-color: #e0e0e0;" +
+            "-fx-border-width: 1;" +
+            "-fx-border-radius: 6;" +
+            "-fx-background-radius: 6;" +
+            "-fx-padding: 8 12;" +
+            "-fx-font-size: 14px;" +
+            "-fx-font-family: 'Segoe UI', sans-serif;"
+        );
+        
+        field.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                field.setStyle(field.getStyle() + "-fx-border-color: #4CAF50; -fx-border-width: 2;");
+            } else {
+                field.setStyle(field.getStyle().replace("-fx-border-color: #4CAF50; -fx-border-width: 2;", "-fx-border-color: #e0e0e0; -fx-border-width: 1;"));
+            }
+        });
+    }
+    
+    private void styleDialogButton(Button button, String color) {
+        button.setStyle(
+            "-fx-background-color: " + color + ";" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 13px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-background-radius: 6;" +
+            "-fx-border-radius: 6;" +
+            "-fx-cursor: hand;" +
+            "-fx-padding: 8 16;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        button.setOnMouseEntered(e -> {
+            button.setStyle(button.getStyle() + "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
+        });
+        
+        button.setOnMouseExited(e -> {
+            button.setStyle(button.getStyle().replace("-fx-scale-x: 1.05; -fx-scale-y: 1.05;", ""));
+        });
+    }
+    
+    private void handlePasswordChange(String currentPassword, String newPassword, String confirmPassword) {
+        try {
+            // Validate passwords match
+            if (!newPassword.equals(confirmPassword)) {
+                showErrorAlert("Passwords don't match", "The new password and confirmation password don't match. Please try again.");
+                return;
+            }
+            
+            // Validate password length
+            if (newPassword.length() < 4) {
+                showErrorAlert("Password too short", "The new password must be at least 4 characters long.");
+                return;
+            }
+            
+            // Get the adventurer's username
+            String username = adventurer.getUsername();
+            if (username == null || username.isEmpty()) {
+                showErrorAlert("No Username Found", "This adventurer doesn't have a username set. Cannot change password.");
+                return;
+            }
+            
+            // Verify current password
+            FirebaseService firebaseService = FirebaseService.getInstance();
+            String verifiedUserId = firebaseService.verifyAdventurerCredentials(username, currentPassword);
+            
+            if (verifiedUserId == null || !verifiedUserId.equals(adventurer.getUserId())) {
+                SoundManager.getInstance().playError();
+                showErrorAlert("Incorrect Current Password", "The current password you entered is incorrect. Please try again.");
+                return;
+            }
+            
+            // Update password in credentials storage
+            boolean passwordUpdated = firebaseService.updateAdventurerPassword(username, currentPassword, newPassword);
+            
+            if (passwordUpdated) {
+                SoundManager.getInstance().playSuccess();
+                
+                // Show success message
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("🎉 Password Changed Successfully!");
+                alert.setHeaderText("Adventure Password Updated");
+                alert.setContentText(
+                    "The password for " + adventurer.getName() + " has been successfully changed!\n\n" +
+                    "Adventure Username: " + username + "\n" +
+                    "New Password: " + newPassword + "\n\n" +
+                    "Make sure your adventurer knows their new password for future logins."
+                );
+                alert.initOwner(dialog);
+                alert.showAndWait();
+                
+            } else {
+                SoundManager.getInstance().playError();
+                showErrorAlert("Password Change Failed", "Could not update the password. Please try again.");
+            }
+            
+        } catch (Exception e) {
+            SoundManager.getInstance().playError();
+            showErrorAlert("Error", "An error occurred while changing the password: " + e.getMessage());
+        }
+    }
+    
+    private void showErrorAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("❌ " + title);
+        alert.setHeaderText(title);
+        alert.setContentText(message);
+        alert.initOwner(dialog);
+        alert.showAndWait();
     }
     
     public void show() {

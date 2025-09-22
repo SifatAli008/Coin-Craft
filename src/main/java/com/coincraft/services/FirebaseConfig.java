@@ -14,6 +14,7 @@ public class FirebaseConfig {
     
     private String apiKey;
     private String authDomain;
+    private String databaseURL;
     private String projectId;
     private String storageBucket;
     private String messagingSenderId;
@@ -34,6 +35,7 @@ public class FirebaseConfig {
             FirebaseConfig config = new FirebaseConfig();
             config.apiKey = (String) configMap.get("apiKey");
             config.authDomain = (String) configMap.get("authDomain");
+            config.databaseURL = (String) configMap.get("databaseURL");
             config.projectId = (String) configMap.get("projectId");
             config.storageBucket = (String) configMap.get("storageBucket");
             config.messagingSenderId = (String) configMap.get("messagingSenderId");
@@ -52,6 +54,7 @@ public class FirebaseConfig {
     // Getters
     public String getApiKey() { return apiKey; }
     public String getAuthDomain() { return authDomain; }
+    public String getDatabaseURL() { return databaseURL; }
     public String getProjectId() { return projectId; }
     public String getStorageBucket() { return storageBucket; }
     public String getMessagingSenderId() { return messagingSenderId; }
@@ -69,5 +72,10 @@ public class FirebaseConfig {
     
     public String getStorageUrl() {
         return "https://firebasestorage.googleapis.com/v0/b/" + storageBucket.replace(".appspot.com", "") + "/o";
+    }
+    
+    public String getRealtimeDatabaseUrl() {
+        return databaseURL != null ? databaseURL : 
+               "https://" + projectId + "-default-rtdb.asia-southeast1.firebasedatabase.app";
     }
 }

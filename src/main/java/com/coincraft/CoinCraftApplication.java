@@ -18,7 +18,7 @@ import javafx.stage.Stage;
 
 /**
  * Main application class for CoinCraft - Interactive Gamified Financial Literacy Platform
- * 
+ *
  * This application teaches children financial concepts through a fully gamified experience
  * combining interactive digital modules, real-world partner-validated tasks, and game elements.
  */
@@ -31,8 +31,31 @@ public class CoinCraftApplication extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
-            // Initialize Firebase service
-            FirebaseService.getInstance().initialize();
+            // Initialize Firebase service with enhanced logging
+            System.out.println("🔥 Initializing Firebase connection...");
+            FirebaseService firebaseService = FirebaseService.getInstance();
+            firebaseService.initialize();
+            
+            // Verify Firebase connection
+            if (firebaseService.isInitialized()) {
+                System.out.println("✅ Firebase connection established successfully!");
+                
+                // Run comprehensive Firebase connection test
+                System.out.println("🧪 Running comprehensive Firebase connection test...");
+                boolean connectionTestPassed = firebaseService.testFirebaseConnection();
+                if (connectionTestPassed) {
+                    System.out.println("✅ All Firebase connection tests PASSED!");
+                } else {
+                    System.out.println("⚠️ Some Firebase connection tests FAILED - using local storage fallback");
+                }
+            } else {
+                System.out.println("⚠️ Firebase connection failed - using local storage fallback");
+            }
+            
+            // Display connection status and configuration
+            System.out.println("📊 Firebase Status: " + firebaseService.getConnectionStatus());
+            System.out.println("📋 Firebase Config: " + firebaseService.getConfigInfo());
+            System.out.println("=" .repeat(80));
             
             // Set up the main window
             primaryStage.setTitle(APP_TITLE);
@@ -74,8 +97,8 @@ public class CoinCraftApplication extends Application {
             }
             
             @Override
-            public void onNavigateToSignUp() {
-                showRegistrationScreen(primaryStage);
+            public void onNavigateToParentRegistration() {
+                showParentRegistrationScreen(primaryStage);
             }
         });
         
@@ -86,8 +109,8 @@ public class CoinCraftApplication extends Application {
         primaryStage.setTitle(APP_TITLE + " - Login");
     }
     
-    private void showRegistrationScreen(Stage primaryStage) {
-        System.out.println("Showing registration screen...");
+    private void showParentRegistrationScreen(Stage primaryStage) {
+        System.out.println("Showing registration screen for parents...");
         try {
             RegistrationScreen registrationScreen = new RegistrationScreen(new RegistrationScreen.RegistrationCallback() {
                 @Override
@@ -102,7 +125,7 @@ public class CoinCraftApplication extends Application {
                 
                 @Override
                 public void onBackToLogin() {
-                    System.out.println("Back to login requested");
+                    System.out.println("Back to login requested from registration");
                     showLoginScreen(primaryStage);
                 }
             });
@@ -118,12 +141,16 @@ public class CoinCraftApplication extends Application {
             e.printStackTrace();
         }
     }
-    
+
     private void showMainDashboard(Stage primaryStage, User user) {
         Platform.runLater(() -> {
             try {
                 // Use the new dashboard router for role-based navigation
                 DashboardRouter router = DashboardRouter.getInstance();
+                
+                // Clean up any existing dashboard and music state before creating new one
+                router.cleanupCurrentDashboard();
+                
                 Scene dashboardScene = new Scene(router.routeToDashboard(user), WINDOW_WIDTH, WINDOW_HEIGHT);
                 loadStyles(dashboardScene);
                 
@@ -136,6 +163,9 @@ public class CoinCraftApplication extends Application {
                 System.err.println("Error switching to dashboard: " + e.getMessage());
                 LOGGER.severe(() -> "Dashboard routing error: " + e.getMessage());
                 
+                // Stop any existing music before creating fallback dashboard
+                // TODO: Use CentralizedMusicManager.getInstance().stop(); if needed
+                
                 // Fallback to original dashboard
                 try {
                     MainDashboard dashboard = new MainDashboard(user);
@@ -143,8 +173,11 @@ public class CoinCraftApplication extends Application {
                     loadStyles(dashboardScene);
                     primaryStage.setScene(dashboardScene);
                     primaryStage.setTitle(APP_TITLE + " - " + user.getName() + " (Fallback)");
+                    
+                    LOGGER.info("Fallback MainDashboard created successfully");
                 } catch (Exception fallbackError) {
                     System.err.println("Fallback dashboard also failed: " + fallbackError.getMessage());
+                    LOGGER.severe(() -> "Fallback dashboard creation failed: " + fallbackError.getMessage());
                 }
             }
         });
@@ -173,6 +206,39 @@ public class CoinCraftApplication extends Application {
     }
     
     public static void main(String[] args) {
+        // Check for Firebase test argument
+        boolean testFirebase = false;
+        for (String arg : args) {
+            if ("--test-firebase".equals(arg)) {
+                testFirebase = true;
+                break;
+            }
+        }
+        
+        if (testFirebase) {
+            // Run Firebase tests only
+            runFirebaseTests();
+            return;
+        }
+        
         launch(args);
+    }
+    
+    /**
+     * Run Firebase tests without starting the GUI
+     */
+    private static void runFirebaseTests() {
+        System.out.println("🧪 Running Firebase tests...");
+        
+        try {
+            // Import the test utility
+            Class<?> testUtilityClass = Class.forName("com.coincraft.services.FirebaseTestUtility");
+            java.lang.reflect.Method testMethod = testUtilityClass.getMethod("testConnection");
+            testMethod.invoke(null);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Failed to run Firebase tests: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

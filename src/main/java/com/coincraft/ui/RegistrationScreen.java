@@ -3,7 +3,7 @@ package com.coincraft.ui;
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
 
-import com.coincraft.audio.SoundManager;
+// import com.coincraft.audio.SoundManager; // Removed - using CentralizedMusicManager now
 import com.coincraft.models.User;
 import com.coincraft.models.UserRole;
 import com.coincraft.services.FirebaseService;
@@ -16,7 +16,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -38,7 +37,6 @@ public class RegistrationScreen {
     private TextField emailField;
     private PasswordField passwordField;
     private PasswordField confirmPasswordField;
-    private ComboBox<String> ageGroupComboBox;
     private Button signUpButton;
     private Button backToLoginButton;
     private Label statusLabel;
@@ -110,7 +108,7 @@ public class RegistrationScreen {
         try { new FadeIn(root).play(); } catch (Throwable ignored) {}
         
         // Ensure single background music instance
-        SoundManager.getInstance().ensureSingleMusicInstance();
+        // Music will be started when dashboard loads
     }
     
     private VBox createRegistrationCard() {
@@ -209,7 +207,7 @@ public class RegistrationScreen {
         );
         nameField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
-                SoundManager.getInstance().playInputClick();
+                // TODO: Implement sound effects via CentralizedMusicManager if needed
                 nameField.setStyle(nameField.getStyle() + "-fx-border-color: #FF9800; -fx-border-width: 2;");
             } else {
                 nameField.setStyle(nameField.getStyle().replace("-fx-border-color: #FF9800; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
@@ -246,7 +244,7 @@ public class RegistrationScreen {
         );
         emailField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
-                SoundManager.getInstance().playInputClick();
+                // TODO: Implement sound effects via CentralizedMusicManager if needed
                 emailField.setStyle(emailField.getStyle() + "-fx-border-color: #FF9800; -fx-border-width: 2;");
             } else {
                 emailField.setStyle(emailField.getStyle().replace("-fx-border-color: #FF9800; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
@@ -258,44 +256,6 @@ public class RegistrationScreen {
         // Add name and email to first row
         firstRow.getChildren().addAll(nameSection, emailSection);
         
-        // Second row: Age Group (full width)
-        // Age group section
-        VBox ageSection = new VBox(8);
-        ageSection.setAlignment(Pos.CENTER_LEFT);
-        
-        Label ageLabel = new Label("Age Group");
-        ageLabel.setStyle(
-            "-fx-font-size: 14px;" +
-            "-fx-font-weight: 600;" +
-            "-fx-text-fill: #000000;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
-        );
-        
-        ageGroupComboBox = new ComboBox<>();
-        ageGroupComboBox.getItems().addAll("7-10 years", "11-14 years", "15+ years");
-        ageGroupComboBox.setPromptText("Select your age group");
-        ageGroupComboBox.setPrefWidth(580);
-        ageGroupComboBox.setPrefHeight(48);
-        ageGroupComboBox.setStyle(
-            "-fx-background-color: #FFFFFF;" +
-            "-fx-border-color: #000000;" +
-            "-fx-border-width: 1;" +
-            "-fx-border-radius: 8;" +
-            "-fx-background-radius: 8;" +
-            "-fx-padding: 12 16;" +
-            "-fx-font-size: 14px;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
-        );
-        
-        // Add click sound to ComboBox
-        ageGroupComboBox.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal) {
-                SoundManager.getInstance().playInputClick();
-            }
-        });
-        ageGroupComboBox.setOnMouseClicked(e -> SoundManager.getInstance().playInputClick());
-        
-        ageSection.getChildren().addAll(ageLabel, ageGroupComboBox);
         
         // Password section
         VBox passwordSection = new VBox(8);
@@ -325,7 +285,7 @@ public class RegistrationScreen {
         );
         passwordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
-                SoundManager.getInstance().playInputClick();
+                // TODO: Implement sound effects via CentralizedMusicManager if needed
                 passwordField.setStyle(passwordField.getStyle() + "-fx-border-color: #FF9800; -fx-border-width: 2;");
             } else {
                 passwordField.setStyle(passwordField.getStyle().replace("-fx-border-color: #FF9800; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
@@ -362,7 +322,7 @@ public class RegistrationScreen {
         );
         confirmPasswordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
-                SoundManager.getInstance().playInputClick();
+                // TODO: Implement sound effects via CentralizedMusicManager if needed
                 confirmPasswordField.setStyle(confirmPasswordField.getStyle() + "-fx-border-color: #FF9800; -fx-border-width: 2;");
             } else {
                 confirmPasswordField.setStyle(confirmPasswordField.getStyle().replace("-fx-border-color: #FF9800; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
@@ -392,7 +352,7 @@ public class RegistrationScreen {
             "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.4), 8, 0, 0, 2);"
         );
         signUpButton.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            // TODO: Implement button hover sound via CentralizedMusicManager if needed
             signUpButton.setStyle(
                 "-fx-background-color: #2E7D32;" +
                 "-fx-text-fill: white;" +
@@ -420,11 +380,11 @@ public class RegistrationScreen {
             );
         });
         signUpButton.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
+            // TODO: Implement button click sound via CentralizedMusicManager if needed
             handleRegistration();
         });
         
-        form.getChildren().addAll(firstRow, ageSection, thirdRow, signUpButton);
+        form.getChildren().addAll(firstRow, thirdRow, signUpButton);
         
         return form;
     }
@@ -450,7 +410,7 @@ public class RegistrationScreen {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         backToLoginLabel.setOnMouseClicked(e -> {
-            SoundManager.getInstance().playButtonClick();
+            // TODO: Implement button click sound via CentralizedMusicManager if needed
             if (callback != null) {
                 callback.onBackToLogin();
             }
@@ -466,29 +426,28 @@ public class RegistrationScreen {
         String email = emailField.getText().trim();
         String password = passwordField.getText();
         String confirmPassword = confirmPasswordField.getText();
-        String ageGroup = ageGroupComboBox.getValue();
         
         // Validation
-        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || ageGroup == null) {
-            SoundManager.getInstance().playError();
+        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+            // TODO: Implement sound effects via CentralizedMusicManager if needed
             showStatus("❌ Please fill in all fields", false);
             return;
         }
         
         if (!email.contains("@") || !email.contains(".")) {
-            SoundManager.getInstance().playError();
+            // TODO: Implement sound effects via CentralizedMusicManager if needed
             showStatus("❌ Please enter a valid email address", false);
             return;
         }
         
         if (password.length() < 6) {
-            SoundManager.getInstance().playError();
+            // TODO: Implement sound effects via CentralizedMusicManager if needed
             showStatus("❌ Password must be at least 6 characters long", false);
             return;
         }
         
         if (!password.equals(confirmPassword)) {
-            SoundManager.getInstance().playError();
+            // TODO: Implement sound effects via CentralizedMusicManager if needed
             showStatus("❌ Passwords do not match", false);
             return;
         }
@@ -504,22 +463,27 @@ public class RegistrationScreen {
                 
                 Platform.runLater(() -> {
                     try {
-                        // Determine age from age group
-                        int age = getAgeFromGroup(ageGroup);
+                        // Default age and role for parent registration
+                        int age = 25; // Default adult age
+                        UserRole userRole = UserRole.PARENT; // All registrations are for parents
                         
-                        // Create new user
-                        User newUser = new User("user_" + System.currentTimeMillis(), name, UserRole.CHILD, age);
+                        // Create new user with proper role validation
+                        User newUser = new User("user_" + System.currentTimeMillis(), name, userRole, age);
                         newUser.setEmail(email);
-                        newUser.setSmartCoinBalance(25); // Starting bonus
+                        newUser.setSmartCoinBalance(userRole == UserRole.CHILD ? 25 : 100); // Different starting amounts
                         newUser.setLevel(1);
                         newUser.setDailyStreaks(0);
                         newUser.setLastLogin(LocalDateTime.now());
                         
-                        // In a real app, this would save to Firebase
+                        // Register user in Firebase/Mock registry
                         FirebaseService firebaseService = FirebaseService.getInstance();
-                        // firebaseService.createUser(newUser, password);
+                        boolean registrationSuccess = firebaseService.registerMockUser(email, password, newUser);
                         
-                        SoundManager.getInstance().playAdventureStart();
+                        if (!registrationSuccess) {
+                            throw new Exception("Failed to register user in system");
+                        }
+                        
+                        // TODO: Implement sound effects via CentralizedMusicManager if needed
                         showStatus("🎉 Welcome to CoinCraft, " + name + "! Your adventure begins now!", true);
                         
                         // Small delay before transitioning
@@ -533,7 +497,7 @@ public class RegistrationScreen {
                     } catch (Exception e) {
                         signUpButton.setDisable(false);
                         signUpButton.setText("⚔️ CREATE YOUR MERCHANT ID");
-                        SoundManager.getInstance().playError();
+                        // TODO: Implement sound effects via CentralizedMusicManager if needed
                         showStatus("❌ Failed to create account: " + e.getMessage(), false);
                         LOGGER.severe(() -> "Registration error: " + e.getMessage());
                     }
@@ -548,14 +512,6 @@ public class RegistrationScreen {
         }).start();
     }
     
-    private int getAgeFromGroup(String ageGroup) {
-        switch (ageGroup) {
-            case "7-10 years": return 9;
-            case "11-14 years": return 12;
-            case "15+ years": return 16;
-            default: return 10;
-        }
-    }
     
     private void showStatus(String message, boolean isSuccess) {
         statusLabel.setText(message);

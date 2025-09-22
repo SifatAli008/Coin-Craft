@@ -83,3 +83,166 @@
     -fx-background-color: #FF9800;
     -fx-text-fill: white;
 }
+
+/* Parent Registration Screen Styles */
+.registration-screen {
+    -fx-background-color: linear-gradient(to bottom right, #667eea, #764ba2);
+    -fx-font-family: "Minecraft", "Segoe UI", Arial;
+}
+
+.title-label {
+    -fx-text-fill: white;
+    -fx-font-size: 28px;
+    -fx-font-weight: 900;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 2, 0, 0, 2);
+}
+
+.subtitle-label {
+    -fx-text-fill: rgba(255,255,255,0.9);
+    -fx-font-size: 16px;
+    -fx-font-weight: 500;
+    -fx-text-alignment: center;
+}
+
+.field-label {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+}
+
+.registration-field {
+    -fx-background-color: rgba(255,255,255,0.95);
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255,255,255,0.3);
+    -fx-border-radius: 8;
+    -fx-border-width: 2;
+    -fx-padding: 12;
+    -fx-font-size: 14px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 4, 0, 0, 2);
+}
+
+.registration-field:focused {
+    -fx-border-color: #4CAF50;
+    -fx-background-color: white;
+}
+
+.primary-button {
+    -fx-background-color: linear-gradient(to bottom, #4CAF50, #45a049);
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 8;
+    -fx-padding: 14 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 4, 0, 0, 2);
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #45a049, #4CAF50);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 6, 0, 0, 3);
+}
+
+.primary-button:pressed {
+    -fx-background-color: #3d8b40;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 2, 0, 0, 1);
+}
+
+.google-button {
+    -fx-background-color: linear-gradient(to bottom, #db4437, #c23321);
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 8;
+    -fx-padding: 14 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 4, 0, 0, 2);
+    -fx-cursor: hand;
+}
+
+.google-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #c23321, #db4437);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 6, 0, 0, 3);
+}
+
+.secondary-button {
+    -fx-background-color: rgba(255,255,255,0.9);
+    -fx-text-fill: #333;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 8;
+    -fx-padding: 14 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 4, 0, 0, 2);
+    -fx-cursor: hand;
+}
+
+.secondary-button:hover {
+    -fx-background-color: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 6, 0, 0, 3);
+}
+
+.tertiary-button {
+    -fx-background-color: rgba(255,255,255,0.2);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 6;
+    -fx-padding: 10 16;
+    -fx-border-color: rgba(255,255,255,0.4);
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+
+.tertiary-button:hover {
+    -fx-background-color: rgba(255,255,255,0.3);
+}
+
+.navigation-link {
+    -fx-text-fill: rgba(255,255,255,0.9);
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-underline: true;
+}
+
+.navigation-link:hover {
+    -fx-text-fill: white;
+}
+
+.separator-line {
+    -fx-background-color: rgba(255,255,255,0.3);
+    -fx-pref-height: 1;
+}
+
+.separator-text {
+    -fx-text-fill: rgba(255,255,255,0.8);
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+
+.status-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-alignment: center;
+}
+
+.success-status {
+    -fx-text-fill: #4CAF50;
+    -fx-background-color: rgba(76,175,80,0.1);
+    -fx-background-radius: 4;
+    -fx-padding: 8 12;
+}
+
+.error-status {
+    -fx-text-fill: #f44336;
+    -fx-background-color: rgba(244,67,54,0.1);
+    -fx-background-radius: 4;
+    -fx-padding: 8 12;
+}
+
+/* Pixel font classes */
+.pixel-font-large { -fx-font-size: 24px; }
+.pixel-font-medium { -fx-font-size: 16px; }
+.pixel-font-small { -fx-font-size: 14px; }
+
+.pixel-input {
+    -fx-font-family: "Minecraft", "Segoe UI", Arial;
+}
