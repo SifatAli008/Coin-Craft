@@ -81,16 +81,16 @@ public class FirebaseService {
             authService = new FirebaseAuthService(config);
             firestoreService = new FirestoreService(config);
             
-            LOGGER.info(() -> "✅ Firebase service initialized successfully for project: " + config.getProjectId());
-            LOGGER.info(() -> "  Admin SDK Status: " + FirebaseAdminService.getConnectionStatus());
-            LOGGER.info(() -> "  Storage Status: " + FirebaseStorageService.getConnectionStatus());
+            LOGGER.info("✅ Firebase service initialized successfully for project: " + config.getProjectId());
+            LOGGER.info("  Admin SDK Status: " + FirebaseAdminService.getConnectionStatus());
+            LOGGER.info("  Storage Status: " + FirebaseStorageService.getConnectionStatus());
             initialized = true;
             
         } catch (NoClassDefFoundError e) {
-            LOGGER.info(() -> "Firebase libraries not found, initializing in mock mode: " + e.getMessage());
+            LOGGER.info("Firebase libraries not found, initializing in mock mode: " + e.getMessage());
             initializeMockMode();
         } catch (Exception e) {
-            LOGGER.warning(() -> "Failed to initialize Firebase, falling back to mock mode: " + e.getMessage());
+            LOGGER.warning("Failed to initialize Firebase, falling back to mock mode: " + e.getMessage());
             initializeMockMode();
         }
     }

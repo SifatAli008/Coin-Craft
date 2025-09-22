@@ -10,6 +10,7 @@ import java.util.List;
  */
 public class User {
     private String userId;
+    private String firebaseUid; // Firebase authentication UID
     private String name;
     private String username; // Adventure username for child users
     private String email;
@@ -50,6 +51,9 @@ public class User {
     // Getters and Setters
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
+    
+    public String getFirebaseUid() { return firebaseUid; }
+    public void setFirebaseUid(String firebaseUid) { this.firebaseUid = firebaseUid; }
     
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
