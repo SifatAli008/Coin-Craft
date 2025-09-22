@@ -146,36 +146,114 @@ public class FirebaseAuthService {
     
     /**
      * Sign in user with Google OAuth token
-     * In production, this would handle the actual Google OAuth flow
+     * Verifies the Google ID token and creates/updates user in Firebase
      */
-    public AuthResult signInWithGoogle(String idToken) {
+    public AuthResult signInWithGoogle(String googleIdToken) {
         try {
-            // In a real implementation, this would:
-            // 1. Verify the Google ID token
-            // 2. Extract user information from the token
-            // 3. Create or update the user in Firebase
-            // 4. Return authentication result
+            // Verify the Google ID token with Firebase
+            String url = config.getAuthUrl() + ":verifyAssertion?key=" + config.getApiKey();
             
-            // For now, simulate the process
-            Thread.sleep(1000); // Simulate network delay
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("requestUri", "http://localhost");
+            requestBody.put("returnSecureToken", true);
             
-            // Mock successful Google sign-in
-            AuthResult result = new AuthResult();
-            result.setSuccess(true);
-            result.setUserId("google_user_123");
-            result.setIdToken("mock_firebase_token");
-            result.setEmail("user@gmail.com");
-            result.setDisplayName("Google User");
+            // Create the assertion request
+            Map<String, Object> assertion = new HashMap<>();
+            assertion.put("providerId", "google.com");
+            assertion.put("idToken", googleIdToken);
+            requestBody.put("assertion", assertion);
             
-            LOGGER.info("Google sign-in successful for user: " + result.getEmail());
-            return result;
+            String jsonBody = objectMapper.writeValueAsString(requestBody);
             
-        } catch (InterruptedException e) {
-            LOGGER.severe("Google sign-in interrupted: " + e.getMessage());
-            return createErrorResult("Google sign-in was cancelled");
+            RequestBody body = RequestBody.create(jsonBody, MediaType.get("application/json"));
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .build();
+            
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String responseBody = response.body().string();
+                    Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
+                    
+                    // Extract user information from Firebase response
+                    Map<String, Object> userInfo = (Map<String, Object>) responseMap.get("user");
+                    
+                    AuthResult result = new AuthResult();
+                    result.setSuccess(true);
+                    result.setUserId((String) userInfo.get("localId"));
+                    result.setIdToken((String) responseMap.get("idToken"));
+                    result.setEmail((String) userInfo.get("email"));
+                    result.setDisplayName((String) userInfo.get("displayName"));
+                    
+                    LOGGER.info("Google sign-in successful for user: " + result.getEmail());
+                    return result;
+                } else {
+                    LOGGER.warning("Google sign-in failed: " + response.code());
+                    return createErrorResult("Google sign-in failed: Invalid token");
+                }
+            }
+            
         } catch (Exception e) {
             LOGGER.severe("Google sign-in error: " + e.getMessage());
             return createErrorResult("Google sign-in failed: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Sign in user with Google user info (alternative method)
+     * Creates a Firebase user from Google OAuth user information
+     */
+    public AuthResult signInWithGoogleUserInfo(GoogleOAuthService.GoogleUserInfo googleUser) {
+        try {
+            // First, try to sign in with existing account
+            AuthResult existingResult = signInUser(googleUser.getEmail(), "google_oauth_user");
+            
+            if (existingResult.isSuccess()) {
+                LOGGER.info("Google user signed in with existing account: " + googleUser.getEmail());
+                return existingResult;
+            }
+            
+            // If user doesn't exist, create new account
+            String url = config.getAuthUrl() + ":signUp?key=" + config.getApiKey();
+            
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("email", googleUser.getEmail());
+            requestBody.put("password", "google_oauth_temp_password_" + System.currentTimeMillis());
+            requestBody.put("displayName", googleUser.getName());
+            requestBody.put("returnSecureToken", true);
+            
+            String jsonBody = objectMapper.writeValueAsString(requestBody);
+            
+            RequestBody body = RequestBody.create(jsonBody, MediaType.get("application/json"));
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .build();
+            
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String responseBody = response.body().string();
+                    Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
+                    
+                    AuthResult result = new AuthResult();
+                    result.setSuccess(true);
+                    result.setUserId((String) responseMap.get("localId"));
+                    result.setIdToken((String) responseMap.get("idToken"));
+                    result.setEmail((String) responseMap.get("email"));
+                    result.setDisplayName((String) responseMap.get("displayName"));
+                    
+                    LOGGER.info("Google user registered successfully: " + result.getEmail());
+                    return result;
+                } else {
+                    LOGGER.warning("Google user registration failed: " + response.code());
+                    return createErrorResult("Google user registration failed");
+                }
+            }
+            
+        } catch (Exception e) {
+            LOGGER.severe("Google user sign-in error: " + e.getMessage());
+            return createErrorResult("Google user sign-in failed: " + e.getMessage());
         }
     }
     
