@@ -1,11 +1,16 @@
 package com.coincraft.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.*;
-// import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Firebase Authentication service using REST API
@@ -145,23 +150,24 @@ public class FirebaseAuthService {
     }
     
     /**
-     * Sign in user with Google OAuth token
-     * Verifies the Google ID token and creates/updates user in Firebase
+     * Sign in user with Google via Firebase IdP (signInWithIdp)
+     * Uses Google OAuth access token to sign in to Firebase
      */
-    public AuthResult signInWithGoogle(String googleIdToken) {
+    public AuthResult signInWithGoogleIdpAccessToken(String googleAccessToken) {
         try {
-            // Verify the Google ID token with Firebase
-            String url = config.getAuthUrl() + ":verifyAssertion?key=" + config.getApiKey();
+            String url = config.getAuthUrl() + ":signInWithIdp?key=" + config.getApiKey();
             
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("requestUri", "http://localhost");
             requestBody.put("returnSecureToken", true);
-            
-            // Create the assertion request
-            Map<String, Object> assertion = new HashMap<>();
-            assertion.put("providerId", "google.com");
-            assertion.put("idToken", googleIdToken);
-            requestBody.put("assertion", assertion);
+
+            Map<String, Object> postBody = new HashMap<>();
+            postBody.put("providerId", "google.com");
+            postBody.put("access_token", googleAccessToken);
+            // Non-spec field names are wrapped in url-encoded style inside JSON per REST API
+            requestBody.put("postBody", "providerId=google.com&access_token=" + googleAccessToken);
+            requestBody.put("returnIdpCredential", true);
+            requestBody.put("autoCreate", true);
             
             String jsonBody = objectMapper.writeValueAsString(requestBody);
             
@@ -176,21 +182,20 @@ public class FirebaseAuthService {
                     String responseBody = response.body().string();
                     Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
                     
-                    // Extract user information from Firebase response
-                    Map<String, Object> userInfo = (Map<String, Object>) responseMap.get("user");
-                    
                     AuthResult result = new AuthResult();
                     result.setSuccess(true);
-                    result.setUserId((String) userInfo.get("localId"));
+                    result.setUserId((String) responseMap.get("localId"));
                     result.setIdToken((String) responseMap.get("idToken"));
-                    result.setEmail((String) userInfo.get("email"));
-                    result.setDisplayName((String) userInfo.get("displayName"));
+                    result.setEmail((String) responseMap.get("email"));
+                    result.setDisplayName((String) responseMap.get("displayName"));
                     
                     LOGGER.info("Google sign-in successful for user: " + result.getEmail());
                     return result;
                 } else {
-                    LOGGER.warning("Google sign-in failed: " + response.code());
-                    return createErrorResult("Google sign-in failed: Invalid token");
+                    String errorBody = null;
+                    try { errorBody = response.body() != null ? response.body().string() : null; } catch (Exception ignored) {}
+                    LOGGER.warning("Google sign-in failed: " + response.code() + (errorBody != null ? " body=" + errorBody : ""));
+                    return createErrorResult("Google sign-in failed: Invalid token or configuration" + (errorBody != null ? " (" + errorBody + ")" : ""));
                 }
             }
             

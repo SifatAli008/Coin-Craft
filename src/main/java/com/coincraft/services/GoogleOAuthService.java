@@ -1,5 +1,13 @@
 package com.coincraft.services;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.util.Arrays;
+import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
+
 import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -11,14 +19,6 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.oauth2.Oauth2;
 import com.google.api.services.oauth2.model.Userinfo;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.GeneralSecurityException;
-import java.util.Arrays;
-import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
-import java.util.logging.Logger;
 
 /**
  * Google OAuth2 Authentication Service
@@ -44,13 +44,19 @@ public class GoogleOAuthService {
         
         this.CLIENT_ID = config.getProperty("google.oauth.client.id", "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com");
         this.CLIENT_SECRET = config.getProperty("google.oauth.client.secret", "YOUR_GOOGLE_CLIENT_SECRET");
-        this.REDIRECT_URI = config.getProperty("google.oauth.redirect.uri", "http://localhost:8080/Callback");
+        this.REDIRECT_URI = config.getProperty("google.oauth.redirect.uri", "http://localhost:8888/Callback");
         
         String scopesString = config.getProperty("google.oauth.scopes", 
-            "https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/userinfo.profile");
+            "openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/userinfo.profile");
         this.SCOPES = Arrays.asList(scopesString.split(","));
         
-        LOGGER.info("Google OAuth service initialized with client ID: " + CLIENT_ID.substring(0, 20) + "...");
+        // Check if OAuth is properly configured
+        if (CLIENT_ID.startsWith("YOUR_GOOGLE_CLIENT_ID") || CLIENT_ID.startsWith("DISABLED_")) {
+            LOGGER.warning("Google OAuth is not configured with real credentials. Google sign-in will be disabled.");
+            LOGGER.info("To enable Google sign-in, please configure real OAuth credentials in google-oauth-config.properties");
+        } else {
+            LOGGER.info("Google OAuth service initialized with client ID: " + CLIENT_ID.substring(0, 20) + "...");
+        }
     }
     
     /**
@@ -77,6 +83,11 @@ public class GoogleOAuthService {
      */
     public CompletableFuture<GoogleUserInfo> authenticateUser() {
         return CompletableFuture.supplyAsync(() -> {
+            // Check if OAuth is properly configured
+            if (CLIENT_ID.startsWith("YOUR_GOOGLE_CLIENT_ID") || CLIENT_ID.startsWith("DISABLED_")) {
+                throw new RuntimeException("Google OAuth is not configured. Please set up real OAuth credentials in google-oauth-config.properties");
+            }
+            
             try {
                 // Create authorization code flow
                 GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
@@ -85,10 +96,29 @@ public class GoogleOAuthService {
                     .setApprovalPrompt("force")
                     .build();
                 
-                // Set up local server receiver for callback
-                LocalServerReceiver receiver = new LocalServerReceiver.Builder()
-                    .setPort(8080)
-                    .build();
+                // Set up local server receiver with automatic port selection
+                LocalServerReceiver receiver = null;
+                int[] ports = {8888, 8889, 8890, 9000, 9001};  // Try multiple ports
+                
+                for (int port : ports) {
+                    try {
+                        receiver = new LocalServerReceiver.Builder()
+                            .setPort(port)
+                            .build();
+                        LOGGER.info("OAuth callback server started on port: " + port);
+                        break;
+                    } catch (Exception e) {
+                        LOGGER.warning("Port " + port + " is in use, trying next port...");
+                    }
+                }
+                
+                if (receiver == null) {
+                    // Fallback to automatic port selection
+                    receiver = new LocalServerReceiver.Builder()
+                        .setPort(-1)  // Let system choose available port
+                        .build();
+                    LOGGER.info("Using automatic port selection for OAuth callback");
+                }
                 
                 // Authorize and get credentials
                 com.google.api.client.auth.oauth2.Credential credential = 
@@ -108,6 +138,8 @@ public class GoogleOAuthService {
                 googleUser.setId(userInfo.getId());
                 googleUser.setPictureUrl(userInfo.getPicture());
                 googleUser.setVerifiedEmail(userInfo.getVerifiedEmail());
+                // Expose access token for Firebase IdP sign-in
+                try { googleUser.setAccessToken(credential.getAccessToken()); } catch (Exception ignored) {}
                 
                 LOGGER.info("Google authentication successful for user: " + googleUser.getEmail());
                 return googleUser;
@@ -194,6 +226,7 @@ public class GoogleOAuthService {
         private String id;
         private String pictureUrl;
         private Boolean verifiedEmail;
+        private String accessToken;
         
         // Getters and setters
         public String getEmail() { return email; }
@@ -210,6 +243,8 @@ public class GoogleOAuthService {
         
         public Boolean getVerifiedEmail() { return verifiedEmail; }
         public void setVerifiedEmail(Boolean verifiedEmail) { this.verifiedEmail = verifiedEmail; }
+        public String getAccessToken() { return accessToken; }
+        public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
         
         @Override
         public String toString() {

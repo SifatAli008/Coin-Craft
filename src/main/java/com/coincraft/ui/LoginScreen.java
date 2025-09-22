@@ -2,12 +2,11 @@ package com.coincraft.ui;
 
 import java.util.logging.Logger;
 
-// import com.coincraft.audio.SoundManager; // Removed - using CentralizedMusicManager now
 import com.coincraft.models.User;
 import com.coincraft.models.UserRole;
+import com.coincraft.services.FirebaseAuthService;
 import com.coincraft.services.FirebaseService;
 import com.coincraft.services.GoogleOAuthService;
-import com.coincraft.services.FirebaseAuthService;
 
 import animatefx.animation.FadeIn;
 import javafx.animation.KeyFrame;
@@ -61,7 +60,9 @@ public class LoginScreen {
         this.callback = callback;
         try {
             this.googleOAuthService = new GoogleOAuthService();
-            this.firebaseAuthService = new FirebaseAuthService(new com.coincraft.services.FirebaseConfig());
+            this.firebaseAuthService = new FirebaseAuthService(
+                com.coincraft.services.FirebaseConfig.loadFromResources()
+            );
         } catch (Exception e) {
             LOGGER.severe("Failed to initialize Google OAuth service: " + e.getMessage());
         }
@@ -754,9 +755,14 @@ public class LoginScreen {
                 .thenAccept(googleUserInfo -> {
                     Platform.runLater(() -> {
                         try {
-                            // Authenticate with Firebase using Google user info
-                            FirebaseAuthService.AuthResult authResult = 
-                                firebaseAuthService.signInWithGoogleUserInfo(googleUserInfo);
+                            // Prefer IdP access token flow if available
+                            FirebaseAuthService.AuthResult authResult;
+                            if (googleUserInfo.getAccessToken() != null && !googleUserInfo.getAccessToken().isEmpty()) {
+                                authResult = firebaseAuthService.signInWithGoogleIdpAccessToken(googleUserInfo.getAccessToken());
+                            } else {
+                                // Fallback to email-based flow
+                                authResult = firebaseAuthService.signInWithGoogleUserInfo(googleUserInfo);
+                            }
                             
                             if (authResult.isSuccess()) {
                                 // Create CoinCraft user from Google and Firebase data
