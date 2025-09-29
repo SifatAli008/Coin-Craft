@@ -3,7 +3,6 @@ package com.coincraft.ui;
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
 
-// import com.coincraft.audio.SoundManager; // Removed - using CentralizedMusicManager now
 import com.coincraft.models.User;
 import com.coincraft.models.UserRole;
 import com.coincraft.services.FirebaseService;
@@ -95,9 +94,16 @@ public class RegistrationScreen {
         
         VBox registrationCard = createRegistrationCard();
         
-        // Status label
+        // Status label (high-contrast over animated background)
         statusLabel = new Label();
-        statusLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 0 0 0;");
+        statusLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-padding: 8 12;" +
+            "-fx-background-color: rgba(0,0,0,0.55);" +
+            "-fx-background-radius: 8;" +
+            "-fx-border-radius: 8;" +
+            "-fx-font-weight: 600;"
+        );
         statusLabel.setWrapText(true);
         statusLabel.setMaxWidth(620);
         statusLabel.setAlignment(Pos.CENTER);
@@ -337,7 +343,7 @@ public class RegistrationScreen {
         thirdRow.getChildren().addAll(passwordSection, confirmPasswordSection);
         
         // Registration button
-        signUpButton = new Button("⚔️ CREATE YOUR MERCHANT ID");
+        signUpButton = new Button("⚔️ Create your merchant ID");
         signUpButton.setPrefWidth(580);
         signUpButton.setPrefHeight(48);
         signUpButton.setStyle(
@@ -453,7 +459,7 @@ public class RegistrationScreen {
         }
         
         showStatus("🏰 Creating your merchant profile...", true);
-        signUpButton.setText("⚡ CREATING...");
+        signUpButton.setText("⚡ Creating...");
         signUpButton.setDisable(true);
         
         // Create user in background thread
@@ -496,7 +502,7 @@ public class RegistrationScreen {
                         
                     } catch (Exception e) {
                         signUpButton.setDisable(false);
-                        signUpButton.setText("⚔️ CREATE YOUR MERCHANT ID");
+                        signUpButton.setText("⚔️ Create your merchant ID");
                         // TODO: Implement sound effects via CentralizedMusicManager if needed
                         showStatus("❌ Failed to create account: " + e.getMessage(), false);
                         LOGGER.severe(() -> "Registration error: " + e.getMessage());
@@ -505,7 +511,7 @@ public class RegistrationScreen {
             } catch (InterruptedException e) {
                 Platform.runLater(() -> {
                     signUpButton.setDisable(false);
-                    signUpButton.setText("⚔️ CREATE ADVENTURER");
+                    signUpButton.setText("⚔️ Create adventurer");
                     showStatus("❌ Account creation cancelled", false);
                 });
             }
@@ -515,10 +521,14 @@ public class RegistrationScreen {
     
     private void showStatus(String message, boolean isSuccess) {
         statusLabel.setText(message);
-        if (isSuccess) {
-            statusLabel.setStyle(statusLabel.getStyle() + "-fx-text-fill: #10b981;");
-        } else {
-            statusLabel.setStyle(statusLabel.getStyle() + "-fx-text-fill: #ef4444;");
-        }
+        String base =
+            "-fx-font-size: 14px;" +
+            "-fx-padding: 8 12;" +
+            "-fx-background-color: rgba(0,0,0,0.55);" +
+            "-fx-background-radius: 8;" +
+            "-fx-border-radius: 8;" +
+            "-fx-font-weight: 600;";
+        String color = isSuccess ? "#10b981" : "#FFE082"; // green for success, amber for errors
+        statusLabel.setStyle(base + "-fx-text-fill: " + color + ";");
     }
 }

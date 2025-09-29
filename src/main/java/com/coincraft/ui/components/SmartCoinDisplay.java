@@ -1,6 +1,7 @@
 package com.coincraft.ui.components;
 
 import com.coincraft.models.User;
+
 import javafx.animation.ScaleTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -10,8 +11,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 
 /**
@@ -73,7 +72,7 @@ public class SmartCoinDisplay {
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #B8860B;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         balanceLabel.getStyleClass().add("balance-label");
         
@@ -82,7 +81,7 @@ public class SmartCoinDisplay {
             "-fx-font-size: 10px;" +
             "-fx-font-weight: 500;" +
             "-fx-text-fill: #8B7355;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         balanceBox.getChildren().addAll(coinIcon, balanceLabel);

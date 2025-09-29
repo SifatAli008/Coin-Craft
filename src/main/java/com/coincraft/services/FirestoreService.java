@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import com.coincraft.models.Task;
+import com.coincraft.models.MessageData;
 import com.coincraft.models.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -480,6 +481,90 @@ public class FirestoreService {
         }
         
         return users;
+    }
+
+    // ===================== Messaging (REST) =====================
+    public boolean saveMessage(MessageData message) {
+        try {
+            String url = config.getFirestoreUrl() + "/messages/" + message.getMessageId();
+            Map<String, Object> fields = new HashMap<>();
+            addStringField(fields, "messageId", message.getMessageId());
+            addStringField(fields, "conversationId", message.getConversationId());
+            addStringField(fields, "senderId", message.getSenderId());
+            addStringField(fields, "senderName", message.getSenderName());
+            addStringField(fields, "recipientId", message.getRecipientId());
+            addStringField(fields, "recipientName", message.getRecipientName());
+            addStringField(fields, "content", message.getContent());
+            if (message.getTimestamp() != null) {
+                addStringField(fields, "timestamp", message.getTimestamp().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            }
+            Map<String, Object> document = new HashMap<>();
+            document.put("fields", fields);
+
+            String jsonBody = objectMapper.writeValueAsString(document);
+            RequestBody body = RequestBody.create(jsonBody, MediaType.get("application/json"));
+            Request request = new Request.Builder()
+                .url(url)
+                .patch(body)
+                .addHeader("Authorization", "Bearer " + idToken)
+                .build();
+            try (Response response = httpClient.newCall(request).execute()) {
+                return response.isSuccessful();
+            }
+        } catch (Exception e) {
+            LOGGER.severe("Error saving message: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public List<MessageData> loadConversation(String conversationId, int limit) {
+        List<MessageData> messages = new ArrayList<>();
+        try {
+            String url = config.getFirestoreUrl() + "/messages";
+            Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("Authorization", "Bearer " + idToken)
+                .build();
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String responseBody = response.body().string();
+                    Map<String, Object> result = objectMapper.readValue(responseBody, Map.class);
+                    if (result.containsKey("documents")) {
+                        List<Map<String, Object>> docs = (List<Map<String, Object>>) result.get("documents");
+                        for (Map<String, Object> doc : docs) {
+                            Map<String, Object> fields = (Map<String, Object>) doc.get("fields");
+                            if (fields == null) continue;
+                            String cid = getStringValue(fields, "conversationId");
+                            if (conversationId.equals(cid)) {
+                                MessageData m = new MessageData();
+                                m.setMessageId(getStringValue(fields, "messageId"));
+                                m.setConversationId(cid);
+                                m.setSenderId(getStringValue(fields, "senderId"));
+                                m.setSenderName(getStringValue(fields, "senderName"));
+                                m.setRecipientId(getStringValue(fields, "recipientId"));
+                                m.setRecipientName(getStringValue(fields, "recipientName"));
+                                m.setContent(getStringValue(fields, "content"));
+                                String ts = getStringValue(fields, "timestamp");
+                                if (ts != null) {
+                                    m.setTimestamp(LocalDateTime.parse(ts, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                                }
+                                messages.add(m);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.severe("Error loading conversation: " + e.getMessage());
+        }
+        // Sort by timestamp ascending
+        messages.sort((a,b) -> a.getTimestamp() != null && b.getTimestamp() != null ? a.getTimestamp().compareTo(b.getTimestamp()) : 0);
+        // Limit
+        if (messages.size() > limit) {
+            return new ArrayList<>(messages.subList(messages.size() - limit, messages.size()));
+        }
+        return messages;
     }
     
     /**

@@ -99,12 +99,26 @@ public class ParentDashboard extends BaseDashboard {
                 for (User user : allUsers) {
                     System.out.println("🔍 DEBUG: Found user: " + user.getName() + " (Role: " + user.getRole() + ")");
                     if (user.getRole() == UserRole.CHILD) {
-                        // In a real app, check if this child belongs to current merchant
-                        // For now, add all children (you can implement parent-child relationship later)
-                        children.add(user);
-                        System.out.println("🔍 DEBUG: Added adventurer: " + user.getName());
+                        // Only include children created by this parent/merchant
+                        boolean belongsToCurrent = false;
+                        if (user.getParentId() != null && currentUser != null) {
+                            if (user.getParentId().equals(currentUser.getUserId())) {
+                                belongsToCurrent = true;
+                            } else if (currentUser.getEmail() != null &&
+                                       user.getParentId().equals("email:" + currentUser.getEmail().toLowerCase())) {
+                                belongsToCurrent = true;
+                            }
+                        }
+                        if (belongsToCurrent) {
+                            children.add(user);
+                            System.out.println("🔍 DEBUG: Added adventurer for current parent: " + user.getName());
+                        } else if (user.getParentId() == null || user.getParentId().isEmpty()) {
+                            // Orphaned child created before parent linkage existed; ignore in strict mode
+                            System.out.println("ℹ️ Orphaned child found (no parentId), not showing: " + user.getName());
+                        }
                     }
                 }
+                // Strict mode: do not include other merchants' adventurers
                 System.out.println("✅ Loaded " + children.size() + " adventurers from Firebase");
             } else {
                 System.out.println("ℹ️ No adventurers found in Firebase - this is normal for new accounts");
@@ -250,14 +264,14 @@ public class ParentDashboard extends BaseDashboard {
             "-fx-font-size: 28px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #FF9800;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         Label subtitleLabel = new Label("Guide your adventurers' quests, monitor progress, and celebrate achievements together");
         subtitleLabel.setStyle(
             "-fx-font-size: 16px;" +
             "-fx-text-fill: #666666;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         welcomeSection.getChildren().addAll(titleLabel, subtitleLabel);
@@ -272,7 +286,7 @@ public class ParentDashboard extends BaseDashboard {
             "-fx-font-size: 20px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #333333;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         // Add New Adventurer button
@@ -337,14 +351,14 @@ public class ParentDashboard extends BaseDashboard {
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #333333;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         Label descLabel = new Label("Add your adventurers' accounts to start monitoring their quest progress");
         descLabel.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-text-fill: #666666;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-text-alignment: center;"
         );
         descLabel.setWrapText(true);
@@ -365,7 +379,7 @@ public class ParentDashboard extends BaseDashboard {
             "-fx-font-size: 20px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #333333;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         HBox statsCards = new HBox(16);
@@ -409,7 +423,7 @@ public class ParentDashboard extends BaseDashboard {
         titleLabel.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-text-fill: #666666;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-text-alignment: center;"
         );
         titleLabel.setWrapText(true);
@@ -419,7 +433,7 @@ public class ParentDashboard extends BaseDashboard {
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: " + color + ";" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-text-alignment: center;"
         );
         valueLabel.setWrapText(true);
@@ -433,7 +447,7 @@ public class ParentDashboard extends BaseDashboard {
      */
     private void applyParentTheme() {
         root.setStyle(
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             // Professional gradient background
             "-fx-background-color: linear-gradient(to bottom right, #E3F2FD, #BBDEFB, #90CAF9);"
         );
@@ -449,6 +463,7 @@ public class ParentDashboard extends BaseDashboard {
             case "children" -> showChildrenContent();
             case "tasks" -> showTasksContent();
             case "analytics" -> showAnalyticsContent();
+            case "messaging" -> showMessagingContent();
             case "settings" -> showSettingsContent();
             default -> System.out.println("Unknown parent section: " + section);
         }
@@ -462,7 +477,7 @@ public class ParentDashboard extends BaseDashboard {
             "-fx-font-size: 24px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #333333;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         // Detailed children view with 3 adventurers per row
@@ -505,6 +520,13 @@ public class ParentDashboard extends BaseDashboard {
         analytics = new FamilyAnalytics(currentUser);
         mainContent.getChildren().add(analytics.getRoot());
     }
+
+    private void showMessagingContent() {
+        mainContent.getChildren().clear();
+        com.coincraft.ui.components.parent.MessagingHubPage messaging =
+            new com.coincraft.ui.components.parent.MessagingHubPage(currentUser, children);
+        mainContent.getChildren().add(messaging.getRoot());
+    }
     
     private void showSettingsContent() {
         mainContent.getChildren().clear();
@@ -526,7 +548,7 @@ public class ParentDashboard extends BaseDashboard {
             "-fx-background-radius: 8;" +
             "-fx-border-radius: 8;" +
             "-fx-cursor: hand;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 6, 0, 0, 2);"
         );
         
@@ -539,7 +561,7 @@ public class ParentDashboard extends BaseDashboard {
                 "-fx-background-radius: 8;" +
                 "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 3);" +
                 "-fx-scale-x: 1.05; -fx-scale-y: 1.05;"
             );
@@ -554,7 +576,7 @@ public class ParentDashboard extends BaseDashboard {
                 "-fx-background-radius: 8;" +
                 "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 6, 0, 0, 2);"
             );
         });
@@ -563,8 +585,8 @@ public class ParentDashboard extends BaseDashboard {
             // Get the current stage
             Stage currentStage = (Stage) root.getScene().getWindow();
             
-            // Open the Add Adventurer dialog
-            AddAdventurerDialog dialog = new AddAdventurerDialog(currentStage, this::onAdventurerAdded);
+            // Open the Add Adventurer dialog with current parent context
+            AddAdventurerDialog dialog = new AddAdventurerDialog(currentStage, this::onAdventurerAdded, currentUser);
             dialog.show();
         });
         
@@ -572,7 +594,24 @@ public class ParentDashboard extends BaseDashboard {
     }
     
     private void onAdventurerAdded(User newAdventurer) {
-        // Refresh data from Firebase to get the latest state
+        // Ensure parent linkage is set
+        if (newAdventurer != null) {
+            if (newAdventurer.getParentId() == null && currentUser != null) {
+                newAdventurer.setParentId(currentUser.getUserId());
+            }
+            if (children == null) {
+                children = new ArrayList<>();
+            }
+            // Add to in-memory list if it belongs to this parent and not already present
+            boolean alreadyExists = children.stream()
+                    .anyMatch(u -> u.getUserId() != null && u.getUserId().equals(newAdventurer.getUserId()));
+            if (!alreadyExists && currentUser != null && newAdventurer.getParentId() != null &&
+                newAdventurer.getParentId().equals(currentUser.getUserId())) {
+                children.add(newAdventurer);
+            }
+        }
+
+        // Refresh data from storage to get the latest state
         loadAdventurersFromFirebase();
         
         // Refresh the current view
@@ -583,7 +622,7 @@ public class ParentDashboard extends BaseDashboard {
         }
         
         // Update top bar stats
-        topBar.updateActiveChildren(children.size());
+        topBar.updateActiveChildren(children != null ? children.size() : 0);
         
         System.out.println("✅ Adventurer added and data refreshed from Firebase: " + newAdventurer.getName());
     }

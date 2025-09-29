@@ -2,6 +2,7 @@ package com.coincraft;
 
 import java.util.logging.Logger;
 
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.User;
 import com.coincraft.services.FirebaseService;
 import com.coincraft.ui.LoginScreen;
@@ -9,6 +10,7 @@ import com.coincraft.ui.MainDashboard;
 import com.coincraft.ui.RegistrationScreen;
 import com.coincraft.ui.routing.DashboardRouter;
 import com.coincraft.ui.theme.PixelSkin;
+import com.coincraft.ui.util.UiSoundBindings;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -105,6 +107,9 @@ public class CoinCraftApplication extends Application {
         Scene scene = new Scene(loginScreen.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
         loadStyles(scene);
         PixelSkin.apply(scene);
+        // Install UI selection sounds and start background music
+        UiSoundBindings.install(loginScreen.getRoot());
+        CentralizedMusicManager.getInstance().play();
         primaryStage.setScene(scene);
         primaryStage.setTitle(APP_TITLE + " - Login");
     }
@@ -133,6 +138,7 @@ public class CoinCraftApplication extends Application {
             Scene scene = new Scene(registrationScreen.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
             loadStyles(scene);
             PixelSkin.apply(scene);
+            UiSoundBindings.install(registrationScreen.getRoot());
             primaryStage.setScene(scene);
             primaryStage.setTitle(APP_TITLE + " - Registration");
             System.out.println("Registration screen loaded successfully");
@@ -153,6 +159,10 @@ public class CoinCraftApplication extends Application {
                 
                 Scene dashboardScene = new Scene(router.routeToDashboard(user), WINDOW_WIDTH, WINDOW_HEIGHT);
                 loadStyles(dashboardScene);
+                PixelSkin.apply(dashboardScene);
+                if (dashboardScene.getRoot() instanceof javafx.scene.Parent) {
+                    UiSoundBindings.install((javafx.scene.Parent) dashboardScene.getRoot());
+                }
                 
                 primaryStage.setScene(dashboardScene);
                 primaryStage.setTitle(APP_TITLE + " - " + user.getName() + " (" + user.getRole() + ")");
@@ -171,6 +181,7 @@ public class CoinCraftApplication extends Application {
                     MainDashboard dashboard = new MainDashboard(user);
                     Scene dashboardScene = new Scene(dashboard.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
                     loadStyles(dashboardScene);
+                    PixelSkin.apply(dashboardScene);
                     primaryStage.setScene(dashboardScene);
                     primaryStage.setTitle(APP_TITLE + " - " + user.getName() + " (Fallback)");
                     

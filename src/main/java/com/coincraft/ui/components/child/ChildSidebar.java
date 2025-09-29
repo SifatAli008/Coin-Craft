@@ -2,8 +2,8 @@ package com.coincraft.ui.components.child;
 
 import java.util.function.Consumer;
 
-import com.coincraft.ui.components.CentralizedMusicController;
 import com.coincraft.models.User;
+import com.coincraft.ui.components.CentralizedMusicController;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -78,7 +78,7 @@ public class ChildSidebar {
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #FF9800;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.3), 2, 0, 0, 1);"
         );
         
@@ -87,7 +87,7 @@ public class ChildSidebar {
             "-fx-font-size: 11px;" +
             "-fx-text-fill: #64748b;" +
             "-fx-font-weight: 500;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         header.getChildren().addAll(titleLabel, subtitleLabel);
@@ -135,7 +135,7 @@ public class ChildSidebar {
             "-fx-font-size: 13px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #F59E0B;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-effect: dropshadow(gaussian, rgba(245,158,11,0.3), 2, 0, 0, 1);"
         );
         

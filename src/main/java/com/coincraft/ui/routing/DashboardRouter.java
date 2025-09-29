@@ -58,6 +58,10 @@ public class DashboardRouter {
                 break;
                 
             case ADMIN:
+                // Ensure background music is stopped for admin experience
+                try {
+                    com.coincraft.audio.CentralizedMusicManager.getInstance().stop();
+                } catch (Exception ignored) {}
                 currentDashboard = new AdminDashboard(user);
                 break;
                 

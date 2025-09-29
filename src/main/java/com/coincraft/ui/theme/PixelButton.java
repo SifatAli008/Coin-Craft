@@ -1,5 +1,7 @@
 package com.coincraft.ui.theme;
 
+import com.coincraft.audio.CentralizedMusicManager;
+
 import javafx.scene.control.Button;
 
 /**
@@ -63,7 +65,7 @@ public class PixelButton extends Button {
     public static PixelButton createPrimary(String text, Runnable action) {
         PixelButton button = new PixelButton(text);
         button.setOnAction(e -> {
-            // PixelAudio removed
+            CentralizedMusicManager.getInstance().playButtonClick();
             if (action != null) {
                 action.run();
             }
@@ -78,7 +80,7 @@ public class PixelButton extends Button {
         PixelButton button = new PixelButton(text);
         button.getStyleClass().add("pixel-button-secondary");
         button.setOnAction(e -> {
-            // PixelAudio removed
+            CentralizedMusicManager.getInstance().playButtonClick();
             if (action != null) {
                 action.run();
             }

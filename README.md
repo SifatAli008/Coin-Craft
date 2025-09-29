@@ -121,6 +121,32 @@ For development, the application runs in mock mode with:
 - Automated launcher with JavaFX environment detection
 - Audio system with sample sound effects and music
 
+### WebSocket Bridge (Realtime Messaging)
+
+A lightweight WebSocket bridge is included at `server/ws-bridge/` for multi-device realtime messaging.
+
+Deploy locally:
+
+```bash
+cd server/ws-bridge
+npm install
+npm start   # listens on ws://localhost:8123
+```
+
+Docker:
+
+```bash
+docker build -t coincraft-ws server/ws-bridge
+docker run -d --name coincraft-ws -p 8123:8123 coincraft-ws
+```
+
+App configuration:
+
+- Env: `COINCRAFT_WS_URL=ws://YOUR_SERVER:8123`
+- Or JVM arg: `-Dcoincraft.ws.url=ws://YOUR_SERVER:8123`
+
+The app will connect to this URL for realtime messaging events.
+
 ## Game Progression
 
 ### Level Structure

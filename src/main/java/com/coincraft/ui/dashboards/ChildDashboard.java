@@ -188,7 +188,7 @@ public class ChildDashboard extends BaseDashboard {
         mainLayout.getStyleClass().addAll("child-dashboard", "medieval-theme");
         mainLayout.setStyle(
             "-fx-background-color: transparent;" +
-            "-fx-font-family: 'Minecraft', 'Courier New', monospace;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         mainLayout.setPadding(new Insets(12, 12, 12, 12));
         
@@ -392,7 +392,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #FFFFFF;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-background-color: linear-gradient(135deg, #667EEA 0%, #764BA2 50%, #F093FB 100%);" +
             "-fx-padding: 16 24;" +
             "-fx-background-radius: 12;" +
@@ -443,7 +443,7 @@ public class ChildDashboard extends BaseDashboard {
                 "-fx-font-weight: 600;" +
                 "-fx-background-radius: 25;" +
                 "-fx-border-radius: 25;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-padding: 12 24;" +
                 "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 8);"
             );
@@ -455,7 +455,7 @@ public class ChildDashboard extends BaseDashboard {
                 "-fx-font-weight: 700;" +
                 "-fx-background-radius: 25;" +
                 "-fx-border-radius: 25;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-padding: 12 24;" +
                 "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.4), 20, 0, 0, 10);" +
                 "-fx-cursor: hand;"
@@ -478,7 +478,7 @@ public class ChildDashboard extends BaseDashboard {
                     "-fx-font-weight: 700;" +
                     "-fx-background-radius: 25;" +
                     "-fx-border-radius: 25;" +
-                    "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                    "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                     "-fx-padding: 12 24;" +
                     "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.4), 20, 0, 0, 10);" +
                     "-fx-cursor: hand;"
@@ -516,7 +516,7 @@ public class ChildDashboard extends BaseDashboard {
         
         // Style the dialog
         dialog.getDialogPane().setStyle(
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-background-color: rgba(255, 255, 255, 0.95);" +
             "-fx-background-radius: 16;"
         );
@@ -535,7 +535,7 @@ public class ChildDashboard extends BaseDashboard {
         
         // Style the alert
         alert.getDialogPane().setStyle(
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-background-color: rgba(255, 255, 255, 0.95);" +
             "-fx-background-radius: 16;"
         );
@@ -604,14 +604,14 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 28px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         Label subtitleLabel = new Label("Track your adventures and complete epic quests!");
         subtitleLabel.setStyle(
             "-fx-font-size: 16px;" +
             "-fx-text-fill: #64748b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         headerSection.getChildren().addAll(titleLabel, subtitleLabel);
@@ -692,7 +692,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #059669;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         Label pendingLabel = new Label("⏳ " + pendingTasks + " In Progress");
@@ -700,7 +700,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #F59E0B;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         int totalTasks = completedTasks + pendingTasks;
@@ -709,7 +709,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #3B82F6;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         progressContent.getChildren().addAll(completedLabel, pendingLabel, totalLabel);
@@ -728,7 +728,7 @@ public class ChildDashboard extends BaseDashboard {
         recentBadgeLabel.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-text-fill: #64748b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         // Show latest badge based on achievements
@@ -738,7 +738,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #F59E0B;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-background-color: rgba(251, 191, 36, 0.1);" +
             "-fx-background-radius: 6;" +
             "-fx-padding: 8 12;"
@@ -768,7 +768,7 @@ public class ChildDashboard extends BaseDashboard {
             tipLabel.setStyle(
                 "-fx-font-size: 12px;" +
                 "-fx-text-fill: #64748b;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-padding: 4 0;"
             );
             tipLabel.setWrapText(true);
@@ -805,7 +805,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 32px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #FFFFFF;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 4, 0, 0, 2);"
         );
         
@@ -814,7 +814,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 500;" +
             "-fx-text-fill: #FFFFFF;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-background-color: rgba(255,255,255,0.2);" +
             "-fx-padding: 10 20;" +
             "-fx-background-radius: 20;" +
@@ -865,7 +865,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-text-fill: white;" +
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 700;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-padding: 6 12;" +
             "-fx-background-radius: 12;" +
             "-fx-border-radius: 12;" +
@@ -927,7 +927,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 22px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #2D3748;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         Label labelText = new Label(label);
@@ -935,7 +935,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 12px;" +
             "-fx-text-fill: " + color + ";" +
             "-fx-font-weight: 500;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         card.getChildren().addAll(iconLabel, valueLabel, labelText);
@@ -1026,7 +1026,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 13px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         // Achievement badges grid
@@ -1052,7 +1052,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 13px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         // Progress toward next badge
@@ -1090,7 +1090,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 8px;" +
             "-fx-text-fill: #92400e;" +
             "-fx-font-weight: 600;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-text-alignment: center;"
         );
         nameLabel.setWrapText(true);
@@ -1112,7 +1112,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #8B5CF6;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         // Progress bar for next achievement
@@ -1144,7 +1144,7 @@ public class ChildDashboard extends BaseDashboard {
         progressText.setStyle(
             "-fx-font-size: 9px;" +
             "-fx-text-fill: #64748b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         progressContainer.getChildren().addAll(nextBadgeLabel, progressStack, progressText);
@@ -1183,7 +1183,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 20px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         // Level and title
@@ -1192,7 +1192,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #FF9800;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-background-color: rgba(255, 152, 0, 0.15);" +
             "-fx-background-radius: 6;" +
             "-fx-padding: 4 12;"
@@ -1241,7 +1241,7 @@ public class ChildDashboard extends BaseDashboard {
         labelText.setStyle(
             "-fx-font-size: 13px;" +
             "-fx-text-fill: #64748b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         Region spacer = new Region();
@@ -1252,7 +1252,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         row.getChildren().addAll(iconLabel, labelText, spacer, valueLabel);
@@ -1298,7 +1298,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 12px;" +
             "-fx-text-fill: #64748b;" +
             "-fx-font-weight: 600;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         Label currentAvatar = new Label("👨‍🚀");
@@ -1317,7 +1317,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         // Professional avatars
@@ -1378,7 +1378,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 9px;" +
             "-fx-text-fill: #64748b;" +
             "-fx-font-weight: 500;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-text-alignment: center;"
         );
         
@@ -1445,7 +1445,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-padding: 0 0 8 0;"
         );
         
@@ -1467,7 +1467,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-padding: 0 0 8 0;"
         );
         
@@ -1495,7 +1495,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-padding: 0 0 8 0;"
         );
         
@@ -1552,7 +1552,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 11px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-text-alignment: center;"
         );
         titleLabel.setWrapText(true);
@@ -1598,7 +1598,7 @@ public class ChildDashboard extends BaseDashboard {
                 "-fx-font-size: 11px;" +
                 "-fx-font-weight: 700;" +
                 "-fx-text-fill: #1e293b;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-text-alignment: center;"
             );
             iconLabel.setStyle(
@@ -1632,7 +1632,7 @@ public class ChildDashboard extends BaseDashboard {
         );
         
         dialog.getDialogPane().setStyle(
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-background-color: rgba(255, 255, 255, 0.95);" +
             "-fx-background-radius: 16;"
         );
@@ -1675,7 +1675,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 26px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #FFFFFF;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-text-alignment: center;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 4, 0, 0, 2);"
         );
@@ -1686,7 +1686,7 @@ public class ChildDashboard extends BaseDashboard {
         statusLabel.setStyle(
             "-fx-font-size: 16px;" +
             "-fx-text-fill: rgba(255,255,255,0.9);" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-text-alignment: center;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 2, 0, 0, 1);"
         );
@@ -1760,7 +1760,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #1A202C;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-text-alignment: center;" +
             "-fx-effect: dropshadow(gaussian, rgba(255,255,255,0.8), 1, 0, 0, 1);"
         );
@@ -1771,7 +1771,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 14px;" +
             "-fx-text-fill: " + color + ";" +
             "-fx-font-weight: 600;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-text-alignment: center;" +
             "-fx-effect: dropshadow(gaussian, rgba(255,255,255,0.6), 1, 0, 0, 1);"
         );
@@ -1818,7 +1818,7 @@ public class ChildDashboard extends BaseDashboard {
                 "-fx-font-size: 18px;" +
                 "-fx-font-weight: 700;" +
                 "-fx-text-fill: #1A202C;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-text-alignment: center;" +
                 "-fx-effect: dropshadow(gaussian, rgba(255,255,255,0.8), 1, 0, 0, 1);"
             );
@@ -1826,7 +1826,7 @@ public class ChildDashboard extends BaseDashboard {
                 "-fx-font-size: 14px;" +
                 "-fx-text-fill: " + color + ";" +
                 "-fx-font-weight: 600;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-text-alignment: center;" +
                 "-fx-effect: dropshadow(gaussian, rgba(255,255,255,0.6), 1, 0, 0, 1);"
             );
@@ -1874,7 +1874,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #475569;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         // Progress bar background
@@ -1908,7 +1908,7 @@ public class ChildDashboard extends BaseDashboard {
         nextLevelLabel.setStyle(
             "-fx-font-size: 11px;" +
             "-fx-text-fill: #64748b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         progressContainer.getChildren().addAll(progressSection, nextLevelLabel);
@@ -1949,7 +1949,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #065f46;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         // Dynamic tip based on user progress
@@ -1958,7 +1958,7 @@ public class ChildDashboard extends BaseDashboard {
         tipContent.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-text-fill: #047857;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-text-alignment: center;"
         );
         tipContent.setWrapText(true);

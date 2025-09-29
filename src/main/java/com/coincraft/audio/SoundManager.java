@@ -12,32 +12,34 @@ public class SoundManager {
         return instance;
     }
     
-    // Stub methods - do nothing
+    // Delegate to CentralizedMusicManager for backward compatibility
     public void playButtonHover() {
-        // TODO: Implement via CentralizedMusicManager if needed
+        CentralizedMusicManager.getInstance().playInputSelect();
     }
     
     public void playButtonClick() {
-        // TODO: Implement via CentralizedMusicManager if needed
+        CentralizedMusicManager.getInstance().playButtonClick();
     }
     
     public void playSuccess() {
-        // TODO: Implement via CentralizedMusicManager if needed
+        // Reuse click for now unless separate asset is provided
+        CentralizedMusicManager.getInstance().playButtonClick();
     }
     
     public void playError() {
-        // TODO: Implement via CentralizedMusicManager if needed
+        // Reuse input select for now unless separate asset is provided
+        CentralizedMusicManager.getInstance().playInputSelect();
     }
     
     public void playNotification() {
-        // TODO: Implement via CentralizedMusicManager if needed
+        CentralizedMusicManager.getInstance().playInputSelect();
     }
     
     public void stopBackgroundMusic() {
-        // TODO: Use CentralizedMusicManager.getInstance().stop() instead
+        CentralizedMusicManager.getInstance().stop();
     }
     
     public void ensureSingleMusicInstance() {
-        // TODO: Use CentralizedMusicManager.getInstance().play() instead
+        CentralizedMusicManager.getInstance().play();
     }
 }

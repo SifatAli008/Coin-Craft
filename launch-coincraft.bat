@@ -44,10 +44,18 @@ if "%SELECTED_JAVA%"=="" if exist "%JAVA22%" set "SELECTED_JAVA=%JAVA22%"
 if "%SELECTED_JAVA%"=="" if exist "%JAVA21%" set "SELECTED_JAVA=%JAVA21%"
 if "%SELECTED_JAVA%"=="" set "SELECTED_JAVA=java"
 
+REM Optional: configure remote WebSocket URL for realtime messaging
+if "%COINCRAFT_WS_URL%"=="" (
+    set WS_FLAG=
+) else (
+    set WS_FLAG=-Dcoincraft.ws.url=%COINCRAFT_WS_URL%
+)
+
 echo Using Java: "%SELECTED_JAVA%"
 echo JavaFX path: "%JAVAFX_PATH%"
+if not "%COINCRAFT_WS_URL%"=="" echo WS URL: %COINCRAFT_WS_URL%
 echo Running command...
-"%SELECTED_JAVA%" --module-path "%JAVAFX_PATH%" --add-modules javafx.controls,javafx.fxml,javafx.media -cp "%CLASSPATH%" %MAIN_CLASS%
+"%SELECTED_JAVA%" %WS_FLAG% --module-path "%JAVAFX_PATH%" --add-modules javafx.controls,javafx.fxml,javafx.media -cp "%CLASSPATH%" %MAIN_CLASS%
 
 echo.
 echo ==============================================

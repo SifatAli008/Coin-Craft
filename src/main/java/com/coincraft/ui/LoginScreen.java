@@ -7,6 +7,7 @@ import com.coincraft.models.UserRole;
 import com.coincraft.services.FirebaseAuthService;
 import com.coincraft.services.FirebaseService;
 import com.coincraft.services.GoogleOAuthService;
+import com.coincraft.ui.components.ForgotPasswordDialog;
 
 import animatefx.animation.FadeIn;
 import javafx.animation.KeyFrame;
@@ -106,9 +107,16 @@ public class LoginScreen {
         
         VBox loginCard = createLoginCard();
         
-        // Status label
+        // Status label (high-contrast over animated background)
         statusLabel = new Label();
-        statusLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 0 0 0;");
+        statusLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-padding: 8 12;" +
+            "-fx-background-color: rgba(0,0,0,0.55);" +
+            "-fx-background-radius: 8;" +
+            "-fx-border-radius: 8;" +
+            "-fx-font-weight: 600;"
+        );
         statusLabel.setWrapText(true);
         statusLabel.setMaxWidth(400);
         statusLabel.setAlignment(Pos.CENTER);
@@ -252,7 +260,7 @@ public class LoginScreen {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
             "-fx-padding: 8 0 0 0;"
         );
-        forgotLabel.setOnMouseClicked(e -> showStatus("Password reset coming soon!", true));
+        forgotLabel.setOnMouseClicked(e -> showForgotPasswordDialog());
         
         HBox forgotContainer = new HBox();
         forgotContainer.setAlignment(Pos.CENTER_RIGHT);
@@ -264,7 +272,7 @@ public class LoginScreen {
         VBox roleSection = createRoleSelector();
         
         // Gaming-style login button
-        loginButton = new Button("🚀 START ADVENTURE");
+        loginButton = new Button("🚀 Start adventure");
         loginButton.setPrefWidth(340);
         loginButton.setPrefHeight(42);  // Reduced from 48 to 42
         loginButton.setStyle(
@@ -333,14 +341,14 @@ public class LoginScreen {
         divider.getChildren().addAll(leftLine, orLabel, rightLine);
         
         // Google Sign-in button
-        googleSignInButton = new Button("🔐 SIGN IN WITH GOOGLE");
+        googleSignInButton = new Button("🔐 Sign in with Google");
         googleSignInButton.setPrefWidth(340);
         googleSignInButton.setPrefHeight(48);
         googleSignInButton.setStyle(
             "-fx-background-color: #4285f4;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 16px;" +
-            "-fx-font-weight: 600;" +
+            "-fx-font-weight: 700;" +
             "-fx-background-radius: 8;" +
             "-fx-border-radius: 8;" +
             "-fx-cursor: hand;" +
@@ -352,7 +360,7 @@ public class LoginScreen {
                 "-fx-background-color: #3367d6;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 16px;" +
-                "-fx-font-weight: 600;" +
+                "-fx-font-weight: 700;" +
                 "-fx-background-radius: 8;" +
                 "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
@@ -366,7 +374,7 @@ public class LoginScreen {
                 "-fx-background-color: #4285f4;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 16px;" +
-                "-fx-font-weight: 600;" +
+                "-fx-font-weight: 700;" +
                 "-fx-background-radius: 8;" +
                 "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
@@ -503,7 +511,7 @@ public class LoginScreen {
                 
                 Platform.runLater(() -> {
                     loginButton.setDisable(false);
-                    loginButton.setText("🚀 START ADVENTURE");
+                    loginButton.setText("🚀 Start adventure");
                     
                     if (userId != null) {
                         // Load user data
@@ -659,9 +667,10 @@ public class LoginScreen {
         Label roleLabel = new Label("I am a:");
         roleLabel.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-font-weight: 600;" +
-            "-fx-text-fill: white;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #0f172a;" +
+            "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;" +
+            "-fx-effect: dropshadow(gaussian, rgba(255,255,255,0.6), 2, 0, 0, 1);"
         );
         
         roleSelector = new ComboBox<>();
@@ -883,13 +892,27 @@ public class LoginScreen {
         }).start();
     }
     
+    private void showForgotPasswordDialog() {
+        try {
+            ForgotPasswordDialog dialog = new ForgotPasswordDialog(firebaseAuthService);
+            dialog.show();
+        } catch (Exception e) {
+            LOGGER.severe("Failed to show forgot password dialog: " + e.getMessage());
+            showStatus("❌ Failed to open password reset dialog", false);
+        }
+    }
+    
     private void showStatus(String message, boolean isSuccess) {
         statusLabel.setText(message);
-        if (isSuccess) {
-            statusLabel.setStyle(statusLabel.getStyle() + "-fx-text-fill: #10b981;");
-        } else {
-            statusLabel.setStyle(statusLabel.getStyle() + "-fx-text-fill: #ef4444;");
-        }
+        String base =
+            "-fx-font-size: 14px;" +
+            "-fx-padding: 8 12;" +
+            "-fx-background-color: rgba(0,0,0,0.55);" +
+            "-fx-background-radius: 8;" +
+            "-fx-border-radius: 8;" +
+            "-fx-font-weight: 600;";
+        String color = isSuccess ? "#10b981" : "#FFE082"; // green for success, amber for errors
+        statusLabel.setStyle(base + "-fx-text-fill: " + color + ";");
     }
     
     public Parent getRoot() {

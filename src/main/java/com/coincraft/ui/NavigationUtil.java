@@ -2,6 +2,7 @@ package com.coincraft.ui;
 
 import com.coincraft.models.User;
 import com.coincraft.ui.routing.DashboardRouter;
+import com.coincraft.ui.theme.PixelSkin;
 
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -97,6 +98,8 @@ public class NavigationUtil {
             scene.getStylesheets().add(
                 NavigationUtil.class.getResource("/styles/coincraft-styles.css").toExternalForm()
             );
+            // Ensure global pixel theme and fonts are applied consistently
+            PixelSkin.apply(scene);
         } catch (Exception e) {
             System.out.println("Could not load CSS styles: " + e.getMessage());
         }

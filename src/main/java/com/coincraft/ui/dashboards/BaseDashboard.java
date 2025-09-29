@@ -92,7 +92,7 @@ public abstract class BaseDashboard {
     protected void applyGameTheme() {
         if (root != null) {
             root.setStyle(
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-background-color: linear-gradient(to bottom, #f0f8ff, #e6f3ff, #ddeeff);"
             );
         }
@@ -156,7 +156,7 @@ public abstract class BaseDashboard {
             "-fx-background-radius: 8;" +
             "-fx-border-radius: 8;" +
             "-fx-cursor: hand;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-padding: 8 12;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 2);"
         );
@@ -171,7 +171,7 @@ public abstract class BaseDashboard {
                 "-fx-background-radius: 8;" +
                 "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-padding: 8 12;" +
                 "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 8, 0, 0, 3);" +
                 "-fx-scale-x: 1.05; -fx-scale-y: 1.05;"
@@ -187,7 +187,7 @@ public abstract class BaseDashboard {
                 "-fx-background-radius: 8;" +
                 "-fx-border-radius: 8;" +
                 "-fx-cursor: hand;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-padding: 8 12;" +
                 "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 2);"
             );

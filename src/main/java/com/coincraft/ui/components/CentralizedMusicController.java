@@ -1,6 +1,7 @@
 package com.coincraft.ui.components;
 
 import com.coincraft.audio.CentralizedMusicManager;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -48,7 +49,7 @@ public class CentralizedMusicController implements CentralizedMusicManager.Music
             "-fx-font-size: 12px;" +
             "-fx-text-fill: #667EEA;" +
             "-fx-font-weight: 700;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         // Status label
@@ -57,7 +58,7 @@ public class CentralizedMusicController implements CentralizedMusicManager.Music
             "-fx-font-size: 10px;" +
             "-fx-text-fill: #4A5568;" +
             "-fx-font-weight: 500;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         // Create control buttons
@@ -217,7 +218,7 @@ public class CentralizedMusicController implements CentralizedMusicManager.Music
         return "-fx-font-size: 10px;" +
                "-fx-text-fill: #667EEA;" +
                "-fx-font-weight: 600;" +
-               "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;";
+               "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;";
     }
     
     private String getSliderStyle() {

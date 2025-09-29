@@ -94,6 +94,79 @@ public class FirebaseService {
             initializeMockMode();
         }
     }
+
+    // ===================== Messaging (Service facade) =====================
+    public boolean saveMessage(com.coincraft.models.MessageData message) {
+        try {
+            if (!initialized) initialize();
+            if (firestoreService != null && currentIdToken != null) {
+                firestoreService.setIdToken(currentIdToken);
+                return firestoreService.saveMessage(message);
+            }
+            // Fallback: append to local file
+            java.nio.file.Path dataDir = java.nio.file.Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            java.nio.file.Files.createDirectories(dataDir);
+            java.nio.file.Path file = dataDir.resolve("messages.txt");
+            String line = String.join("|",
+                message.getMessageId(),
+                message.getConversationId(),
+                message.getSenderId(),
+                message.getSenderName() != null ? message.getSenderName() : "",
+                message.getRecipientId(),
+                message.getRecipientName() != null ? message.getRecipientName() : "",
+                message.getTimestamp() != null ? message.getTimestamp().toString() : "",
+                message.getContent().replace("\n", "\\n")
+            );
+            try (java.io.PrintWriter w = new java.io.PrintWriter(java.nio.file.Files.newBufferedWriter(file, java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND))) {
+                w.println(line);
+            }
+            return true;
+        } catch (Exception e) {
+            LOGGER.warning("Failed to save message locally: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public java.util.List<com.coincraft.models.MessageData> loadConversation(String conversationId, int limit) {
+        try {
+            if (!initialized) initialize();
+            if (firestoreService != null && currentIdToken != null) {
+                firestoreService.setIdToken(currentIdToken);
+                return firestoreService.loadConversation(conversationId, limit);
+            }
+            // Fallback local read
+            java.util.List<com.coincraft.models.MessageData> list = new java.util.ArrayList<>();
+            java.nio.file.Path dataDir = java.nio.file.Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            java.nio.file.Path file = dataDir.resolve("messages.txt");
+            if (!java.nio.file.Files.exists(file)) return list;
+            try (java.io.BufferedReader r = java.nio.file.Files.newBufferedReader(file)) {
+                String line;
+                while ((line = r.readLine()) != null) {
+                    String[] parts = line.split("\\|", -1);
+                    if (parts.length >= 8 && conversationId.equals(parts[1])) {
+                        com.coincraft.models.MessageData m = new com.coincraft.models.MessageData();
+                        m.setMessageId(parts[0]);
+                        m.setConversationId(parts[1]);
+                        m.setSenderId(parts[2]);
+                        m.setSenderName(parts[3]);
+                        m.setRecipientId(parts[4]);
+                        m.setRecipientName(parts[5]);
+                        if (!parts[6].isEmpty()) m.setTimestamp(java.time.LocalDateTime.parse(parts[6]));
+                        m.setContent(parts[7].replace("\\n", "\n"));
+                        list.add(m);
+                    }
+                }
+            }
+            list.sort((a,b) -> a.getTimestamp() != null && b.getTimestamp() != null ? a.getTimestamp().compareTo(b.getTimestamp()) : 0);
+            if (list.size() > limit) {
+                return new java.util.ArrayList<>(list.subList(Math.max(0, list.size()-limit), list.size()));
+            }
+            return list;
+        } catch (Exception e) {
+            LOGGER.warning("Failed to load conversation locally: " + e.getMessage());
+            return new java.util.ArrayList<>();
+        }
+    }
     
     /**
      * Fallback to mock mode if Firebase initialization fails
@@ -559,7 +632,8 @@ public class FirebaseService {
                                 user.getDailyStreaks() + "|" + (user.getEmail() != null ? user.getEmail() : "") + "|" +
                                 (user.getUsername() != null ? user.getUsername() : "") + "|" +
                                 (user.getLastLogin() != null ? user.getLastLogin().toString() : "") + "|" +
-                                (user.getCreatedAt() != null ? user.getCreatedAt().toString() : "");
+                                (user.getCreatedAt() != null ? user.getCreatedAt().toString() : "") + "|" +
+                                (user.getParentId() != null ? user.getParentId() : "");
                 writer.println(userData);
             }
         }
@@ -619,6 +693,9 @@ public class FirebaseService {
                 }
                 if (parts.length > 10 && !parts[10].isEmpty()) {
                     user.setCreatedAt(LocalDateTime.parse(parts[10]));
+                }
+                if (parts.length > 11 && !parts[11].isEmpty()) {
+                    user.setParentId(parts[11]);
                 }
                 
                 return user;
@@ -1095,82 +1172,75 @@ public class FirebaseService {
      * Initialize demo accounts for testing
      */
     private void initializeDemoAccounts() {
-        LOGGER.info("Initializing demo accounts for testing");
-        
-        // Demo child account
-        User childUser = new User();
-        childUser.setName("Demo Child");
-        childUser.setAge(10);
-        childUser.setRole(UserRole.CHILD);
-        childUser.setSmartCoinBalance(25);
-        childUser.setLevel(1);
-        registerMockUser("child@demo.com", "demo123", childUser);
-        
-        // Demo parent account
-        User parentUser = new User();
-        parentUser.setName("Demo Parent");
-        parentUser.setAge(35);
-        parentUser.setRole(UserRole.PARENT);
-        parentUser.setSmartCoinBalance(100);
-        parentUser.setLevel(1);
-        registerMockUser("parent@demo.com", "demo123", parentUser);
-        
-        // Demo teacher account
-        User teacherUser = new User();
-        teacherUser.setName("Demo Teacher");
-        teacherUser.setAge(30);
-        teacherUser.setRole(UserRole.TEACHER);
-        teacherUser.setSmartCoinBalance(200);
-        teacherUser.setLevel(1);
-        registerMockUser("teacher@demo.com", "demo123", teacherUser);
-        
-        LOGGER.info("Demo accounts initialized: child@demo.com, parent@demo.com, teacher@demo.com (password: demo123)");
-        
-        // Also create a test adventurer with username for testing
-        createTestAdventurer();
+        // Demo accounts are disabled per project requirements
+        LOGGER.info("Skipping demo account initialization");
+        // Clean up any legacy demo data that might exist from previous runs
+        try { purgeDemoAccounts(); } catch (Exception ignored) {}
     }
     
     /**
      * Create a test adventurer for testing child login
      */
     private void createTestAdventurer() {
+        // Disabled: no auto-created test adventurer
+    }
+
+    /**
+     * Remove legacy demo accounts and credentials from local storage
+     */
+    public void purgeDemoAccounts() {
         try {
-            String testUsername = "testadventurer";
-            String testPassword = "test123";
-            
-            // Check if test adventurer already exists
-            if (isAdventureUsernameTaken(testUsername)) {
-                LOGGER.info("Test adventurer already exists: " + testUsername);
-                return;
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Files.createDirectories(dataDir);
+            Path userFile = dataDir.resolve("users.txt");
+
+            // Filter users file
+            if (Files.exists(userFile)) {
+                List<User> users = loadUsersFromFile(userFile);
+                List<User> filtered = new ArrayList<>();
+                for (User u : users) {
+                    if (u == null) continue;
+                    String email = u.getEmail();
+                    String name = u.getName();
+                    String uid = u.getUserId();
+                    String username = u.getUsername();
+                    boolean isDemo = (email != null && email.endsWith("@demo.com")) ||
+                                     ("Demo Child".equalsIgnoreCase(name)) ||
+                                     ("Demo Parent".equalsIgnoreCase(name)) ||
+                                     ("Demo Teacher".equalsIgnoreCase(name)) ||
+                                     ("Connection Test User".equalsIgnoreCase(name)) ||
+                                     (username != null && "testadventurer".equalsIgnoreCase(username)) ||
+                                     (uid != null && (uid.startsWith("adventurer_test_") || uid.startsWith("connection_test_")));
+                    if (!isDemo) {
+                        filtered.add(u);
+                    }
+                }
+                saveUsersToFile(filtered, userFile);
             }
-            
-            // Create test adventurer user
-            User testAdventurer = new User();
-            testAdventurer.setUserId("adventurer_test_" + System.currentTimeMillis());
-            testAdventurer.setName("Test Adventurer");
-            testAdventurer.setUsername(testUsername);
-            testAdventurer.setRole(UserRole.CHILD);
-            testAdventurer.setAge(10);
-            testAdventurer.setEmail(testUsername + "@coincraft.adventure");
-            testAdventurer.setSmartCoinBalance(50);
-            testAdventurer.setLevel(1);
-            testAdventurer.setDailyStreaks(0);
-            testAdventurer.setLastLogin(LocalDateTime.now());
-            testAdventurer.setCreatedAt(LocalDateTime.now());
-            
-            // Save to local storage
-            saveUser(testAdventurer);
-            
-            // Store credentials
-            storeAdventurerCredentials(testUsername, testPassword, testAdventurer.getUserId());
-            
-            LOGGER.info("Test adventurer created successfully:");
-            LOGGER.info("  Username: " + testUsername);
-            LOGGER.info("  Password: " + testPassword);
-            LOGGER.info("  Use these credentials to test child login functionality");
-            
+
+            // Filter credentials file
+            Path credentialsFile = dataDir.resolve("adventurer_credentials.txt");
+            if (Files.exists(credentialsFile)) {
+                List<String> kept = new ArrayList<>();
+                try (BufferedReader reader = Files.newBufferedReader(credentialsFile)) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        String[] parts = line.split("\\|");
+                        String username = parts.length > 0 ? parts[0] : null;
+                        String uid = parts.length > 2 ? parts[2] : null;
+                        boolean isDemo = (username != null && username.equalsIgnoreCase("testadventurer")) ||
+                                         (uid != null && (uid.startsWith("adventurer_test_") || uid.startsWith("connection_test_")));
+                        if (!isDemo) kept.add(line);
+                    }
+                }
+                try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(credentialsFile))) {
+                    for (String l : kept) writer.println(l);
+                }
+            }
+
+            LOGGER.info("Purged legacy demo accounts and credentials");
         } catch (Exception e) {
-            LOGGER.warning("Failed to create test adventurer: " + e.getMessage());
+            LOGGER.warning("Failed to purge demo data: " + e.getMessage());
         }
     }
     

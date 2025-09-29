@@ -1,22 +1,32 @@
 package com.coincraft.ui.components.parent;
 
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+
+import com.coincraft.audio.SoundManager;
 import com.coincraft.models.User;
 import com.coincraft.services.FirebaseService;
-import com.coincraft.audio.SoundManager;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 /**
  * Dialog for viewing and editing detailed adventurer information
@@ -27,6 +37,7 @@ public class ViewAdventurerDetailsDialog {
     private User adventurer;
     private TextField nameField;
     private TextField adventureUsernameField;
+    private Button copyUsernameBtn;
     private Spinner<Integer> ageSpinner;
     private TextField emailField;
     private TextField smartCoinField;
@@ -36,6 +47,8 @@ public class ViewAdventurerDetailsDialog {
     private Label lastLoginLabel;
     private Label createdAtLabel;
     private Button changePasswordBtn;
+    private Button saveBtn;
+    private boolean dirty = false;
     
     public ViewAdventurerDetailsDialog(Stage parentStage, User adventurer) {
         this.adventurer = adventurer;
@@ -49,8 +62,8 @@ public class ViewAdventurerDetailsDialog {
         dialog.initStyle(StageStyle.DECORATED);
         dialog.setTitle("⚔️ Adventure Details - " + adventurer.getName());
         dialog.setResizable(true);
-        dialog.setWidth(850);
-        dialog.setHeight(750);
+        dialog.setWidth(860);
+        dialog.setHeight(760);
         
         // Create main content
         VBox mainContent = createMainContent();
@@ -66,6 +79,15 @@ public class ViewAdventurerDetailsDialog {
         }
         
         dialog.setScene(scene);
+        try {
+            // Keyboard shortcuts: Ctrl+S to save, Esc to close
+            javafx.scene.input.KeyCombination saveComb = new javafx.scene.input.KeyCodeCombination(
+                javafx.scene.input.KeyCode.S, javafx.scene.input.KeyCombination.CONTROL_DOWN);
+            scene.getAccelerators().put(saveComb, () -> { if (saveBtn != null && !saveBtn.isDisable()) saveBtn.fire(); });
+            javafx.scene.input.KeyCombination escComb = new javafx.scene.input.KeyCodeCombination(
+                javafx.scene.input.KeyCode.ESCAPE);
+            scene.getAccelerators().put(escComb, () -> dialog.close());
+        } catch (Exception ignored) {}
     }
     
     private VBox createMainContent() {
@@ -76,25 +98,23 @@ public class ViewAdventurerDetailsDialog {
         // Header section
         VBox headerSection = createHeaderSection();
         
-        // Details section
+        // Details and Stats sections (side-by-side)
         VBox detailsSection = createDetailsSection();
-        
-        // Stats section
         VBox statsSection = createStatsSection();
-        
+        HBox twoColumn = new HBox(20);
+        twoColumn.getChildren().addAll(detailsSection, statsSection);
+        HBox.setHgrow(detailsSection, Priority.ALWAYS);
+        HBox.setHgrow(statsSection, Priority.NEVER);
+        detailsSection.setPrefWidth(560);
+        statsSection.setPrefWidth(260);
+
         // Notes section
         VBox notesSection = createNotesSection();
         
         // Action buttons
         HBox actionButtons = createActionButtons();
         
-        mainContent.getChildren().addAll(
-            headerSection,
-            detailsSection,
-            statsSection,
-            notesSection,
-            actionButtons
-        );
+        mainContent.getChildren().addAll(headerSection, twoColumn, notesSection, actionButtons);
         
         return mainContent;
     }
@@ -103,21 +123,39 @@ public class ViewAdventurerDetailsDialog {
         VBox headerSection = new VBox(10);
         headerSection.setAlignment(Pos.CENTER);
         headerSection.setStyle(
-            "-fx-background-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" +
+            "-fx-background-color: linear-gradient(135deg, #FB8C00 0%, #F59E0B 60%, #FFB74D 100%);" +
             "-fx-background-radius: 12;" +
             "-fx-padding: 20;"
         );
         
         Label titleLabel = new Label("⚔️ " + adventurer.getName());
-        titleLabel.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 24));
-        titleLabel.setStyle("-fx-text-fill: white;");
+        titleLabel.setStyle(
+            "-fx-text-fill: #ffffff;" +
+            "-fx-font-size: 24px;" +
+            "-fx-font-weight: 800;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 6, 0, 0, 1);"
+        );
         
         String usernameDisplay = adventurer.getUsername() != null ? adventurer.getUsername() : "No Username Set";
         Label subtitleLabel = new Label("Adventure Username: " + usernameDisplay);
-        subtitleLabel.setFont(Font.font("Ancient Medium", 14));
-        subtitleLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.9);");
+        subtitleLabel.setStyle(
+            "-fx-text-fill: rgba(255,255,255,0.96);" +
+            "-fx-font-size: 14px;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 4, 0, 0, 1);"
+        );
+
+        // Quick stats chips in header
+        HBox chips = new HBox(8);
+        chips.setAlignment(Pos.CENTER);
+        chips.getChildren().addAll(
+            createChip("💰 " + adventurer.getSmartCoinBalance(), "#22c55e"),
+            createChip("⭐ " + adventurer.getLevel(), "#3b82f6"),
+            createChip("🔥 " + adventurer.getDailyStreaks(), "#f59e0b")
+        );
         
-        headerSection.getChildren().addAll(titleLabel, subtitleLabel);
+        headerSection.getChildren().addAll(titleLabel, subtitleLabel, chips);
         return headerSection;
     }
     
@@ -125,8 +163,7 @@ public class ViewAdventurerDetailsDialog {
         VBox detailsSection = new VBox(15);
         
         Label sectionTitle = new Label("📋 Adventure Details");
-        sectionTitle.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 16));
-        sectionTitle.setStyle("-fx-text-fill: #333333;");
+        sectionTitle.setStyle("-fx-text-fill: #333333; -fx-font-weight: 800; -fx-font-size: 16px;");
         
         GridPane detailsGrid = new GridPane();
         detailsGrid.setHgap(15);
@@ -144,6 +181,7 @@ public class ViewAdventurerDetailsDialog {
         detailsGrid.add(new Label("Adventurer Name:"), 0, 0);
         nameField = new TextField(adventurer.getName());
         nameField.setPrefWidth(200);
+        nameField.textProperty().addListener((o, ov, nv) -> markDirty());
         detailsGrid.add(nameField, 1, 0);
         
         // Adventure Username field
@@ -171,11 +209,37 @@ public class ViewAdventurerDetailsDialog {
         );
         changePasswordBtn.setOnAction(e -> openChangePasswordDialog());
         detailsGrid.add(changePasswordBtn, 2, 1);
+
+        // Copy username button
+        copyUsernameBtn = new Button("📋 Copy");
+        copyUsernameBtn.setPrefHeight(32);
+        copyUsernameBtn.setStyle(
+            "-fx-background-color: #ffffff;" +
+            "-fx-text-fill: #374151;" +
+            "-fx-font-size: 12px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-background-radius: 6;" +
+            "-fx-border-radius: 6;" +
+            "-fx-border-color: #e5e7eb;" +
+            "-fx-cursor: hand;" +
+            "-fx-padding: 0 10;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
+        );
+        copyUsernameBtn.setOnAction(e -> {
+            String text = adventureUsernameField.getText();
+            if (text != null && !text.isEmpty()) {
+                javafx.scene.input.ClipboardContent cc = new javafx.scene.input.ClipboardContent();
+                cc.putString(text);
+                javafx.scene.input.Clipboard.getSystemClipboard().setContent(cc);
+            }
+        });
+        detailsGrid.add(copyUsernameBtn, 3, 1);
         
         // Age field
         detailsGrid.add(new Label("Age:"), 0, 2);
         ageSpinner = new Spinner<>(5, 18, adventurer.getAge());
         ageSpinner.setPrefWidth(100);
+        ageSpinner.valueProperty().addListener((o, ov, nv) -> markDirty());
         detailsGrid.add(ageSpinner, 1, 2);
         
         // Email field (auto-generated, read-only)
@@ -194,8 +258,7 @@ public class ViewAdventurerDetailsDialog {
         VBox statsSection = new VBox(15);
         
         Label sectionTitle = new Label("📊 Adventure Statistics");
-        sectionTitle.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 16));
-        sectionTitle.setStyle("-fx-text-fill: #333333;");
+        sectionTitle.setStyle("-fx-text-fill: #333333; -fx-font-weight: 800; -fx-font-size: 16px;");
         
         GridPane statsGrid = new GridPane();
         statsGrid.setHgap(15);
@@ -255,8 +318,7 @@ public class ViewAdventurerDetailsDialog {
         VBox notesSection = new VBox(15);
         
         Label sectionTitle = new Label("📝 Adventure Notes");
-        sectionTitle.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 16));
-        sectionTitle.setStyle("-fx-text-fill: #333333;");
+        sectionTitle.setStyle("-fx-text-fill: #333333; -fx-font-weight: 800; -fx-font-size: 16px;");
         
         notesArea = new TextArea();
         notesArea.setPrefHeight(100);
@@ -297,7 +359,7 @@ public class ViewAdventurerDetailsDialog {
         messageBtn.setOnAction(e -> openMessagingPortal());
         
         // Save Changes button
-        Button saveBtn = new Button("💾 Save Changes");
+        saveBtn = new Button("💾 Save Changes");
         saveBtn.setPrefWidth(140);
         saveBtn.setPrefHeight(40);
         saveBtn.setStyle(
@@ -313,6 +375,7 @@ public class ViewAdventurerDetailsDialog {
         );
         
         saveBtn.setOnAction(e -> saveChanges());
+        saveBtn.setDisable(true);
         
         // Cancel button
         Button cancelBtn = new Button("❌ Cancel");
@@ -334,6 +397,30 @@ public class ViewAdventurerDetailsDialog {
         
         actionButtons.getChildren().addAll(messageBtn, saveBtn, cancelBtn);
         return actionButtons;
+    }
+
+    private HBox createChip(String text, String color) {
+        Label l = new Label(text);
+        l.setStyle(
+            "-fx-background-color: " + color + ";" +
+            "-fx-text-fill: white;" +
+            "-fx-font-weight: 700;" +
+            "-fx-font-size: 12px;" +
+            "-fx-padding: 4 10;" +
+            "-fx-background-radius: 9999;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
+        );
+        HBox box = new HBox(l);
+        box.setAlignment(Pos.CENTER);
+        return box;
+    }
+
+    /** Mark form dirty and enable save button. */
+    private void markDirty() {
+        dirty = true;
+        if (saveBtn != null) {
+            saveBtn.setDisable(false);
+        }
     }
     
     private void openMessagingPortal() {
@@ -357,6 +444,9 @@ public class ViewAdventurerDetailsDialog {
             FirebaseService firebaseService = FirebaseService.getInstance();
             firebaseService.saveUser(adventurer);
             
+            dirty = false;
+            if (saveBtn != null) saveBtn.setDisable(true);
+
             // Show success message
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("✅ Success");

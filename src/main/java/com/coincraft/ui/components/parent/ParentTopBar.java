@@ -70,7 +70,7 @@ public class ParentTopBar {
             "-fx-font-size: 20px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #2E7D32;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         timeLabel = new Label();
@@ -78,7 +78,7 @@ public class ParentTopBar {
             "-fx-font-size: 14px;" +
             "-fx-text-fill: #4CAF50;" +
             "-fx-font-weight: 500;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         updateTimeLabel();
         
@@ -105,7 +105,7 @@ public class ParentTopBar {
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #2E7D32;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         // Create mock user for SmartCoinDisplay
@@ -130,7 +130,7 @@ public class ParentTopBar {
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #2E7D32;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         Label childrenValue = new Label("⚔️ " + activeChildren);
@@ -138,7 +138,7 @@ public class ParentTopBar {
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #4CAF50;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         childrenBox.getChildren().addAll(childrenTitle, childrenValue);
@@ -152,7 +152,7 @@ public class ParentTopBar {
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #2E7D32;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         Label tasksValue = new Label("📋 " + pendingTasks);
@@ -160,7 +160,7 @@ public class ParentTopBar {
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #FF9800;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         tasksBox.getChildren().addAll(tasksTitle, tasksValue);
@@ -179,7 +179,7 @@ public class ParentTopBar {
             "-fx-font-size: 13px;" +
             "-fx-text-fill: #FF9800;" +
             "-fx-font-weight: 600;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-cursor: hand;" +
             "-fx-background-color: rgba(255, 152, 0, 0.15);" +
             "-fx-background-radius: 16;" +
@@ -195,7 +195,7 @@ public class ParentTopBar {
                 "-fx-font-size: 13px;" +
                 "-fx-text-fill: #FF9800;" +
                 "-fx-font-weight: 600;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-cursor: hand;" +
                 "-fx-background-color: rgba(255, 152, 0, 0.25);" +
                 "-fx-background-radius: 16;" +
@@ -213,7 +213,7 @@ public class ParentTopBar {
                 "-fx-font-size: 13px;" +
                 "-fx-text-fill: #FF9800;" +
                 "-fx-font-weight: 600;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-cursor: hand;" +
                 "-fx-background-color: rgba(255, 152, 0, 0.15);" +
                 "-fx-background-radius: 16;" +

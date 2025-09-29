@@ -15,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -38,9 +39,17 @@ public class AddAdventurerDialog {
     private Label adventureUsernameStatusLabel;
     
     private final Consumer<User> onAdventurerCreated;
+    private final User creatorParent;
     
     public AddAdventurerDialog(Stage parentStage, Consumer<User> onAdventurerCreated) {
         this.onAdventurerCreated = onAdventurerCreated;
+        this.creatorParent = null;
+        initializeDialog(parentStage);
+    }
+
+    public AddAdventurerDialog(Stage parentStage, Consumer<User> onAdventurerCreated, User currentParent) {
+        this.onAdventurerCreated = onAdventurerCreated;
+        this.creatorParent = currentParent;
         initializeDialog(parentStage);
     }
     
@@ -49,11 +58,18 @@ public class AddAdventurerDialog {
         dialogStage.initModality(Modality.WINDOW_MODAL);
         dialogStage.initOwner(parentStage);
         dialogStage.setTitle("⚔️ Add New Adventurer");
-        dialogStage.setResizable(false);
+        dialogStage.setResizable(true);
         
         createUI();
         
-        Scene scene = new Scene(root, 520, 550);
+        // Wrap content in a scroll container to avoid clipping on smaller screens
+        ScrollPane scrollPane = new ScrollPane(root);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setStyle("-fx-background-color: transparent;");
+
+        Scene scene = new Scene(scrollPane, 520, 550);
         
         // Load CSS styles
         try {
@@ -65,6 +81,7 @@ public class AddAdventurerDialog {
         }
         
         dialogStage.setScene(scene);
+        dialogStage.centerOnScreen();
     }
     
     private void createUI() {
@@ -443,6 +460,38 @@ public class AddAdventurerDialog {
             newAdventurer.setDailyStreaks(0);
             newAdventurer.setLastLogin(java.time.LocalDateTime.now());
             newAdventurer.setCreatedAt(java.time.LocalDateTime.now()); // Set creation timestamp
+            // Link this child to the creating merchant/parent
+            try {
+                // Prefer parent passed in from dashboard
+                if (creatorParent != null) {
+                    String pid = creatorParent.getUserId();
+                    if (pid == null || pid.isEmpty()) {
+                        String email = creatorParent.getEmail();
+                        if (email != null && !email.isEmpty()) {
+                            pid = "email:" + email.toLowerCase();
+                        }
+                    }
+                    if (pid != null && !pid.isEmpty()) {
+                        newAdventurer.setParentId(pid);
+                    }
+                } else {
+                    // Fallback: fetch current parent from router if available
+                    com.coincraft.ui.routing.DashboardRouter router = com.coincraft.ui.routing.DashboardRouter.getInstance();
+                    com.coincraft.models.User currentParent = router.getCurrentUser();
+                    if (currentParent != null) {
+                        String pid = currentParent.getUserId();
+                        if (pid == null || pid.isEmpty()) {
+                            String email = currentParent.getEmail();
+                            if (email != null && !email.isEmpty()) {
+                                pid = "email:" + email.toLowerCase();
+                            }
+                        }
+                        if (pid != null && !pid.isEmpty()) {
+                            newAdventurer.setParentId(pid);
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
         
         // Ensure Firebase is initialized before saving
         if (!firebaseService.isInitialized()) {
@@ -614,6 +663,7 @@ public class AddAdventurerDialog {
     }
     
     public void show() {
+        dialogStage.centerOnScreen();
         dialogStage.showAndWait();
     }
 }

@@ -27,7 +27,7 @@ public class ParentSidebar {
     private VBox overviewButton;
     private VBox childrenButton;
     private VBox tasksButton;
-    private VBox analyticsButton;
+    private VBox messagingButton;
     private VBox settingsButton;
     
     // Control buttons
@@ -70,14 +70,14 @@ public class ParentSidebar {
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #FF9800;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         Label subtitleLabel = new Label("Guide Adventures");
         subtitleLabel.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-text-fill: #666666;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         header.getChildren().addAll(titleLabel, subtitleLabel);
@@ -88,14 +88,14 @@ public class ParentSidebar {
         overviewButton = createNavButton("🏠", "Overview", "overview");
         childrenButton = createNavButton("⚔️", "My Adventurers", "children");
         tasksButton = createNavButton("📋", "Task Management", "tasks");
-        analyticsButton = createNavButton("📈", "Analytics", "analytics");
+        messagingButton = createNavButton("💬", "Messaging", "messaging");
         settingsButton = createNavButton("⚙️", "Settings", "settings");
         
         root.getChildren().addAll(
             overviewButton,
             childrenButton,
             tasksButton,
-            analyticsButton,
+            messagingButton,
             settingsButton
         );
         
@@ -124,7 +124,7 @@ public class ParentSidebar {
             "-fx-font-size: 13px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #333333;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         button.getChildren().addAll(iconLabel, textLabel);
@@ -178,7 +178,7 @@ public class ParentSidebar {
             "-fx-background-radius: 6;" +
             "-fx-border-radius: 6;" +
             "-fx-cursor: hand;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         logoutButton.setOnMouseEntered(e -> {
@@ -190,7 +190,7 @@ public class ParentSidebar {
                 "-fx-background-radius: 6;" +
                 "-fx-border-radius: 6;" +
                 "-fx-cursor: hand;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
                 "-fx-scale-x: 1.05; -fx-scale-y: 1.05;"
             );
         });
@@ -204,7 +204,7 @@ public class ParentSidebar {
                 "-fx-background-radius: 6;" +
                 "-fx-border-radius: 6;" +
                 "-fx-cursor: hand;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
             );
         });
         
@@ -235,7 +235,7 @@ public class ParentSidebar {
         versionLabel.setStyle(
             "-fx-font-size: 10px;" +
             "-fx-text-fill: #999999;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         footer.getChildren().add(versionLabel);
@@ -249,7 +249,7 @@ public class ParentSidebar {
         resetButtonStyle(overviewButton);
         resetButtonStyle(childrenButton);
         resetButtonStyle(tasksButton);
-        resetButtonStyle(analyticsButton);
+        resetButtonStyle(messagingButton);
         resetButtonStyle(settingsButton);
         
         // Set active button style
@@ -279,7 +279,7 @@ public class ParentSidebar {
             case "overview" -> overviewButton;
             case "children" -> childrenButton;
             case "tasks" -> tasksButton;
-            case "analytics" -> analyticsButton;
+            case "messaging" -> messagingButton;
             case "settings" -> settingsButton;
             default -> null;
         };

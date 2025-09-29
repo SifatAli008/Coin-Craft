@@ -1,6 +1,8 @@
 package com.coincraft.audio;
 
 import java.util.logging.Logger;
+
+import javafx.scene.media.AudioClip;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
@@ -17,6 +19,10 @@ public class CentralizedMusicManager {
     private boolean isMuted = false;
     private double volume = 0.5; // 50% volume by default
     private String currentTrack = null;
+    
+    // Sound effects
+    private AudioClip sfxButtonClick;
+    private AudioClip sfxInputSelect;
     
     // Music state listeners
     private MusicStateListener stateListener;
@@ -84,6 +90,72 @@ public class CentralizedMusicManager {
             }
         } catch (Exception e) {
             LOGGER.severe("🎵 Failed to load default music track: " + e.getMessage());
+        }
+    }
+
+    // ============================
+    // Sound Effects (SFX)
+    // ============================
+    /**
+     * Play the global button click sound effect.
+     * Uses /sounds/clicking-interface-select-201946.mp3
+     */
+    public void playButtonClick() {
+        try {
+            ensureButtonClickClipLoaded();
+            playClipIfAllowed(sfxButtonClick);
+        } catch (Exception e) {
+            LOGGER.warning("🔊 Failed to play button click: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Play the global input selection sound effect.
+     * Uses /sounds/beep-313342.mp3
+     */
+    public void playInputSelect() {
+        try {
+            ensureInputSelectClipLoaded();
+            playClipIfAllowed(sfxInputSelect);
+        } catch (Exception e) {
+            LOGGER.warning("🔊 Failed to play input select: " + e.getMessage());
+        }
+    }
+
+    private void ensureButtonClickClipLoaded() {
+        if (sfxButtonClick == null) {
+            var resource = getClass().getResource("/sounds/clicking-interface-select-201946.mp3");
+            if (resource != null) {
+                sfxButtonClick = new AudioClip(resource.toExternalForm());
+            } else {
+                LOGGER.warning("🔊 Button click SFX not found: /sounds/clicking-interface-select-201946.mp3");
+            }
+        }
+    }
+
+    private void ensureInputSelectClipLoaded() {
+        if (sfxInputSelect == null) {
+            var resource = getClass().getResource("/sounds/beep-313342.mp3");
+            if (resource != null) {
+                sfxInputSelect = new AudioClip(resource.toExternalForm());
+            } else {
+                LOGGER.warning("🔊 Input select SFX not found: /sounds/beep-313342.mp3");
+            }
+        }
+    }
+
+    private void playClipIfAllowed(AudioClip clip) {
+        if (clip == null) {
+            return;
+        }
+        if (isMuted) {
+            return; // respect mute state for SFX as well
+        }
+        try {
+            clip.setVolume(Math.max(0.0, Math.min(1.0, volume)));
+            clip.play();
+        } catch (Exception e) {
+            LOGGER.warning("🔊 Error playing SFX: " + e.getMessage());
         }
     }
     
@@ -251,5 +323,8 @@ public class CentralizedMusicManager {
                 LOGGER.warning("🎵 Error during music manager shutdown: " + e.getMessage());
             }
         }
+        // Release SFX references
+        sfxButtonClick = null;
+        sfxInputSelect = null;
     }
 }

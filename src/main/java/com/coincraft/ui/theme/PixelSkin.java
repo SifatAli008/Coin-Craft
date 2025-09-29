@@ -23,12 +23,14 @@ public final class PixelSkin {
             }
         } catch (Exception ignored) {}
 
-        // Optional: load a pixel font if provided
+        // Load readable + pixel fonts for global use
         try {
-            var fontUrl = PixelSkin.class.getResource("/fonts/pixel.ttf");
-            if (fontUrl != null) {
-                Font.loadFont(fontUrl.toExternalForm(), 12);
-            }
+            var pxf = PixelSkin.class.getResourceAsStream("/Fonts/Pixelify_Sans/PixelifySans-VariableFont_wght.ttf");
+            if (pxf != null) { Font.loadFont(pxf, 12); }
+        } catch (Exception ignored) {}
+        try {
+            var mc = PixelSkin.class.getResourceAsStream("/Fonts/minecraft/Minecraft.ttf");
+            if (mc != null) { Font.loadFont(mc, 12); }
         } catch (Exception ignored) {}
 
         // Tag root for pixel styles

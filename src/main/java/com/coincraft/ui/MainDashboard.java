@@ -2,7 +2,6 @@ package com.coincraft.ui;
 
 import java.util.logging.Logger;
 
-// import com.coincraft.audio.SoundManager; // Removed - using CentralizedMusicManager now
 import com.coincraft.models.Badge;
 import com.coincraft.models.BadgeLevel;
 import com.coincraft.models.User;
@@ -86,7 +85,7 @@ public class MainDashboard {
         // Set light gaming background style
         root.setStyle(
             "-fx-background-color: linear-gradient(to bottom, #f0f8ff, #e6f3ff, #ddeeff);" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;"
         );
         
         // Create header section
@@ -131,7 +130,7 @@ public class MainDashboard {
             "-fx-font-size: 24px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #2E3440;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;" +
             "-fx-effect: dropshadow(gaussian, rgba(46,52,64,0.3), 3, 0, 0, 1);"
         );
 
@@ -140,9 +139,9 @@ public class MainDashboard {
 
         // Enhanced action buttons with gaming style
         HBox actions = new HBox(12);
-        Button helpBtn = createActionButton("❓ HELP", "#4CAF50");
-        Button settingsBtn = createActionButton("⚙️ SETTINGS", "#FF9800");
-        Button logoutBtn = createActionButton("🚪 LOGOUT", "#F44336");
+        Button helpBtn = createActionButton("❓ Help", "#4CAF50");
+        Button settingsBtn = createActionButton("⚙️ Settings", "#FF9800");
+        Button logoutBtn = createActionButton("🚪 Logout", "#F44336");
         
         actions.getChildren().addAll(helpBtn, settingsBtn, logoutBtn);
 
@@ -158,7 +157,7 @@ public class MainDashboard {
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #2E3440;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;"
         );
 
         levelProgressBar = new ProgressBar(0.0);
@@ -197,56 +196,56 @@ public class MainDashboard {
         switch (role) {
             case CHILD:
                 rail.getChildren().addAll(
-                    createNavButton("🏠 HOME", "#FF9800", true),
-                    createNavButton("🗺️ ADVENTURE", "#2196F3", false),
-                    createNavButton("📋 QUESTS", "#4CAF50", false),
-                    createNavButton("🛒 SHOP", "#9C27B0", false),
-                    createNavButton("🏆 BADGES", "#FFD700", false),
-                    createNavButton("👤 PROFILE", "#607D8B", false)
+                    createNavButton("🏠 Home", "#FF9800", true),
+                    createNavButton("🗺️ Adventure", "#2196F3", false),
+                    createNavButton("📋 Quests", "#4CAF50", false),
+                    createNavButton("🛒 Shop", "#9C27B0", false),
+                    createNavButton("🏆 Badges", "#FFD700", false),
+                    createNavButton("👤 Profile", "#607D8B", false)
                 );
                 break;
                 
             case PARENT:
                 rail.getChildren().addAll(
-                    createNavButton("🏠 OVERVIEW", "#FF9800", true),
-                    createNavButton("👶 MY CHILD", "#2196F3", false),
-                    createNavButton("✅ VALIDATE", "#4CAF50", false),
-                    createNavButton("📊 PROGRESS", "#9C27B0", false),
-                    createNavButton("💰 ALLOWANCE", "#FFD700", false),
-                    createNavButton("⚙️ SETTINGS", "#607D8B", false)
+                    createNavButton("🏠 Overview", "#FF9800", true),
+                    createNavButton("👶 My child", "#2196F3", false),
+                    createNavButton("✅ Validate", "#4CAF50", false),
+                    createNavButton("📊 Progress", "#9C27B0", false),
+                    createNavButton("💰 Allowance", "#FFD700", false),
+                    createNavButton("⚙️ Settings", "#607D8B", false)
                 );
                 break;
                 
             case TEACHER:
                 rail.getChildren().addAll(
-                    createNavButton("🏠 CLASSROOM", "#FF9800", true),
-                    createNavButton("👥 STUDENTS", "#2196F3", false),
-                    createNavButton("📚 LESSONS", "#4CAF50", false),
-                    createNavButton("🏆 CHALLENGES", "#9C27B0", false),
-                    createNavButton("📈 ANALYTICS", "#FFD700", false),
-                    createNavButton("📋 REPORTS", "#607D8B", false)
+                    createNavButton("🏠 Classroom", "#FF9800", true),
+                    createNavButton("👥 Students", "#2196F3", false),
+                    createNavButton("📚 Lessons", "#4CAF50", false),
+                    createNavButton("🏆 Challenges", "#9C27B0", false),
+                    createNavButton("📈 Analytics", "#FFD700", false),
+                    createNavButton("📋 Reports", "#607D8B", false)
                 );
                 break;
                 
             case ADMIN:
                 rail.getChildren().addAll(
-                    createNavButton("🏠 DASHBOARD", "#FF9800", true),
-                    createNavButton("👥 USERS", "#2196F3", false),
-                    createNavButton("📊 ANALYTICS", "#4CAF50", false),
-                    createNavButton("🔧 SYSTEM", "#9C27B0", false),
-                    createNavButton("📝 CONTENT", "#FFD700", false),
-                    createNavButton("🛡️ SECURITY", "#F44336", false)
+                    createNavButton("🏠 Dashboard", "#FF9800", true),
+                    createNavButton("👥 Users", "#2196F3", false),
+                    createNavButton("📊 Analytics", "#4CAF50", false),
+                    createNavButton("🔧 System", "#9C27B0", false),
+                    createNavButton("📝 Content", "#FFD700", false),
+                    createNavButton("🛡️ Security", "#F44336", false)
                 );
                 break;
                 
             case ELDER:
                 rail.getChildren().addAll(
-                    createNavButton("🏠 HOME", "#FF9800", true),
-                    createNavButton("🗺️ ADVENTURE", "#2196F3", false),
-                    createNavButton("📋 QUESTS", "#4CAF50", false),
-                    createNavButton("🛒 SHOP", "#9C27B0", false),
-                    createNavButton("🏆 BADGES", "#FFD700", false),
-                    createNavButton("👤 PROFILE", "#607D8B", false)
+                    createNavButton("🏠 Home", "#FF9800", true),
+                    createNavButton("🗺️ Adventure", "#2196F3", false),
+                    createNavButton("📋 Quests", "#4CAF50", false),
+                    createNavButton("🛒 Shop", "#9C27B0", false),
+                    createNavButton("🏆 Badges", "#FFD700", false),
+                    createNavButton("👤 Profile", "#607D8B", false)
                 );
                 break;
         }
@@ -264,7 +263,7 @@ public class MainDashboard {
             "-fx-background-radius: 8;" +
             "-fx-border-radius: 8;" +
             "-fx-cursor: hand;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;" +
             "-fx-padding: 8 16;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2);"
         );
@@ -297,7 +296,7 @@ public class MainDashboard {
             "-fx-background-radius: 10;" +
             "-fx-border-radius: 10;" +
             "-fx-cursor: hand;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;" +
             "-fx-padding: 12 8;" +
             (selected ? "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 3);" : "-fx-border-color: rgba(46,52,64,0.2); -fx-border-width: 1;");
             
@@ -313,7 +312,7 @@ public class MainDashboard {
                     "-fx-background-radius: 10;" +
                     "-fx-border-radius: 10;" +
                     "-fx-cursor: hand;" +
-                    "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                    "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;" +
                     "-fx-padding: 12 8;" +
                     "-fx-border-color: rgba(46,52,64,0.3); -fx-border-width: 1;" +
                     "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);"
@@ -755,9 +754,9 @@ public class MainDashboard {
         VBox actions = new VBox(8);
         actions.setAlignment(Pos.CENTER);
         
-        Button validateBtn = createGameButton("✅ VALIDATE TASKS", "#4CAF50");
-        Button allowanceBtn = createGameButton("💰 MANAGE ALLOWANCE", "#FF9800");
-        Button reportsBtn = createGameButton("📊 VIEW REPORTS", "#2196F3");
+        Button validateBtn = createGameButton("✅ Validate tasks", "#4CAF50");
+        Button allowanceBtn = createGameButton("💰 Manage allowance", "#FF9800");
+        Button reportsBtn = createGameButton("📊 View reports", "#2196F3");
         
         actions.getChildren().addAll(validateBtn, allowanceBtn, reportsBtn);
         return actions;
@@ -773,7 +772,7 @@ public class MainDashboard {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        Button validateAllBtn = createGameButton("✅ VALIDATE ALL", "#4CAF50");
+        Button validateAllBtn = createGameButton("✅ Validate all", "#4CAF50");
         validateAllBtn.setPrefWidth(200);
         
         panel.getChildren().addAll(pendingLabel, validateAllBtn);
@@ -999,7 +998,7 @@ public class MainDashboard {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        Button editBtn = createGameButton("✏️ EDIT CONTENT", "#FF9800");
+        Button editBtn = createGameButton("✏️ Edit content", "#FF9800");
         editBtn.setPrefWidth(150);
         
         panel.getChildren().addAll(contentLabel, editBtn);
@@ -1130,7 +1129,7 @@ public class MainDashboard {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
         // Music control button
-        Button musicBtn = createActionButton("🎵 MUSIC", "#9C27B0");
+        Button musicBtn = createActionButton("🎵 Music", "#9C27B0");
         
         footer.getChildren().addAll(statusLabel, streakLabel, spacer, musicBtn);
         return footer;
@@ -1153,7 +1152,7 @@ public class MainDashboard {
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;"
         );
         
         card.getChildren().addAll(titleLabel, content);
@@ -1164,9 +1163,9 @@ public class MainDashboard {
         HBox actions = new HBox(10);
         actions.setAlignment(Pos.CENTER);
         
-        Button startQuestBtn = createGameButton("🎯 START QUEST", "#4CAF50");
-        Button shopBtn = createGameButton("🛒 SHOP", "#FF9800");
-        Button achievementsBtn = createGameButton("🏆 BADGES", "#9C27B0");
+        Button startQuestBtn = createGameButton("🎯 Start quest", "#4CAF50");
+        Button shopBtn = createGameButton("🛒 Shop", "#FF9800");
+        Button achievementsBtn = createGameButton("🏆 Badges", "#9C27B0");
         
         actions.getChildren().addAll(startQuestBtn, shopBtn, achievementsBtn);
         return actions;
@@ -1234,9 +1233,9 @@ public class MainDashboard {
     
     private void handleGameAction(String action) {
         String message = switch (action) {
-            case "🎯 START QUEST" -> "Quest system coming soon! Complete real-world money tasks to earn rewards.";
-            case "🛒 SHOP" -> "Avatar shop coming soon! Customize your character with earned SmartCoins.";
-            case "🏆 BADGES" -> "Achievement system coming soon! Unlock badges by mastering financial skills.";
+            case "🎯 Start quest" -> "Quest system coming soon! Complete real-world money tasks to earn rewards.";
+            case "🛒 Shop" -> "Avatar shop coming soon! Customize your character with earned SmartCoins.";
+            case "🏆 Badges" -> "Achievement system coming soon! Unlock badges by mastering financial skills.";
             default -> "Feature coming soon!";
         };
         showInfoDialog("Game Action", message);

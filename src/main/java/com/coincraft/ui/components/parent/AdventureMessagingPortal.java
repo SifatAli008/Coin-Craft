@@ -1,24 +1,34 @@
 package com.coincraft.ui.components.parent;
 
-import com.coincraft.models.User;
-
-import javafx.application.Platform;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import com.coincraft.models.User;
+import com.coincraft.models.MessageData;
+import com.coincraft.services.MessagingService;
+
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 /**
  * Adventure Messaging Portal for communication between merchants and adventurers
@@ -27,14 +37,17 @@ import java.util.Optional;
 public class AdventureMessagingPortal {
     private Stage dialog;
     private User adventurer;
-    private TextArea messageHistoryArea;
-    private TextField messageInputField;
+    private ScrollPane messagesScroll;
+    private VBox messagesContainer;
+    private TextArea messageInputField;
     private Button sendButton;
-    private List<Message> messageHistory;
+    private List<MessageData> messageHistory;
+    private MessagingService messagingService;
     
     public AdventureMessagingPortal(Stage parentStage, User adventurer) {
         this.adventurer = adventurer;
         this.messageHistory = new ArrayList<>();
+        this.messagingService = MessagingService.getInstance();
         createDialog(parentStage);
         loadMessageHistory();
     }
@@ -114,27 +127,30 @@ public class AdventureMessagingPortal {
     }
     
     private VBox createMessageHistorySection() {
-        VBox messageHistorySection = new VBox(10);
+        VBox messageHistorySection = new VBox(8);
         
-        Label sectionTitle = new Label("📜 Message History");
+        Label sectionTitle = new Label("💬 Chat");
         sectionTitle.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 14));
         sectionTitle.setStyle("-fx-text-fill: #333333;");
         
-        messageHistoryArea = new TextArea();
-        messageHistoryArea.setPrefHeight(400);
-        messageHistoryArea.setEditable(false);
-        messageHistoryArea.setWrapText(true);
-        messageHistoryArea.setStyle(
-            "-fx-background-color: white;" +
-            "-fx-background-radius: 8;" +
-            "-fx-border-radius: 8;" +
-            "-fx-border-color: #e0e0e0;" +
-            "-fx-border-width: 1;" +
-            "-fx-font-family: 'Consolas', 'Monaco', monospace;" +
-            "-fx-font-size: 12px;"
-        );
+        messagesContainer = new VBox(8);
+        messagesContainer.setPadding(new Insets(12));
+        messagesContainer.setFillWidth(true);
         
-        messageHistorySection.getChildren().addAll(sectionTitle, messageHistoryArea);
+        messagesScroll = new ScrollPane(messagesContainer);
+        messagesScroll.setFitToWidth(true);
+        messagesScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        messagesScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        messagesScroll.setStyle(
+            "-fx-background-color: white;" +
+            "-fx-background: white;" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
+            "-fx-border-color: #e5e7eb;"
+        );
+        messagesScroll.setPrefHeight(480);
+        
+        messageHistorySection.getChildren().addAll(sectionTitle, messagesScroll);
         return messageHistorySection;
     }
     
@@ -142,25 +158,30 @@ public class AdventureMessagingPortal {
         HBox messageInputSection = new HBox(10);
         messageInputSection.setAlignment(Pos.CENTER_LEFT);
         
-        Label inputLabel = new Label("💬 New Message:");
-        inputLabel.setFont(Font.font("Ancient Medium", FontWeight.BOLD, 12));
-        inputLabel.setStyle("-fx-text-fill: #333333;");
-        
-        messageInputField = new TextField();
-        messageInputField.setPromptText("Type your message to " + adventurer.getName() + "...");
-        messageInputField.setPrefHeight(35);
+        messageInputField = new TextArea();
+        messageInputField.setPromptText("Write a message…  (Enter to send • Shift+Enter for new line)");
+        messageInputField.setPrefRowCount(2);
         HBox.setHgrow(messageInputField, Priority.ALWAYS);
         messageInputField.setStyle(
             "-fx-background-color: white;" +
-            "-fx-background-radius: 6;" +
-            "-fx-border-radius: 6;" +
-            "-fx-border-color: #e0e0e0;" +
+            "-fx-background-radius: 10;" +
+            "-fx-border-radius: 10;" +
+            "-fx-border-color: #e5e7eb;" +
             "-fx-border-width: 1;" +
             "-fx-font-family: 'Segoe UI', sans-serif;"
         );
         
-        // Handle Enter key to send message
-        messageInputField.setOnAction(e -> sendMessage());
+        // Handle Enter to send, Shift+Enter for newline
+        messageInputField.setOnKeyPressed(e -> {
+            if (e.getCode() == javafx.scene.input.KeyCode.ENTER) {
+                if (e.isShiftDown()) {
+                    // allow newline
+                } else {
+                    e.consume();
+                    sendMessage();
+                }
+            }
+        });
         
         sendButton = new Button("📤 Send");
         sendButton.setPrefWidth(80);
@@ -179,7 +200,7 @@ public class AdventureMessagingPortal {
         
         sendButton.setOnAction(e -> sendMessage());
         
-        messageInputSection.getChildren().addAll(inputLabel, messageInputField, sendButton);
+        messageInputSection.getChildren().addAll(messageInputField, sendButton);
         return messageInputSection;
     }
     
@@ -246,47 +267,20 @@ public class AdventureMessagingPortal {
     }
     
     private void loadMessageHistory() {
-        // Load sample messages for demonstration
-        // In a real implementation, this would load from Firebase
-        addSampleMessages();
+        // Subscribe to conversation updates
+        String conversationId = buildConversationId();
+        messageHistory = messagingService.getRecent(conversationId, 100);
         updateMessageDisplay();
+
+        messagingService.addListener(conversationId, new MessagingService.Listener() {
+            @Override public void onUpdate(List<MessageData> messages) {
+                messageHistory = messages;
+                Platform.runLater(() -> updateMessageDisplay());
+            }
+        });
     }
     
-    private void addSampleMessages() {
-        LocalDateTime now = LocalDateTime.now();
-        
-        // Add welcome message
-        messageHistory.add(new Message(
-            "Merchant",
-            "Welcome to your adventure, " + adventurer.getName() + "! 🎉",
-            now.minusHours(2)
-        ));
-        
-        // Add some sample conversation
-        messageHistory.add(new Message(
-            adventurer.getName(),
-            "Hi! I'm excited to start my financial adventure! 💰",
-            now.minusHours(1).minusMinutes(30)
-        ));
-        
-        messageHistory.add(new Message(
-            "Merchant",
-            "Great to hear! Remember to complete your daily quests to earn SmartCoins. 🏆",
-            now.minusHours(1)
-        ));
-        
-        messageHistory.add(new Message(
-            adventurer.getName(),
-            "I completed my first quest! I earned 25 SmartCoins! ⭐",
-            now.minusMinutes(30)
-        ));
-        
-        messageHistory.add(new Message(
-            "Merchant",
-            "Excellent work! Keep up the great progress! 🎯",
-            now.minusMinutes(15)
-        ));
-    }
+    // Demo seeding removed: messages are loaded from service
     
     private void sendMessage() {
         String messageText = messageInputField.getText().trim();
@@ -294,38 +288,61 @@ public class AdventureMessagingPortal {
             return;
         }
         
-        // Create new message
-        Message newMessage = new Message(
-            "Merchant",
-            messageText,
-            LocalDateTime.now()
+        // Persist via messaging service
+        String parentId = com.coincraft.ui.routing.DashboardRouter.getInstance().getCurrentUser().getUserId();
+        String parentName = com.coincraft.ui.routing.DashboardRouter.getInstance().getCurrentUser().getName();
+        messagingService.sendMessage(
+            buildConversationId(),
+            parentId,
+            parentName,
+            adventurer.getUserId(),
+            adventurer.getName(),
+            messageText
         );
-        
-        messageHistory.add(newMessage);
-        updateMessageDisplay();
         messageInputField.clear();
-        
-        // In a real implementation, save to Firebase here
-        System.out.println("Message sent to " + adventurer.getName() + ": " + messageText);
     }
     
     private void updateMessageDisplay() {
-        StringBuilder displayText = new StringBuilder();
-        
-        for (Message message : messageHistory) {
-            String timestamp = message.getTimestamp().format(DateTimeFormatter.ofPattern("MMM dd, HH:mm"));
-            String sender = message.getSender().equals("Merchant") ? "🏪 Merchant" : "⚔️ " + message.getSender();
-            
-            displayText.append(String.format("[%s] %s: %s\n\n", 
-                timestamp, sender, message.getContent()));
+        messagesContainer.getChildren().clear();
+        for (MessageData message : messageHistory) {
+            messagesContainer.getChildren().add(createBubble(message));
         }
-        
-        messageHistoryArea.setText(displayText.toString());
         
         // Scroll to bottom
         Platform.runLater(() -> {
-            messageHistoryArea.setScrollTop(Double.MAX_VALUE);
+            messagesScroll.setVvalue(1.0);
         });
+    }
+
+    private HBox createBubble(MessageData message) {
+        boolean isMerchant = !adventurer.getUserId().equals(message.getSenderId());
+        HBox row = new HBox();
+        row.setAlignment(isMerchant ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+        
+        VBox bubble = new VBox(4);
+        bubble.setMaxWidth(520);
+        bubble.setStyle(
+            (isMerchant
+                ? "-fx-background-color: #2563EB; -fx-text-fill: white;"
+                : "-fx-background-color: #F3F4F6; -fx-text-fill: #111827;") +
+            "-fx-padding: 10 12; -fx-background-radius: 14; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 1);"
+        );
+        
+        Label content = new Label(message.getContent());
+        content.setWrapText(true);
+        content.setStyle(isMerchant ? "-fx-text-fill: white;" : "-fx-text-fill: #111827;");
+        
+        Label meta = new Label(message.getTimestamp().format(DateTimeFormatter.ofPattern("MMM dd, HH:mm")));
+        meta.setStyle((isMerchant ? "-fx-text-fill: rgba(255,255,255,0.85);" : "-fx-text-fill: #6B7280;") + "-fx-font-size: 10px;");
+        
+        bubble.getChildren().addAll(content, meta);
+        row.getChildren().add(bubble);
+        return row;
+    }
+
+    private String buildConversationId() {
+        String parentId = com.coincraft.ui.routing.DashboardRouter.getInstance().getCurrentUser().getUserId();
+        return parentId + "_" + adventurer.getUserId();
     }
     
     private void showQuickMessages() {
@@ -369,22 +386,5 @@ public class AdventureMessagingPortal {
         dialog.showAndWait();
     }
     
-    /**
-     * Inner class to represent a message
-     */
-    private static class Message {
-        private String sender;
-        private String content;
-        private LocalDateTime timestamp;
-        
-        public Message(String sender, String content, LocalDateTime timestamp) {
-            this.sender = sender;
-            this.content = content;
-            this.timestamp = timestamp;
-        }
-        
-        public String getSender() { return sender; }
-        public String getContent() { return content; }
-        public LocalDateTime getTimestamp() { return timestamp; }
-    }
+    // Messages are represented by com.coincraft.models.MessageData
 }

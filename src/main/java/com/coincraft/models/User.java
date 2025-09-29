@@ -26,6 +26,8 @@ public class User {
     private int leaderboardRank;
     private LocalDateTime lastLogin;
     private LocalDateTime createdAt;
+    // ID of the parent/merchant who created/owns this adventurer (for CHILD accounts)
+    private String parentId;
     
     // Constructors
     public User() {
@@ -106,6 +108,9 @@ public class User {
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    
+    public String getParentId() { return parentId; }
+    public void setParentId(String parentId) { this.parentId = parentId; }
     
     // Business methods
     public void addSmartCoins(int coins) {

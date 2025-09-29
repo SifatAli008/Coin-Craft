@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import com.coincraft.models.User;
-import com.coincraft.ui.components.CentralizedMusicController;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -296,12 +295,9 @@ public class AdminDashboard extends BaseDashboard {
         VBox titleBox = new VBox(5);
         titleBox.getChildren().addAll(title, welcome);
         
-        // Music Controller for Admin
-        CentralizedMusicController musicController = new CentralizedMusicController();
-        
         HBox buttonBox = new HBox(10);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
-        buttonBox.getChildren().addAll(musicController.getRoot(), refreshButton, logoutButton);
+        buttonBox.getChildren().addAll(refreshButton, logoutButton);
         
         header.getChildren().addAll(titleBox, spacer, buttonBox);
         return header;
@@ -737,7 +733,7 @@ public class AdminDashboard extends BaseDashboard {
     
     private void applyAdminTheme() {
         root.setStyle(
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-background-color: linear-gradient(to bottom right, #263238, #37474F, #455A64);"
         );
     }

@@ -2,13 +2,23 @@
 
 /* Root styling - Modern with pixel touches */
 .pixel-root {
-    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+    -fx-font-family: "Segoe UI", "Inter", "Pixelify Sans", "Minecraft", sans-serif !important;
     -fx-font-size: 14px;
+}
+
+/* Enforce readable font across all descendants */
+.pixel-root * {
+    -fx-font-family: "Segoe UI", "Inter", "Pixelify Sans", "Minecraft", sans-serif !important;
+}
+
+/* Make all buttons bold by default */
+.pixel-root .button {
+    -fx-font-weight: 700;
 }
 
 /* Gaming accent elements */
 .pixel-accent {
-    -fx-font-family: "Courier New", "Monaco", monospace;
+    -fx-font-family: "Minecraft", "Courier New", monospace;
     -fx-font-weight: bold;
 }
 
@@ -23,7 +33,7 @@
     -fx-border-style: solid;
     -fx-padding: 12 24;
     -fx-font-size: 12px;
-    -fx-font-family: "Courier New", monospace;
+    -fx-font-family: "Segoe UI", "Inter", "Pixelify Sans", "Minecraft", sans-serif !important;
 }
 .pixel-button:hover {
     -fx-background-color: #333333;
@@ -61,14 +71,14 @@
     -fx-border-width: 3 3 3 3;
     -fx-border-style: solid;
     -fx-padding: 8 12;
-    -fx-font-family: "Courier New", monospace;
+    -fx-font-family: "Segoe UI", "Inter", "Pixelify Sans", "Minecraft", sans-serif !important;
     -fx-font-size: 12px;
 }
 
 /* Labels */
 .pixel-label {
     -fx-text-fill: #000000;
-    -fx-font-family: "Courier New", monospace;
+    -fx-font-family: "Segoe UI", "Inter", "Pixelify Sans", "Minecraft", sans-serif !important;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
 }

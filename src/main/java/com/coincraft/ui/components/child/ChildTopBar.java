@@ -133,7 +133,7 @@ public class ChildTopBar {
             "-fx-text-fill: white;" +
             "-fx-font-size: 10px;" +
             "-fx-font-weight: 700;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-padding: 3 8;" +
             "-fx-background-radius: 10;" +
             "-fx-border-radius: 10;" +
@@ -157,7 +157,7 @@ public class ChildTopBar {
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         return welcomeLabel;
@@ -217,7 +217,7 @@ public class ChildTopBar {
             "-fx-font-size: 10px;" +
             "-fx-text-fill: #64748b;" +
             "-fx-font-weight: 500;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         progressContainer.getChildren().addAll(progressStack, progressText);

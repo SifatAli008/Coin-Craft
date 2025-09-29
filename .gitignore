@@ -95,6 +95,17 @@ logs/
 coincraft-app-*.jar
 launch-coincraft.bat.bak
 
+# WS Bridge (Node)
+server/ws-bridge/node_modules/
+server/ws-bridge/npm-debug.log*
+server/ws-bridge/yarn-error.log*
+server/ws-bridge/pnpm-debug.log*
+server/ws-bridge/.env
+
+# Local runtime data
+*.local
+.coincraft/
+
 # Security - Never commit sensitive files
 firebase-config.json
 firebase-service-account.json

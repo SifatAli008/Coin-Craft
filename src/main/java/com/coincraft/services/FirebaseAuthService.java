@@ -206,6 +206,47 @@ public class FirebaseAuthService {
     }
     
     /**
+     * Send password reset email
+     */
+    public AuthResult sendPasswordResetEmail(String email) {
+        try {
+            String url = config.getAuthUrl() + ":sendOobCode?key=" + config.getApiKey();
+            
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("requestType", "PASSWORD_RESET");
+            requestBody.put("email", email);
+            
+            String jsonBody = objectMapper.writeValueAsString(requestBody);
+            
+            RequestBody body = RequestBody.create(jsonBody, MediaType.get("application/json"));
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .build();
+            
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (response.isSuccessful()) {
+                    AuthResult result = new AuthResult();
+                    result.setSuccess(true);
+                    result.setEmail(email);
+                    
+                    LOGGER.info("Password reset email sent successfully to: " + email);
+                    return result;
+                } else {
+                    String errorBody = null;
+                    try { errorBody = response.body() != null ? response.body().string() : null; } catch (Exception ignored) {}
+                    LOGGER.warning("Password reset failed: " + response.code() + (errorBody != null ? " body=" + errorBody : ""));
+                    return createErrorResult("Password reset failed: " + (errorBody != null ? errorBody : "Invalid email"));
+                }
+            }
+            
+        } catch (Exception e) {
+            LOGGER.severe("Password reset error: " + e.getMessage());
+            return createErrorResult("Password reset error: " + e.getMessage());
+        }
+    }
+    
+    /**
      * Sign in user with Google user info (alternative method)
      * Creates a Firebase user from Google OAuth user information
      */
