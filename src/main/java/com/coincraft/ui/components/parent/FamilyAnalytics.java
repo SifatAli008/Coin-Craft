@@ -1,7 +1,6 @@
 package com.coincraft.ui.components.parent;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -325,7 +324,7 @@ public class FamilyAnalytics {
         
         // Learning Streak
         VBox streakCard = createStatCard("🔥", "Learning Streak", longestStreak + " days", 
-            longestStreak > 7 ? "Excellent!" : "Keep going!", "#FF9800");
+            longestStreak > 7 ? "Excellent!" : "Keep going!", "#FA8A00");
         
         // Achievement Rate
         VBox achievementCard = createStatCard("🏆", "Achievement Rate", String.format("%.0f%%", achievementRate), 
@@ -376,7 +375,7 @@ public class FamilyAnalytics {
         Label changeLabel = new Label(change);
         changeLabel.setStyle(
             "-fx-font-size: 10px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
             "-fx-text-alignment: center;"
         );

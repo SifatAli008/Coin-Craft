@@ -44,7 +44,7 @@ public class CentralizedMusicController implements CentralizedMusicManager.Music
         );
         
         // Title
-        Label titleLabel = new Label("🎵 Centralized Music");
+        Label titleLabel = new Label("Centralized Music");
         titleLabel.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-text-fill: #667EEA;" +
@@ -85,35 +85,35 @@ public class CentralizedMusicController implements CentralizedMusicManager.Music
         // Play/Pause Button
         playPauseButton = new Button("▶️");
         playPauseButton.setPrefSize(40, 40);
-        playPauseButton.setStyle(getButtonStyle());
+        playPauseButton.setStyle(getButtonStyle() + "-fx-text-fill: white;");
         
         playPauseButton.setOnAction(e -> {
             musicManager.togglePlayPause();
         });
         
         playPauseButton.setOnMouseEntered(e -> {
-            playPauseButton.setStyle(getButtonHoverStyle());
+            playPauseButton.setStyle(getButtonHoverStyle() + "-fx-text-fill: white;");
         });
         
         playPauseButton.setOnMouseExited(e -> {
-            playPauseButton.setStyle(getButtonStyle());
+            playPauseButton.setStyle(getButtonStyle() + "-fx-text-fill: white;");
         });
         
         // Mute Button
         muteButton = new Button("🔊");
         muteButton.setPrefSize(40, 40);
-        muteButton.setStyle(getButtonStyle());
+        muteButton.setStyle(getButtonStyle() + "-fx-text-fill: white;");
         
         muteButton.setOnAction(e -> {
             musicManager.toggleMute();
         });
         
         muteButton.setOnMouseEntered(e -> {
-            muteButton.setStyle(getButtonHoverStyle());
+            muteButton.setStyle(getButtonHoverStyle() + "-fx-text-fill: white;");
         });
         
         muteButton.setOnMouseExited(e -> {
-            muteButton.setStyle(getButtonStyle());
+            muteButton.setStyle(getButtonStyle() + "-fx-text-fill: white;");
         });
     }
     

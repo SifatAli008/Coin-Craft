@@ -22,7 +22,7 @@ import javafx.scene.shape.Circle;
  */
 public class ChildTopBar {
     private HBox root;
-    private final User currentUser;
+    private User currentUser;
     private Label welcomeLabel;
     
     // Real data for stats
@@ -34,6 +34,16 @@ public class ChildTopBar {
         this.currentUser = user;
         calculateStats();
         initializeUI();
+    }
+
+    /**
+     * Update the bound user and rebuild internal stats on next refresh
+     */
+    public void setCurrentUser(User user) {
+        if (user != null) {
+            this.currentUser = user;
+            calculateStats();
+        }
     }
     
     /**
@@ -120,7 +130,7 @@ public class ChildTopBar {
             avatarImage.setImage(defaultAvatar);
         } catch (Exception e) {
             avatarImage.setStyle(
-                "-fx-background-color: linear-gradient(to bottom, #4CAF50, #388E3C);" +
+                "-fx-background-color: linear-gradient(to bottom, #FA8A00, #E67E00);" +
                 "-fx-background-radius: 20;" +
                 "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0, 0, 2);"
             );
@@ -129,7 +139,7 @@ public class ChildTopBar {
         // Enhanced level badge with better styling
         Label levelBadge = new Label("LVL " + currentUser.getLevel());
         levelBadge.setStyle(
-            "-fx-background-color: #FF9800;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 10px;" +
             "-fx-font-weight: 700;" +
@@ -149,10 +159,9 @@ public class ChildTopBar {
      */
     private Label createCompactWelcome() {
         String greeting = getTimeBasedGreeting();
-        String userName = currentUser.getName();
-        String adventureEmoji = getAdventureEmoji();
+        String userName = sanitizeDisplayName(currentUser.getName());
         
-        welcomeLabel = new Label(greeting + ", " + userName + "! " + adventureEmoji);
+        welcomeLabel = new Label(greeting + ", " + userName + "!");
         welcomeLabel.setStyle(
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 700;" +
@@ -161,6 +170,15 @@ public class ChildTopBar {
         );
         
         return welcomeLabel;
+    }
+
+    /**
+     * Remove repeated role suffixes like "(Adventurer)" from the display name
+     */
+    private String sanitizeDisplayName(String rawName) {
+        if (rawName == null) return "";
+        String cleaned = rawName.replaceAll("\\s*\\(Adventurer\\)", "");
+        return cleaned.trim().replaceAll("\\s{2,}", " ");
     }
     
     /**
@@ -202,7 +220,7 @@ public class ChildTopBar {
         progressFill.setPrefWidth(120 * Math.max(0.1, progressPercent)); // At least 10% visible
         progressFill.setPrefHeight(4);
         progressFill.setStyle(
-            "-fx-background-color: linear-gradient(to right, #4CAF50, #66BB6A);" +
+            "-fx-background-color: linear-gradient(to right, #FA8A00, #FFB84D);" +
             "-fx-background-radius: 2;"
         );
         
@@ -232,13 +250,13 @@ public class ChildTopBar {
         statsSection.setAlignment(Pos.CENTER);
         
         // Coins display (real data)
-        HBox coinsCard = createStatCard("💰", String.valueOf(currentUser.getSmartCoinBalance()), "#EAB308");
+        HBox coinsCard = createStatCard("SmartCoins", String.valueOf(currentUser.getSmartCoinBalance()), "#EAB308");
         
         // Streak display (real data)
-        HBox streakCard = createStatCard("🔥", String.valueOf(dailyStreak), "#F97316");
+        HBox streakCard = createStatCard("Streak", String.valueOf(dailyStreak), "#F97316");
         
         // Active quests (real data)
-        HBox questsCard = createStatCard("⚔️", String.valueOf(activeTasks), "#3B82F6");
+        HBox questsCard = createStatCard("Tasks", String.valueOf(activeTasks), "#3B82F6");
         
         statsSection.getChildren().addAll(coinsCard, streakCard, questsCard);
         return statsSection;
@@ -247,7 +265,7 @@ public class ChildTopBar {
     /**
      * Create individual stat card
      */
-    private HBox createStatCard(String icon, String value, String accentColor) {
+    private HBox createStatCard(String label, String value, String accentColor) {
         HBox card = new HBox(6);
         card.setAlignment(Pos.CENTER);
         card.setPadding(new Insets(8, 12, 8, 12));
@@ -260,9 +278,14 @@ public class ChildTopBar {
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);"
         );
         
-        // Icon
-        Label iconLabel = new Label(icon);
-        iconLabel.setStyle("-fx-font-size: 14px;");
+        // Label
+        Label labelLabel = new Label(label);
+        labelLabel.setStyle(
+            "-fx-font-size: 11px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #666666;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
         
         // Value
         Label valueLabel = new Label(value);
@@ -273,25 +296,8 @@ public class ChildTopBar {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        card.getChildren().addAll(iconLabel, valueLabel);
+        card.getChildren().addAll(labelLabel, valueLabel);
         return card;
-    }
-    
-    /**
-     * Get adventure emoji based on time of day
-     */
-    private String getAdventureEmoji() {
-        int hour = LocalDateTime.now().getHour();
-        
-        if (hour < 12) {
-            return "🌅"; // Sunrise for morning
-        } else if (hour < 17) {
-            return "🚀"; // Rocket for afternoon
-        } else if (hour < 21) {
-            return "⭐"; // Star for evening
-        } else {
-            return "🌙"; // Moon for night
-        }
     }
     
     /**
@@ -309,10 +315,6 @@ public class ChildTopBar {
             "-fx-padding: 4 8;"
         );
         
-        // Small coin icon
-        Label coinIcon = new Label("💰");
-        coinIcon.setStyle("-fx-font-size: 12px;");
-        
         // Balance
         Label balanceLabel = new Label(String.valueOf(currentUser.getSmartCoinBalance()));
         balanceLabel.setStyle(
@@ -322,7 +324,7 @@ public class ChildTopBar {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        coinSection.getChildren().addAll(coinIcon, balanceLabel);
+        coinSection.getChildren().add(balanceLabel);
         return coinSection;
     }
     

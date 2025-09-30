@@ -160,6 +160,10 @@ public class TaskPanel {
                 statusLabel.setText("PENDING");
                 statusLabel.setStyle(statusLabel.getStyle() + "-fx-background-color: #FFA500; -fx-text-fill: white;");
             }
+            case AWAITING_APPROVAL -> {
+                statusLabel.setText("AWAITING APPROVAL");
+                statusLabel.setStyle(statusLabel.getStyle() + "-fx-background-color: #FF8C00; -fx-text-fill: white;");
+            }
             case APPROVED -> {
                 statusLabel.setText("COMPLETED");
                 statusLabel.setStyle(statusLabel.getStyle() + "-fx-background-color: #32CD32; -fx-text-fill: white;");
@@ -186,11 +190,11 @@ public class TaskPanel {
         
         if (status == ValidationStatus.PENDING && !task.isCompleted()) {
             actionButton.setText("Mark Complete");
-            actionButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+            actionButton.setStyle("-fx-background-color: #FA8A00; -fx-text-fill: white;");
             actionButton.setOnAction(e -> handleTaskComplete(task));
         } else if (status == ValidationStatus.REJECTED) {
             actionButton.setText("Try Again");
-            actionButton.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white;");
+            actionButton.setStyle("-fx-background-color: #FA8A00; -fx-text-fill: white;");
             actionButton.setOnAction(e -> handleTaskRetry(task));
         } else {
             actionButton.setText("View Details");

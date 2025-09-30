@@ -1,8 +1,5 @@
 package com.coincraft.services;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import com.coincraft.models.Task;

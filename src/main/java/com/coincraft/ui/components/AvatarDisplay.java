@@ -60,7 +60,7 @@ public class AvatarDisplay {
         
         // Add border effect to avatar
         avatarImageView.setStyle(
-            "-fx-effect: dropshadow(gaussian, #FF9800, 8, 0, 0, 0)," +
+            "-fx-effect: dropshadow(gaussian, #FA8A00, 8, 0, 0, 0)," +
             "           dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 3);"
         );
         
@@ -71,9 +71,9 @@ public class AvatarDisplay {
         } catch (Exception e) {
             // Create a colorful placeholder if image not found
             avatarImageView.setStyle(
-                "-fx-background-color: linear-gradient(to bottom, #4CAF50, #388E3C);" +
+                "-fx-background-color: linear-gradient(to bottom, #FA8A00, #E67E00);" +
                 "-fx-background-radius: 35;" +
-                "-fx-effect: dropshadow(gaussian, #FF9800, 6, 0, 0, 0)," +
+                "-fx-effect: dropshadow(gaussian, #FA8A00, 6, 0, 0, 0)," +
                 "           dropshadow(gaussian, rgba(0,0,0,0.3), 4, 0, 0, 2);"
             );
         }
@@ -92,7 +92,7 @@ public class AvatarDisplay {
         // Level badge with gaming style
         levelLabel = new Label("Level 1");
         levelLabel.setStyle(
-            "-fx-background-color: #FF9800;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 10px;" +
             "-fx-font-weight: 700;" +
@@ -107,7 +107,7 @@ public class AvatarDisplay {
         // Customize button with gaming style
         customizeButton = new Button("🎨 Customize");
         customizeButton.setStyle(
-            "-fx-background-color: #4CAF50;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 10px;" +
             "-fx-font-weight: 600;" +
@@ -124,7 +124,7 @@ public class AvatarDisplay {
         // Add hover effects
         customizeButton.setOnMouseEntered(e -> {
             customizeButton.setStyle(
-                "-fx-background-color: #388E3C;" +
+                "-fx-background-color: #E67E00;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 10px;" +
                 "-fx-font-weight: 600;" +
@@ -140,7 +140,7 @@ public class AvatarDisplay {
         
         customizeButton.setOnMouseExited(e -> {
             customizeButton.setStyle(
-                "-fx-background-color: #4CAF50;" +
+                "-fx-background-color: #FA8A00;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 10px;" +
                 "-fx-font-weight: 600;" +
@@ -212,7 +212,7 @@ public class AvatarDisplay {
             "-fx-background-color: rgba(255, 255, 255, 0.95);" +
             "-fx-background-radius: 16;" +
             "-fx-border-radius: 16;" +
-            "-fx-border-color: #FF9800;" +
+            "-fx-border-color: #FA8A00;" +
             "-fx-border-width: 2;" +
             "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.3), 16, 0, 0, 8);"
         );

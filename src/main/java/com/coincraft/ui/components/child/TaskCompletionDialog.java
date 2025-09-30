@@ -44,12 +44,14 @@ public class TaskCompletionDialog {
         dialogStage = new Stage();
         dialogStage.initModality(Modality.WINDOW_MODAL);
         dialogStage.initOwner(parentStage);
-        dialogStage.setTitle("⚔️ Complete Quest");
-        dialogStage.setResizable(false);
+        dialogStage.setTitle("⚔️ Complete Task");
+        dialogStage.setResizable(true);
         
         createUI();
         
-        Scene scene = new Scene(root, 500, 400);
+        Scene scene = new Scene(root, 640, 520);
+        dialogStage.setMinWidth(600);
+        dialogStage.setMinHeight(480);
         
         // Load CSS styles
         try {
@@ -68,7 +70,7 @@ public class TaskCompletionDialog {
         root.setPadding(new Insets(30));
         root.setAlignment(Pos.TOP_CENTER);
         root.setStyle(
-            "-fx-background-color: linear-gradient(to bottom right, #E3F2FD, #F3E5F5, #E8F5E8);" +
+            "-fx-background-color: linear-gradient(to bottom right, #E3F2FD, #F3E5F5, #FFF8E1);" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -82,7 +84,7 @@ public class TaskCompletionDialog {
         VBox header = new VBox(8);
         header.setAlignment(Pos.CENTER);
         
-        Label titleLabel = new Label("⚔️ Complete Quest");
+        Label titleLabel = new Label("⚔️ Complete Task");
         titleLabel.setStyle(
             "-fx-font-size: 24px;" +
             "-fx-font-weight: 700;" +
@@ -90,10 +92,10 @@ public class TaskCompletionDialog {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        Label subtitleLabel = new Label("Mark your quest as complete and provide evidence");
+        Label subtitleLabel = new Label("Mark your task as complete and provide evidence");
         subtitleLabel.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -130,7 +132,7 @@ public class TaskCompletionDialog {
         rewardInfo.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -150,7 +152,7 @@ public class TaskCompletionDialog {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        Label notesSubtitle = new Label("Describe what you did to complete this quest (required for approval)");
+        Label notesSubtitle = new Label("Describe what you did to complete this task (required for approval)");
         notesSubtitle.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-text-fill: #666666;" +
@@ -158,8 +160,9 @@ public class TaskCompletionDialog {
         );
         
         completionNotesArea = new TextArea();
-        completionNotesArea.setPromptText("I completed this quest by...\n\nProvide specific details about what you did...");
-        completionNotesArea.setPrefRowCount(4);
+        completionNotesArea.setPromptText("I completed this task by...\n\nProvide specific details about what you did...");
+        completionNotesArea.setPrefRowCount(6);
+        completionNotesArea.setPrefWidth(560);
         completionNotesArea.setWrapText(true);
         completionNotesArea.setStyle(
             "-fx-background-color: white;" +
@@ -197,11 +200,11 @@ public class TaskCompletionDialog {
             dialogStage.close();
         });
         
-        completeButton = new Button("✅ COMPLETE QUEST");
+        completeButton = new Button("✅ COMPLETE TASK");
         completeButton.setPrefWidth(200);
         completeButton.setPrefHeight(40);
         completeButton.setStyle(
-            "-fx-background-color: #4CAF50;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 700;" +
@@ -279,8 +282,8 @@ public class TaskCompletionDialog {
         SoundManager.getInstance().playError();
         
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("❌ Quest Completion Error");
-        alert.setHeaderText("Cannot Complete Quest");
+        alert.setTitle("❌ Task Completion Error");
+        alert.setHeaderText("Cannot Complete Task");
         alert.setContentText(message);
         alert.showAndWait();
     }
@@ -289,10 +292,10 @@ public class TaskCompletionDialog {
         SoundManager.getInstance().playSuccess();
         
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("✅ Quest Submitted for Review!");
-        alert.setHeaderText("Quest Completion Submitted");
+        alert.setTitle("✅ Task Submitted for Review!");
+        alert.setHeaderText("Task Completion Submitted");
         alert.setContentText(
-            "Your quest has been marked as complete and submitted for review!\n\n" +
+            "Your task has been marked as complete and submitted for review!\n\n" +
             "A parent or guardian will review your completion evidence and approve or reject it.\n\n" +
             "You'll receive your " + task.getRewardCoins() + " SmartCoins once approved!"
         );

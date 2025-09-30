@@ -8,6 +8,8 @@ import com.coincraft.services.FirebaseAuthService;
 import com.coincraft.services.FirebaseService;
 import com.coincraft.services.GoogleOAuthService;
 import com.coincraft.ui.components.ForgotPasswordDialog;
+import com.coincraft.ui.util.Fonts;
+import com.coincraft.ui.util.ImageCache;
 
 import animatefx.animation.FadeIn;
 import javafx.animation.KeyFrame;
@@ -21,12 +23,12 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.util.Duration;
 
 /**
@@ -75,23 +77,42 @@ public class LoginScreen {
         root.setPadding(new Insets(0));
         root.setAlignment(Pos.CENTER);
         
-        // Load Minecraft font
-        try {
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 14);
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 16);
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 18);
-        } catch (Exception e) {
-            System.out.println("Could not load Minecraft font: " + e.getMessage());
-        }
+        // Load fonts once
+        Fonts.ensureLoaded();
         
-        // Set animated GIF background
-        String backgroundImage = getClass().getResource("/images/588a44195922117.66168b374ece8-ezgif.com-webp-to-gif-converter.gif").toExternalForm();
-        root.setStyle(
-            "-fx-background-image: url('" + backgroundImage + "');" +
-            "-fx-background-size: cover;" +
-            "-fx-background-position: center;" +
-            "-fx-background-repeat: no-repeat;"
-        );
+        // Animated background via ImageView (more efficient than CSS)
+        ImageView bg;
+        {
+            var cached = ImageCache.get(
+                "/images/588a44195922117.66168b374ece8-ezgif.com-webp-to-gif-converter.gif"
+            );
+            if (cached != null) {
+                bg = new ImageView(cached);
+                bg.setPreserveRatio(false);
+                bg.setSmooth(true);
+                bg.setCache(true);
+                bg.setFitWidth(1200);
+                bg.setFitHeight(800);
+                bg.fitWidthProperty().bind(root.widthProperty());
+                bg.fitHeightProperty().bind(root.heightProperty());
+            } else {
+                // Fallback to CSS background if resource missing
+                bg = new ImageView();
+                String backgroundImage = getClass().getResource("/images/588a44195922117.66168b374ece8-ezgif.com-webp-to-gif-converter.gif") != null
+                    ? getClass().getResource("/images/588a44195922117.66168b374ece8-ezgif.com-webp-to-gif-converter.gif").toExternalForm()
+                    : null;
+                if (backgroundImage != null) {
+                    root.setStyle(
+                        "-fx-background-image: url('" + backgroundImage + "');" +
+                        "-fx-background-size: cover;" +
+                        "-fx-background-position: center;" +
+                        "-fx-background-repeat: no-repeat;"
+                    );
+                } else {
+                    root.setStyle("-fx-background-color: linear-gradient(to bottom, #111827, #1f2937);");
+                }
+            }
+        }
         
         // Add semi-transparent dark overlay
         Region darkOverlay = new Region();
@@ -123,7 +144,7 @@ public class LoginScreen {
         
         centerContainer.getChildren().addAll(loginCard, statusLabel);
         
-        root.getChildren().addAll(darkOverlay, centerContainer);
+        root.getChildren().addAll(bg, darkOverlay, centerContainer);
         try { new FadeIn(root).play(); } catch (Throwable ignored) {}
         
         // Ensure single background music instance
@@ -414,7 +435,7 @@ public class LoginScreen {
         Label parentRegLink = new Label("Create Parent Account");
         parentRegLink.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FF9800;" +
             "-fx-font-weight: 700;" +
             "-fx-underline: true;" +
             "-fx-cursor: hand;" +
@@ -537,12 +558,14 @@ public class LoginScreen {
                             // Role-specific setup (only after validation)
                             if (userActualRole == UserRole.PARENT) {
                                 user.setName(user.getName() + " (Merchant)");
-                                if (user.getSmartCoinBalance() < 100) {
+                                // Only set default balance if user has no balance saved (new user)
+                                if (user.getSmartCoinBalance() <= 0) {
                                     user.setSmartCoinBalance(500); // Merchants start with more
                                 }
                             } else if (userActualRole == UserRole.TEACHER) {
                                 user.setName(user.getName() + " (Teacher)");
-                                if (user.getSmartCoinBalance() < 50) {
+                                // Only set default balance if user has no balance saved (new user)
+                                if (user.getSmartCoinBalance() <= 0) {
                                     user.setSmartCoinBalance(200);
                                 }
                             } else if (userActualRole == UserRole.CHILD) {
@@ -774,17 +797,40 @@ public class LoginScreen {
                             }
                             
                             if (authResult.isSuccess()) {
-                                // Create CoinCraft user from Google and Firebase data
-                                User coinCraftUser = new User();
-                                coinCraftUser.setName(googleUserInfo.getName());
-                                coinCraftUser.setEmail(googleUserInfo.getEmail());
-                                coinCraftUser.setRole(selectedRole);
-                                coinCraftUser.setAge(selectedRole == UserRole.PARENT ? 35 : 25);
-                                coinCraftUser.setSmartCoinBalance(1000);
-                                coinCraftUser.setLevel(1);
-                                coinCraftUser.setExperiencePoints(0);
-                                coinCraftUser.setFirebaseUid(authResult.getUserId());
-                                coinCraftUser.setLastLogin(java.time.LocalDateTime.now());
+                                // Try to load existing user data first
+                                FirebaseService firebaseService = FirebaseService.getInstance();
+                                User existingUser = firebaseService.loadUser(authResult.getUserId());
+                                
+                                User coinCraftUser;
+                                if (existingUser != null) {
+                                    // Use existing user data and preserve balance
+                                    coinCraftUser = existingUser;
+                                    coinCraftUser.setLastLogin(java.time.LocalDateTime.now());
+                                    LOGGER.info("Loaded existing user data for Google sign-in: " + coinCraftUser.getName() + " with balance: " + coinCraftUser.getSmartCoinBalance());
+                                } else {
+                                    // Create new CoinCraft user from Google data
+                                    coinCraftUser = new User();
+                                    coinCraftUser.setUserId(authResult.getUserId());
+                                    coinCraftUser.setName(googleUserInfo.getName());
+                                    coinCraftUser.setEmail(googleUserInfo.getEmail());
+                                    coinCraftUser.setRole(selectedRole);
+                                    coinCraftUser.setAge(selectedRole == UserRole.PARENT ? 35 : 25);
+                                    coinCraftUser.setLevel(1);
+                                    coinCraftUser.setExperiencePoints(0);
+                                    coinCraftUser.setFirebaseUid(authResult.getUserId());
+                                    coinCraftUser.setLastLogin(java.time.LocalDateTime.now());
+                                    
+                                    // Set default balance based on role for new users only
+                                    if (selectedRole == UserRole.PARENT) {
+                                        coinCraftUser.setSmartCoinBalance(500);
+                                    } else if (selectedRole == UserRole.TEACHER) {
+                                        coinCraftUser.setSmartCoinBalance(200);
+                                    } else {
+                                        coinCraftUser.setSmartCoinBalance(0);
+                                    }
+                                    
+                                    LOGGER.info("Created new user for Google sign-in: " + coinCraftUser.getName() + " with default balance: " + coinCraftUser.getSmartCoinBalance());
+                                }
                                 
                                 String roleMessage = selectedRole == UserRole.PARENT ? "merchant" : 
                                                    selectedRole.name().toLowerCase();

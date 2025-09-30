@@ -37,7 +37,7 @@ public class MessagingHubPage {
         root.setAlignment(Pos.TOP_LEFT);
         root.setPadding(new Insets(12));
 
-        Label title = new Label("💬 Messaging");
+        Label title = new Label("Messaging");
         title.setStyle(
             "-fx-font-size: 24px;" +
             "-fx-font-weight: 800;" +

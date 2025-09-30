@@ -70,18 +70,18 @@ public class TaskManagementPage {
         // Allow header to use full width
         header.setMaxWidth(Double.MAX_VALUE);
         
-        Label titleLabel = new Label("📋 Quest Management Center");
+        Label titleLabel = new Label("Task Management Center");
         titleLabel.setStyle(
             "-fx-font-size: 28px;" +
             "-fx-font-weight: 700;" +
-            "-fx-text-fill: #2E7D32;" +
+            "-fx-text-fill: #E67E00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        Label subtitleLabel = new Label("Create, assign, and manage quests for your adventurers");
+        Label subtitleLabel = new Label("Create, assign, and manage tasks for your adventurers");
         subtitleLabel.setStyle(
             "-fx-font-size: 16px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -114,10 +114,10 @@ public class TaskManagementPage {
         HBox topRow = new HBox(16);
         topRow.setAlignment(Pos.CENTER_LEFT);
         
-        createTaskButton = new Button("📋 CREATE NEW QUEST");
+        createTaskButton = new Button("📋 CREATE NEW TASK");
         createTaskButton.setPrefHeight(45);
         createTaskButton.setStyle(
-            "-fx-background-color: #4CAF50;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 700;" +
@@ -133,7 +133,7 @@ public class TaskManagementPage {
         HBox.setHgrow(spacer1, Priority.ALWAYS);
         
         searchField = new TextField();
-        searchField.setPromptText("🔍 Search quests...");
+        searchField.setPromptText("🔍 Search tasks...");
         searchField.setPrefWidth(300);
         searchField.setPrefHeight(40);
         searchField.setStyle(
@@ -163,8 +163,8 @@ public class TaskManagementPage {
         );
         
         filterCombo = new ComboBox<>();
-        filterCombo.getItems().addAll("All Quests", "Active", "Completed", "Pending Review", "Overdue");
-        filterCombo.setValue("All Quests");
+        filterCombo.getItems().addAll("All Tasks", "Active", "Completed", "Pending Review", "Overdue");
+        filterCombo.setValue("All Tasks");
         filterCombo.setPrefWidth(150);
         filterCombo.setOnAction(e -> filterTasks());
         styleComboBox(filterCombo);
@@ -196,11 +196,11 @@ public class TaskManagementPage {
         // Allow list container to use full width
         listContainer.setMaxWidth(Double.MAX_VALUE);
         
-        Label listTitle = new Label("📋 Active Quests");
+        Label listTitle = new Label("Active Tasks");
         listTitle.setStyle(
             "-fx-font-size: 20px;" +
             "-fx-font-weight: 700;" +
-            "-fx-text-fill: #2E7D32;" +
+            "-fx-text-fill: #E67E00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -230,7 +230,7 @@ public class TaskManagementPage {
         taskListContainer.getChildren().clear();
         
         if (allTasks.isEmpty()) {
-            Label emptyLabel = new Label("📝 No quests created yet. Click 'CREATE NEW QUEST' to get started!");
+            Label emptyLabel = new Label("📝 No tasks created yet. Click 'CREATE NEW TASK' to get started!");
             emptyLabel.setStyle(
                 "-fx-font-size: 16px;" +
                 "-fx-text-fill: #666666;" +
@@ -321,20 +321,20 @@ public class TaskManagementPage {
         rewardLabel.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
         Label difficultyLabel = new Label("⭐ Level " + task.getDifficultyLevel());
         difficultyLabel.setStyle(
             "-fx-font-size: 12px;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
         Label deadlineLabel = new Label();
         if (task.getDeadline() != null) {
-            deadlineLabel.setText("📅 Due: " + task.getDeadline().format(DateTimeFormatter.ofPattern("MMM dd, yyyy")));
+            deadlineLabel.setText("📅 Due: " + task.getDeadline().format(DateTimeFormatter.ofPattern("MMM dd, yyyy, HH:mm")));
         } else {
             deadlineLabel.setText("📅 No deadline");
         }
@@ -352,7 +352,7 @@ public class TaskManagementPage {
         
         if (task.getValidationStatus() == ValidationStatus.AWAITING_APPROVAL) {
             Button verifyButton = new Button("📋 Review");
-            styleActionButton(verifyButton, "#FF9800");
+            styleActionButton(verifyButton, "#FA8A00");
             verifyButton.setOnAction(e -> handleVerifyTask(task));
             actionRow.getChildren().add(verifyButton);
         }
@@ -387,6 +387,9 @@ public class TaskManagementPage {
                 allTasks.set(index, verifiedTask);
             }
             refreshTaskList();
+            
+            // Notify parent dashboard to update notification count
+            notifyParentDashboard();
         });
         dialog.show();
     }
@@ -403,7 +406,7 @@ public class TaskManagementPage {
         int completedTasks = totalTasks - activeTasks;
         
         statsLabel.setText(String.format(
-            "📊 Total: %d quests | ⚔️ Active: %d | ✅ Completed: %d | 📋 Pending Review: %d",
+            "📊 Total: %d tasks | ⚔️ Active: %d | ✅ Completed: %d | 📋 Pending Review: %d",
             totalTasks, activeTasks, completedTasks, pendingReview
         ));
     }
@@ -417,7 +420,7 @@ public class TaskManagementPage {
     // Utility methods for styling and colors
     private String getTaskBorderColor(Task task) {
         if (task.isCompleted()) return "#4CAF50";
-        if (task.getValidationStatus() == ValidationStatus.AWAITING_APPROVAL) return "#FF9800";
+        if (task.getValidationStatus() == ValidationStatus.AWAITING_APPROVAL) return "#FA8A00";
         return "#2196F3";
     }
     
@@ -429,7 +432,7 @@ public class TaskManagementPage {
     
     private String getStatusColor(Task task) {
         if (task.isCompleted()) return "#4CAF50";
-        if (task.getValidationStatus() == ValidationStatus.AWAITING_APPROVAL) return "#FF9800";
+        if (task.getValidationStatus() == ValidationStatus.AWAITING_APPROVAL) return "#FA8A00";
         return "#2196F3";
     }
     
@@ -444,7 +447,7 @@ public class TaskManagementPage {
             case LEARNING -> "📚";
             case CHALLENGE -> "🎯";
             case CHORE -> "🏠";
-            case QUEST -> "⚔️";
+            case QUEST -> "🎯";
             case DONATION -> "💝";
             case CREATIVE -> "🎨";
             case PHYSICAL -> "💪";
@@ -496,5 +499,22 @@ public class TaskManagementPage {
     
     public VBox getRoot() {
         return root;
+    }
+    
+    /**
+     * Notify parent dashboard to update notification count
+     */
+    private void notifyParentDashboard() {
+        try {
+            com.coincraft.ui.routing.DashboardRouter router = com.coincraft.ui.routing.DashboardRouter.getInstance();
+            if (router.getCurrentDashboard() instanceof com.coincraft.ui.dashboards.ParentDashboard) {
+                com.coincraft.ui.dashboards.ParentDashboard parentDashboard = 
+                    (com.coincraft.ui.dashboards.ParentDashboard) router.getCurrentDashboard();
+                // Refresh the notification count
+                parentDashboard.refreshData();
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ Could not notify parent dashboard: " + e.getMessage());
+        }
     }
 }

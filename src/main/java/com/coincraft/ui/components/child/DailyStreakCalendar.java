@@ -109,7 +109,7 @@ public class DailyStreakCalendar {
         motivationLabel.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 500;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
             "-fx-text-alignment: center;"
         );

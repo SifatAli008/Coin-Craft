@@ -73,11 +73,11 @@ public class ChildSidebar {
             "-fx-padding: 8 12;"
         );
         
-        Label titleLabel = new Label("🚀 Adventurer Hub");
+        Label titleLabel = new Label("Adventurer Hub");
         titleLabel.setStyle(
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 700;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.3), 2, 0, 0, 1);"
         );
@@ -95,11 +95,11 @@ public class ChildSidebar {
     }
     
     private void createNavigationButtons() {
-        homeButton = createNavButton("🏡", "Home", "home");
-        tasksButton = createNavButton("⚔️", "Tasks", "tasks");
-        messagesButton = createNavButtonWithBadge("💬", "Messages", "messages", 2);
-        shopButton = createNavButton("🏪", "Shop", "shop");
-        profileButton = createNavButton("👨‍🚀", "Profile", "profile");
+        homeButton = createNavButton("Home", "home");
+        tasksButton = createNavButton("Tasks", "tasks");
+        messagesButton = createNavButtonWithBadge("Messages", "messages", 2);
+        shopButton = createNavButton("Shop", "shop");
+        profileButton = createNavButton("Profile", "profile");
         
         root.getChildren().addAll(
             homeButton,
@@ -130,7 +130,7 @@ public class ChildSidebar {
             "-fx-border-width: 1;"
         );
         
-        Label headerLabel = new Label("🏆 Achievements");
+        Label headerLabel = new Label("Achievements");
         headerLabel.setStyle(
             "-fx-font-size: 13px;" +
             "-fx-font-weight: 700;" +
@@ -183,7 +183,7 @@ public class ChildSidebar {
         viewAllButton.setPrefWidth(120);
         viewAllButton.setPrefHeight(24);
         viewAllButton.setStyle(
-            "-fx-background-color: linear-gradient(to bottom, #FF9800, #F57C00);" +
+            "-fx-background-color: linear-gradient(to bottom, #FA8A00, #F57C00);" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 10px;" +
             "-fx-font-weight: 700;" +
@@ -211,7 +211,7 @@ public class ChildSidebar {
         
         viewAllButton.setOnMouseExited(e -> {
             viewAllButton.setStyle(
-                "-fx-background-color: linear-gradient(to bottom, #FF9800, #F57C00);" +
+                "-fx-background-color: linear-gradient(to bottom, #FA8A00, #F57C00);" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 10px;" +
                 "-fx-font-weight: 700;" +
@@ -252,31 +252,25 @@ public class ChildSidebar {
     /**
      * Create a horizontal navigation button (like parent sidebar)
      */
-    private VBox createNavButton(String icon, String text, String section) {
+    private VBox createNavButton(String text, String section) {
         VBox button = new VBox(1);
         button.setAlignment(Pos.CENTER_LEFT);
-        button.setPadding(new Insets(4, 12, 4, 12));
+        button.setPadding(new Insets(8, 12, 8, 12));
         button.setStyle(
             "-fx-background-color: transparent;" +
             "-fx-background-radius: 8;" +
             "-fx-cursor: hand;"
         );
         
-        Label iconLabel = new Label(icon);
-        iconLabel.setStyle(
-            "-fx-font-size: 14px;" +
-            "-fx-text-fill: #666666;"
-        );
-        
         Label textLabel = new Label(text);
         textLabel.setStyle(
-            "-fx-font-size: 12px;" +
+            "-fx-font-size: 13px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #333333;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        button.getChildren().addAll(iconLabel, textLabel);
+        button.getChildren().add(textLabel);
         
         // Add enhanced hover effects
         button.setOnMouseEntered(e -> {
@@ -289,12 +283,13 @@ public class ChildSidebar {
                     "-fx-scale-x: 1.02; -fx-scale-y: 1.02;"
                 );
                 
-                // Enhance icon color on hover
-                Label hoverIconLabel = (Label) button.getChildren().get(0);
-                hoverIconLabel.setStyle(
-                    "-fx-font-size: 16px;" +
-                    "-fx-text-fill: #FF9800;" +
-                    "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.4), 3, 0, 0, 1);"
+                // Enhance text color on hover
+                Label hoverTextLabel = (Label) button.getChildren().get(0);
+                hoverTextLabel.setStyle(
+                    "-fx-font-size: 13px;" +
+                    "-fx-font-weight: 700;" +
+                    "-fx-text-fill: #FA8A00;" +
+                    "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
                 );
             }
         });
@@ -307,11 +302,13 @@ public class ChildSidebar {
                     "-fx-cursor: hand;"
                 );
                 
-                // Reset icon color
-                Label exitIconLabel = (Label) button.getChildren().get(0);
-                exitIconLabel.setStyle(
-                    "-fx-font-size: 16px;" +
-                    "-fx-text-fill: #666666;"
+                // Reset text color
+                Label exitTextLabel = (Label) button.getChildren().get(0);
+                exitTextLabel.setStyle(
+                    "-fx-font-size: 13px;" +
+                    "-fx-font-weight: 600;" +
+                    "-fx-text-fill: #333333;" +
+                    "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
                 );
             }
         });
@@ -327,13 +324,13 @@ public class ChildSidebar {
     /**
      * Create a navigation button with badge
      */
-    private VBox createNavButtonWithBadge(String icon, String label, String section, int badgeCount) {
-        VBox button = createNavButton(icon, label, section);
+    private VBox createNavButtonWithBadge(String label, String section, int badgeCount) {
+        VBox button = createNavButton(label, section);
         
         if (badgeCount > 0) {
-            // Add badge indicator to icon
-            Label iconLabel = (Label) button.getChildren().get(0);
-            iconLabel.setText(icon + " 🔴");
+            // Add badge indicator to text
+            Label textLabel = (Label) button.getChildren().get(0);
+            textLabel.setText(label + " 🔴");
         }
         
         return button;
@@ -383,17 +380,10 @@ public class ChildSidebar {
             "-fx-cursor: hand;"
         );
         
-        // Reset icon color
-        Label iconLabel = (Label) button.getChildren().get(0);
-        iconLabel.setStyle(
-            "-fx-font-size: 14px;" +
-            "-fx-text-fill: #666666;"
-        );
-        
         // Reset text color
-        Label textLabel = (Label) button.getChildren().get(1);
+        Label textLabel = (Label) button.getChildren().get(0);
         textLabel.setStyle(
-            "-fx-font-size: 12px;" +
+            "-fx-font-size: 13px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #333333;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
@@ -405,23 +395,16 @@ public class ChildSidebar {
      */
     private void setActiveButtonStyle(VBox button) {
         button.setStyle(
-            "-fx-background-color: #FF9800;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-background-radius: 8;" +
             "-fx-cursor: hand;" +
             "-fx-effect: dropshadow(gaussian, rgba(255,152,0,0.4), 8, 0, 0, 4);"
         );
         
-        // Set active icon color
-        Label iconLabel = (Label) button.getChildren().get(0);
-        iconLabel.setStyle(
-            "-fx-font-size: 14px;" +
-            "-fx-text-fill: white;"
-        );
-        
         // Set active text color
-        Label textLabel = (Label) button.getChildren().get(1);
+        Label textLabel = (Label) button.getChildren().get(0);
         textLabel.setStyle(
-            "-fx-font-size: 12px;" +
+            "-fx-font-size: 13px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: white;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
@@ -436,7 +419,7 @@ public class ChildSidebar {
         int index = root.getChildren().indexOf(messagesButton);
         if (index != -1) {
             root.getChildren().remove(messagesButton);
-            messagesButton = createNavButtonWithBadge("💬", "Messages", "messages", count);
+            messagesButton = createNavButtonWithBadge("Messages", "messages", count);
             root.getChildren().add(index, messagesButton);
             
             if ("messages".equals(activeSection)) {

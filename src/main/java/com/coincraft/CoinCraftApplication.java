@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.User;
+import com.coincraft.services.FirebaseDataManager;
 import com.coincraft.services.FirebaseService;
 import com.coincraft.ui.LoginScreen;
 import com.coincraft.ui.MainDashboard;
@@ -38,6 +39,11 @@ public class CoinCraftApplication extends Application {
             FirebaseService firebaseService = FirebaseService.getInstance();
             firebaseService.initialize();
             
+            // Initialize enhanced Firebase Data Manager
+            System.out.println("🚀 Initializing Firebase Data Manager...");
+            FirebaseDataManager dataManager = FirebaseDataManager.getInstance();
+            dataManager.initialize();
+            
             // Verify Firebase connection
             if (firebaseService.isInitialized()) {
                 System.out.println("✅ Firebase connection established successfully!");
@@ -48,14 +54,24 @@ public class CoinCraftApplication extends Application {
                 if (connectionTestPassed) {
                     System.out.println("✅ All Firebase connection tests PASSED!");
                 } else {
-                    System.out.println("⚠️ Some Firebase connection tests FAILED - using local storage fallback");
+                    System.out.println("Some Firebase connection tests FAILED - using local storage fallback");
+                }
+                
+                // Test enhanced data manager
+                System.out.println("🧪 Testing Firebase Data Manager...");
+                boolean dataManagerReady = dataManager.isFirebaseAvailable();
+                if (dataManagerReady) {
+                    System.out.println("✅ Firebase Data Manager is ready!");
+                } else {
+                    System.out.println("Firebase Data Manager in offline mode");
                 }
             } else {
-                System.out.println("⚠️ Firebase connection failed - using local storage fallback");
+                System.out.println("Firebase connection failed - using local storage fallback");
             }
             
             // Display connection status and configuration
             System.out.println("📊 Firebase Status: " + firebaseService.getConnectionStatus());
+            System.out.println("📊 Data Manager Status: " + dataManager.getConnectionStatus());
             System.out.println("📋 Firebase Config: " + firebaseService.getConfigInfo());
             System.out.println("=" .repeat(80));
             
@@ -248,7 +264,7 @@ public class CoinCraftApplication extends Application {
             testMethod.invoke(null);
             
         } catch (Exception e) {
-            System.err.println("❌ Failed to run Firebase tests: " + e.getMessage());
+            System.err.println("Failed to run Firebase tests: " + e.getMessage());
             e.printStackTrace();
         }
     }

@@ -30,7 +30,7 @@ public class ChildLeaderboard {
         rankLabel.setStyle(
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 700;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
             "-fx-text-alignment: center;"
         );
@@ -57,7 +57,7 @@ public class ChildLeaderboard {
         motivationLabel.setStyle(
             "-fx-font-size: 11px;" +
             "-fx-font-weight: 500;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
             "-fx-text-alignment: center;"
         );

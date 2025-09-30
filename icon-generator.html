@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinCraft Icon Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .icon-preview {
+            width: 256px;
+            height: 256px;
+            margin: 20px auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .coin {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA726 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: #E65100;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            border: 4px solid #E65100;
+        }
+        .download-btn {
+            background: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 20px;
+            transition: background 0.3s;
+        }
+        .download-btn:hover {
+            background: #45a049;
+        }
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .color-palette {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .color {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🪙 CoinCraft Icon Generator</h1>
+        <p>Preview and generate your new CoinCraft application icon</p>
+        
+        <div class="icon-preview">
+            <div class="coin">$</div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button class="download-btn" onclick="downloadIcon()">Download Icon (256x256)</button>
+            <button class="download-btn" onclick="downloadIconSmall()">Download Icon (64x64)</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Instructions</h3>
+            <ol>
+                <li>Click "Download Icon" to save the preview as PNG</li>
+                <li>Save the file as "coincraft-icon.png"</li>
+                <li>Replace the file in: <code>src/main/resources/images/</code></li>
+                <li>Run your CoinCraft application to see the new icon</li>
+            </ol>
+        </div>
+        
+        <div class="instructions">
+            <h3>🎨 Color Palette</h3>
+            <div class="color-palette">
+                <div class="color" style="background: #FFD700;" title="Gold - #FFD700"></div>
+                <div class="color" style="background: #2E7D32;" title="Green - #2E7D32"></div>
+                <div class="color" style="background: #2196F3;" title="Blue - #2196F3"></div>
+                <div class="color" style="background: #9C27B0;" title="Purple - #9C27B0"></div>
+                <div class="color" style="background: #E65100;" title="Orange - #E65100"></div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>✨ Design Features</h3>
+            <ul>
+                <li>Modern rounded square design</li>
+                <li>Gold coin with dollar sign ($)</li>
+                <li>Blue-purple gradient background</li>
+                <li>Professional and clean appearance</li>
+                <li>High contrast for small sizes</li>
+                <li>Perfect for financial education app</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadIcon() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, 256, 256);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            
+            // Draw rounded rectangle background
+            ctx.fillStyle = gradient;
+            ctx.roundRect(8, 8, 240, 240, 56);
+            ctx.fill();
+            
+            // Draw coin
+            ctx.beginPath();
+            ctx.arc(128, 128, 60, 0, 2 * Math.PI);
+            
+            // Coin gradient
+            const coinGradient = ctx.createLinearGradient(68, 68, 188, 188);
+            coinGradient.addColorStop(0, '#FFD700');
+            coinGradient.addColorStop(1, '#FFA726');
+            
+            ctx.fillStyle = coinGradient;
+            ctx.fill();
+            ctx.strokeStyle = '#E65100';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            
+            // Draw dollar sign
+            ctx.fillStyle = '#E65100';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('$', 128, 128);
+            
+            // Download
+            const link = document.createElement('a');
+            link.download = 'coincraft-icon.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        function downloadIconSmall() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, 64, 64);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            
+            // Draw rounded rectangle background
+            ctx.fillStyle = gradient;
+            ctx.roundRect(2, 2, 60, 60, 14);
+            ctx.fill();
+            
+            // Draw coin
+            ctx.beginPath();
+            ctx.arc(32, 32, 15, 0, 2 * Math.PI);
+            
+            // Coin gradient
+            const coinGradient = ctx.createLinearGradient(17, 17, 47, 47);
+            coinGradient.addColorStop(0, '#FFD700');
+            coinGradient.addColorStop(1, '#FFA726');
+            
+            ctx.fillStyle = coinGradient;
+            ctx.fill();
+            ctx.strokeStyle = '#E65100';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Draw dollar sign
+            ctx.fillStyle = '#E65100';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('$', 32, 32);
+            
+            // Download
+            const link = document.createElement('a');
+            link.download = 'coincraft-icon-64.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Add roundRect polyfill for older browsers
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+    </script>
+</body>
+</html>

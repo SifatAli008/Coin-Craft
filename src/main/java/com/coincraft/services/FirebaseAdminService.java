@@ -266,6 +266,11 @@ public class FirebaseAdminService {
             if (document.exists()) {
                 Map<String, Object> data = document.getData();
                 
+                if (data == null) {
+                    LOGGER.warning("Document data is null for user: " + userId);
+                    return null;
+                }
+                
                 User user = new User();
                 user.setUserId((String) data.get("userId"));
                 user.setName((String) data.get("name"));
@@ -311,6 +316,11 @@ public class FirebaseAdminService {
             
             for (DocumentSnapshot document : querySnapshot.getDocuments()) {
                 Map<String, Object> data = document.getData();
+                
+                if (data == null) {
+                    LOGGER.warning("Document data is null for document: " + document.getId());
+                    continue;
+                }
                 
                 User user = new User();
                 user.setUserId((String) data.get("userId"));

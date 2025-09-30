@@ -3,11 +3,11 @@ package com.coincraft.ui.dashboards;
 import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.User;
 import com.coincraft.ui.routing.RoleGuard;
+import com.coincraft.ui.util.Fonts;
 
 import animatefx.animation.FadeIn;
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
-import javafx.scene.text.Font;
 
 /**
  * Abstract base class for all role-based dashboards
@@ -73,17 +73,7 @@ public abstract class BaseDashboard {
      * Load Minecraft game fonts for consistent theming
      */
     private void loadGameFonts() {
-        try {
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 12);
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 14);
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 16);
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 18);
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 20);
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 24);
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 28);
-        } catch (Exception e) {
-            System.out.println("Could not load Minecraft font: " + e.getMessage());
-        }
+        Fonts.ensureLoaded();
     }
     
     /**
@@ -207,12 +197,12 @@ public abstract class BaseDashboard {
     protected javafx.scene.layout.VBox createGameCard() {
         javafx.scene.layout.VBox card = new javafx.scene.layout.VBox(16);
         card.setStyle(
-            "-fx-background-color: rgba(255, 255, 255, 0.85);" +
+            "-fx-background-color: rgba(255, 255, 255, 0.9);" +
             "-fx-background-radius: 16;" +
             "-fx-border-radius: 16;" +
-            "-fx-border-color: rgba(255, 255, 255, 0.4);" +
+            "-fx-border-color: rgba(255, 255, 255, 0.6);" +
             "-fx-border-width: 1;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 10);" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 20, 0, 0, 10);" +
             "-fx-padding: 24;"
         );
         return card;

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2E7D32;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="coinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFC107;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF8F00;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="coinShadow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E65100;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#BF360C;stop-opacity:0.6" />
+    </linearGradient>
+    
+    <!-- Inner shadow effect -->
+    <filter id="innerShadow">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feOffset in="blur" dx="2" dy="2" result="offset"/>
+      <feFlood flood-color="#000000" flood-opacity="0.2"/>
+      <feComposite in="offset" operator="in"/>
+    </filter>
+  </defs>
+  
+  <!-- Main background circle -->
+  <circle cx="128" cy="128" r="120" fill="url(#bgGradient)" stroke="#1B5E20" stroke-width="8"/>
+  
+  <!-- Coin stack (3 coins) -->
+  <!-- Bottom coin -->
+  <circle cx="128" cy="140" r="45" fill="url(#coinGradient)" stroke="#E65100" stroke-width="3"/>
+  <circle cx="128" cy="140" r="40" fill="url(#coinShadow)" opacity="0.4"/>
+  
+  <!-- Middle coin -->
+  <circle cx="128" cy="120" r="42" fill="url(#coinGradient)" stroke="#E65100" stroke-width="3"/>
+  <circle cx="128" cy="120" r="37" fill="url(#coinShadow)" opacity="0.3"/>
+  
+  <!-- Top coin -->
+  <circle cx="128" cy="100" r="39" fill="url(#coinGradient)" stroke="#E65100" stroke-width="3"/>
+  <circle cx="128" cy="100" r="34" fill="url(#coinShadow)" opacity="0.2"/>
+  
+  <!-- Dollar sign on top coin -->
+  <text x="128" y="108" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#E65100">$</text>
+  
+  <!-- Sparkle effects around coins -->
+  <g opacity="0.8">
+    <!-- Top sparkles -->
+    <polygon points="128,50 130,58 138,58 132,63 134,71 128,66 122,71 124,63 118,58 126,58" fill="#FFD700"/>
+    <polygon points="90,90 92,98 100,98 94,103 96,111 90,106 84,111 86,103 80,98 88,98" fill="#FFD700"/>
+    <polygon points="166,90 168,98 176,98 170,103 172,111 166,106 160,111 162,103 156,98 164,98" fill="#FFD700"/>
+    
+    <!-- Bottom sparkles -->
+    <polygon points="128,170 130,178 138,178 132,183 134,191 128,186 122,191 124,183 118,178 126,178" fill="#FFD700"/>
+    <polygon points="85,150 87,158 95,158 89,163 91,171 85,166 79,171 81,163 75,158 83,158" fill="#FFD700"/>
+    <polygon points="171,150 173,158 181,158 175,163 177,171 171,166 165,171 167,163 161,158 169,158" fill="#FFD700"/>
+  </g>
+  
+  <!-- Subtle inner glow -->
+  <circle cx="128" cy="128" r="115" fill="none" stroke="#81C784" stroke-width="2" opacity="0.3"/>
+</svg>

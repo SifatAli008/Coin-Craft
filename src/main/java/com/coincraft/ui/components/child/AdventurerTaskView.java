@@ -59,7 +59,7 @@ public class AdventurerTaskView {
         VBox header = new VBox(8);
         header.setAlignment(Pos.CENTER_LEFT);
         
-        Label titleLabel = new Label("⚔️ My Quests");
+        Label titleLabel = new Label("⚔️ My Tasks");
         titleLabel.setStyle(
             "-fx-font-size: 24px;" +
             "-fx-font-weight: 700;" +
@@ -67,10 +67,10 @@ public class AdventurerTaskView {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        Label subtitleLabel = new Label("Complete your assigned quests to earn SmartCoins!");
+        Label subtitleLabel = new Label("Complete your assigned tasks to earn SmartCoins!");
         subtitleLabel.setStyle(
             "-fx-font-size: 16px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -95,7 +95,7 @@ public class AdventurerTaskView {
             "-fx-padding: 0;"
         );
         
-        Label listTitle = new Label("📋 Your Active Quests");
+        Label listTitle = new Label("📋 Your Active Tasks");
         listTitle.setStyle(
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
@@ -167,7 +167,7 @@ public class AdventurerTaskView {
         mainMessage.setWrapText(true);
         
         // Subtitle
-        Label subtitle = new Label("No quests assigned yet, but exciting adventures are coming your way!");
+        Label subtitle = new Label("No tasks assigned yet, but exciting adventures are coming your way!");
         subtitle.setStyle(
             "-fx-font-size: 16px;" +
             "-fx-text-fill: #64748b;" +
@@ -217,7 +217,7 @@ public class AdventurerTaskView {
         ctaSection.setAlignment(Pos.CENTER);
         ctaSection.setPadding(new Insets(20, 0, 0, 0));
         
-        Label ctaLabel = new Label("🚀 Ask your parent to assign you some quests to get started!");
+        Label ctaLabel = new Label("🚀 Ask your parent to assign you some tasks to get started!");
         ctaLabel.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
@@ -314,7 +314,7 @@ public class AdventurerTaskView {
         rewardLabel.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -322,13 +322,13 @@ public class AdventurerTaskView {
         difficultyLabel.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
         Label deadlineLabel = new Label();
         if (task.getDeadline() != null) {
-            deadlineLabel.setText("📅 Due: " + task.getDeadline().format(DateTimeFormatter.ofPattern("MMM dd, yyyy")));
+            deadlineLabel.setText("📅 Due: " + task.getDeadline().format(DateTimeFormatter.ofPattern("MMM dd, yyyy, HH:mm")));
         } else {
             deadlineLabel.setText("📅 No deadline");
         }
@@ -345,13 +345,13 @@ public class AdventurerTaskView {
         actionRow.setAlignment(Pos.CENTER_RIGHT);
         
         if (task.getValidationStatus() == ValidationStatus.PENDING && !task.isCompleted()) {
-            Button completeButton = new Button("✅ Complete Quest");
+            Button completeButton = new Button("✅ Complete Task");
             styleActionButton(completeButton, "#4CAF50");
             completeButton.setOnAction(e -> handleTaskCompletion(task));
             actionRow.getChildren().add(completeButton);
         } else if (task.getValidationStatus() == ValidationStatus.AWAITING_APPROVAL) {
             Button pendingButton = new Button("⏳ Pending Review");
-            styleActionButton(pendingButton, "#FF9800");
+            styleActionButton(pendingButton, "#FA8A00");
             pendingButton.setDisable(true);
             actionRow.getChildren().add(pendingButton);
         } else if (task.getValidationStatus() == ValidationStatus.REJECTED) {
@@ -422,7 +422,7 @@ public class AdventurerTaskView {
             .count();
         
         statsLabel.setText(String.format(
-            "📊 Total: %d quests | ⚔️ Active: %d | ⏳ Pending: %d | ✅ Completed: %d | ❌ Rejected: %d",
+            "📊 Total: %d tasks | ⚔️ Active: %d | ⏳ Pending: %d | ✅ Completed: %d | ❌ Rejected: %d",
             totalTasks, activeTasks, pendingReview, completedTasks, rejectedTasks
         ));
     }
@@ -434,9 +434,11 @@ public class AdventurerTaskView {
         
         List<Task> myTasks = new ArrayList<>();
         for (Task task : allTasks) {
-            // Check if task is assigned to this adventurer or to all adventurers
-            if (currentAdventurer.getUserId().equals(task.getAssignedTo()) || 
-                "ALL_ADVENTURERS".equals(task.getAssignedTo())) {
+            String assignedTo = task.getAssignedTo();
+            boolean isUnscoped = (assignedTo == null || assignedTo.isEmpty());
+            boolean isForAll = "ALL_ADVENTURERS".equals(assignedTo);
+            boolean isForMe = currentAdventurer.getUserId().equals(assignedTo);
+            if (isForMe || isForAll || isUnscoped) {
                 myTasks.add(task);
             }
         }
@@ -447,7 +449,7 @@ public class AdventurerTaskView {
     // Utility methods for styling and colors
     private String getTaskBorderColor(Task task) {
         if (task.isCompleted() && task.getValidationStatus() == ValidationStatus.APPROVED) return "#4CAF50";
-        if (task.getValidationStatus() == ValidationStatus.AWAITING_APPROVAL) return "#FF9800";
+        if (task.getValidationStatus() == ValidationStatus.AWAITING_APPROVAL) return "#FA8A00";
         if (task.getValidationStatus() == ValidationStatus.REJECTED) return "#F44336";
         return "#2196F3";
     }
@@ -461,7 +463,7 @@ public class AdventurerTaskView {
     
     private String getStatusColor(Task task) {
         if (task.isCompleted() && task.getValidationStatus() == ValidationStatus.APPROVED) return "#4CAF50";
-        if (task.getValidationStatus() == ValidationStatus.AWAITING_APPROVAL) return "#FF9800";
+        if (task.getValidationStatus() == ValidationStatus.AWAITING_APPROVAL) return "#FA8A00";
         if (task.getValidationStatus() == ValidationStatus.REJECTED) return "#F44336";
         return "#2196F3";
     }
@@ -478,7 +480,7 @@ public class AdventurerTaskView {
             case LEARNING: return "📚";
             case CHALLENGE: return "🎯";
             case CHORE: return "🏠";
-            case QUEST: return "⚔️";
+            case QUEST: return "🎯";
             case DONATION: return "💝";
             case CREATIVE: return "🎨";
             case PHYSICAL: return "💪";

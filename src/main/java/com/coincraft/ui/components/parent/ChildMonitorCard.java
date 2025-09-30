@@ -99,7 +99,7 @@ public class ChildMonitorCard {
         avatar.setMaxSize(50, 50);
         avatar.setAlignment(Pos.CENTER);
         avatar.setStyle(
-            "-fx-background-color: linear-gradient(to bottom right, #4CAF50, #45A049);" +
+            "-fx-background-color: linear-gradient(to bottom right, #FA8A00, #E67E00);" +
             "-fx-background-radius: 25;" +
             "-fx-border-radius: 25;"
         );
@@ -135,7 +135,7 @@ public class ChildMonitorCard {
         Label statusLabel = new Label("🟢 Active " + lastActivity);
         statusLabel.setStyle(
             "-fx-font-size: 11px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -173,7 +173,7 @@ public class ChildMonitorCard {
         percentLabel.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -227,7 +227,7 @@ public class ChildMonitorCard {
         // Task type icon
         String icon = getTaskTypeIcon(task.getType());
         Label iconLabel = new Label(icon);
-        iconLabel.setStyle("-fx-font-size: 14px;");
+        iconLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FA8A00;");
         
         // Task info
         VBox taskInfo = new VBox(2);
@@ -243,7 +243,7 @@ public class ChildMonitorCard {
         Label taskReward = new Label("+" + task.getRewardCoins() + " SmartCoins");
         taskReward.setStyle(
             "-fx-font-size: 10px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -254,7 +254,7 @@ public class ChildMonitorCard {
         
         // Status
         Label statusLabel = new Label("✅");
-        statusLabel.setStyle("-fx-font-size: 12px;");
+        statusLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #FA8A00;");
         
         taskItem.getChildren().addAll(iconLabel, taskInfo, spacer, statusLabel);
         return taskItem;
@@ -265,7 +265,7 @@ public class ChildMonitorCard {
             case LEARNING: return "📚";
             case CHALLENGE: return "🎯";
             case CHORE: return "🏠";
-            case QUEST: return "⚔️";
+            case QUEST: return "🎯";
             case DONATION: return "💝";
             case CREATIVE: return "🎨";
             case PHYSICAL: return "💪";
@@ -279,7 +279,7 @@ public class ChildMonitorCard {
         buttonRow.setAlignment(Pos.CENTER);
         
         Button viewDetailsBtn = createActionButton("View Details", "#2196F3", "#1976D2");
-        Button sendMessageBtn = createActionButton("Send Message", "#FF9800", "#F57C00");
+        Button sendMessageBtn = createActionButton("Send Message", "#FA8A00", "#E67E00");
         
         viewDetailsBtn.setOnAction(e -> {
             SoundManager.getInstance().playButtonClick();

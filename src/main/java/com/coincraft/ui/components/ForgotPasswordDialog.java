@@ -103,9 +103,9 @@ public class ForgotPasswordDialog {
         
         emailField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
-                emailField.setStyle(emailField.getStyle() + "-fx-border-color: #FF9800; -fx-border-width: 2;");
+                emailField.setStyle(emailField.getStyle() + "-fx-border-color: #FA8A00; -fx-border-width: 2;");
             } else {
-                emailField.setStyle(emailField.getStyle().replace("-fx-border-color: #FF9800; -fx-border-width: 2;", "-fx-border-color: #d1d5db; -fx-border-width: 1;"));
+                emailField.setStyle(emailField.getStyle().replace("-fx-border-color: #FA8A00; -fx-border-width: 2;", "-fx-border-color: #d1d5db; -fx-border-width: 1;"));
             }
         });
         
@@ -133,7 +133,7 @@ public class ForgotPasswordDialog {
         sendButton.setPrefWidth(140);
         sendButton.setPrefHeight(40);
         sendButton.setStyle(
-            "-fx-background-color: #4CAF50;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +

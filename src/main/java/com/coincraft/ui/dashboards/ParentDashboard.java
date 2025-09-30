@@ -3,6 +3,7 @@ package com.coincraft.ui.dashboards;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.coincraft.models.Task;
 import com.coincraft.models.User;
 import com.coincraft.models.UserRole;
 import com.coincraft.services.FirebaseService;
@@ -45,9 +46,11 @@ public class ParentDashboard extends BaseDashboard {
     private VBox mainContent;
     private ScrollPane contentScrollPane;
     private String currentSection = "overview";
+    private javafx.animation.Timeline autoRefreshTimeline;
     
     // Real adventurer data from Firebase
     private List<User> children;
+    private List<Task> allTasks;
     
     public ParentDashboard(User user) {
         super(user);
@@ -66,14 +69,25 @@ public class ParentDashboard extends BaseDashboard {
         }
         if (topBar != null) {
             topBar.updateActiveChildren(children != null ? children.size() : 0);
+            // Update notification count based on pending tasks
+            updateNotificationCount();
+            // Also refresh the displayed values immediately
+            int pendingCount = (int) (allTasks == null ? 0 : allTasks.stream()
+                .filter(task -> task.getValidationStatus() == com.coincraft.models.ValidationStatus.AWAITING_APPROVAL)
+                .count());
+            topBar.updatePendingTasks(pendingCount);
         }
     }
     
     private void loadRealData() {
         children = new ArrayList<>();
+        allTasks = new ArrayList<>();
         
         // Load real adventurer data from Firebase
         loadAdventurersFromFirebase();
+        
+        // Load tasks for notification calculation
+        loadTasksForNotifications();
     }
     
     private void loadAdventurersFromFirebase() {
@@ -142,7 +156,7 @@ public class ParentDashboard extends BaseDashboard {
         
         // Add semi-transparent overlay for better contrast
         Region overlay = new Region();
-        overlay.setStyle("-fx-background-color: rgba(255, 255, 255, 0.05);");
+        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.15);");
         overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
         overlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         overlay.setMouseTransparent(true);
@@ -179,6 +193,9 @@ public class ParentDashboard extends BaseDashboard {
         
         // Apply parent-specific theme
         applyParentTheme();
+
+        // Begin header auto-refresh for pending reviews/notifications
+        startAutoRefresh();
     }
     
     private ImageView createBackgroundImageView(StackPane container) {
@@ -207,7 +224,7 @@ public class ParentDashboard extends BaseDashboard {
     }
     
     private void createTopBar() {
-        topBar = new ParentTopBar(currentUser);
+        topBar = new ParentTopBar(currentUser, () -> navigateToSection("tasks"));
     }
     
     private void createSidebar() {
@@ -251,19 +268,22 @@ public class ParentDashboard extends BaseDashboard {
         
         // Quick stats
         VBox quickStats = createQuickStatsSection();
+
+        // Pending reviews panel
+        VBox pendingReviews = createPendingReviewsSection();
         
-        mainContent.getChildren().addAll(welcomeSection, childrenSection, quickStats);
+        mainContent.getChildren().addAll(welcomeSection, childrenSection, quickStats, pendingReviews);
     }
     
     private VBox createWelcomeSection() {
         VBox welcomeSection = new VBox(12);
         welcomeSection.setAlignment(Pos.CENTER_LEFT);
         
-        Label titleLabel = new Label("⚔️ Merchant's Adventure Hub");
+        Label titleLabel = new Label("Merchant's Adventure Hub");
         titleLabel.setStyle(
             "-fx-font-size: 28px;" +
             "-fx-font-weight: 700;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
@@ -393,7 +413,7 @@ public class ParentDashboard extends BaseDashboard {
         
         VBox totalEarningsCard = createStatCard("💰", "Total Adventure Earnings", totalEarnings + " SmartCoins", "#4CAF50");
         VBox tasksCompletedCard = createStatCard("✅", "Quests Completed", totalTasks + " completed", "#2196F3");
-        VBox streakCard = createStatCard("🔥", "Adventure Streak", familyStreak + " days", "#FF9800");
+        VBox streakCard = createStatCard("🔥", "Adventure Streak", familyStreak + " days", "#FA8A00");
         VBox achievementsCard = createStatCard("🏆", "Achievements", totalAchievements + " unlocked", "#9C27B0");
         
         statsCards.getChildren().addAll(totalEarningsCard, tasksCompletedCard, streakCard, achievementsCard);
@@ -472,7 +492,7 @@ public class ParentDashboard extends BaseDashboard {
     private void showChildrenContent() {
         mainContent.getChildren().clear();
         
-        Label titleLabel = new Label("⚔️ Adventurer Management");
+        Label titleLabel = new Label("Adventurer Management");
         titleLabel.setStyle(
             "-fx-font-size: 24px;" +
             "-fx-font-weight: 700;" +
@@ -541,7 +561,7 @@ public class ParentDashboard extends BaseDashboard {
         addBtn.setPrefWidth(200);
         addBtn.setPrefHeight(40);
         addBtn.setStyle(
-            "-fx-background-color: #4CAF50;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 13px;" +
             "-fx-font-weight: 600;" +
@@ -554,7 +574,7 @@ public class ParentDashboard extends BaseDashboard {
         
         addBtn.setOnMouseEntered(e -> {
             addBtn.setStyle(
-                "-fx-background-color: #2E7D32;" +
+                "-fx-background-color: #E67E00;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 13px;" +
                 "-fx-font-weight: 600;" +
@@ -569,7 +589,7 @@ public class ParentDashboard extends BaseDashboard {
         
         addBtn.setOnMouseExited(e -> {
             addBtn.setStyle(
-                "-fx-background-color: #4CAF50;" +
+                "-fx-background-color: #FA8A00;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 13px;" +
                 "-fx-font-weight: 600;" +
@@ -624,7 +644,8 @@ public class ParentDashboard extends BaseDashboard {
         // Update top bar stats
         topBar.updateActiveChildren(children != null ? children.size() : 0);
         
-        System.out.println("✅ Adventurer added and data refreshed from Firebase: " + newAdventurer.getName());
+        System.out.println("✅ Adventurer added and data refreshed from Firebase: " + 
+                          (newAdventurer != null ? newAdventurer.getName() : "Unknown"));
     }
     
     /**
@@ -681,4 +702,139 @@ public class ParentDashboard extends BaseDashboard {
                 .mapToInt(child -> child.getLevel() + (child.getSmartCoinBalance() / 50))
                 .sum();
     }
+    
+    /**
+     * Load tasks for notification calculation
+     */
+    private void loadTasksForNotifications() {
+        try {
+            FirebaseService firebaseService = FirebaseService.getInstance();
+            allTasks = firebaseService.loadAllTasks();
+            // Filter only tasks that belong to this parent's children or ALL_ADVENTURERS
+            if (children != null && !children.isEmpty()) {
+                java.util.Set<String> childIds = new java.util.HashSet<>();
+                for (User c : children) {
+                    if (c != null && c.getUserId() != null) childIds.add(c.getUserId());
+                }
+                java.util.List<Task> filtered = new java.util.ArrayList<>();
+                for (Task t : allTasks) {
+                    String assignedTo = t.getAssignedTo();
+                    if (assignedTo == null || assignedTo.isEmpty() || "ALL_ADVENTURERS".equals(assignedTo) || childIds.contains(assignedTo)) {
+                        filtered.add(t);
+                    }
+                }
+                allTasks = filtered;
+            }
+            System.out.println("📋 Loaded " + allTasks.size() + " tasks for notification calculation");
+        } catch (Exception e) {
+            System.out.println("⚠️ Could not load tasks for notifications: " + e.getMessage());
+            allTasks = new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Update notification count based on pending tasks
+     */
+    private void updateNotificationCount() {
+        if (allTasks == null || allTasks.isEmpty()) {
+            topBar.updatePendingTasks(0);
+            return;
+        }
+        
+        // Count tasks that need parent review/approval
+        int pendingCount = (int) allTasks.stream()
+                .filter(task -> task.getValidationStatus() == com.coincraft.models.ValidationStatus.AWAITING_APPROVAL)
+                .count();
+        
+        // Also count any unread messages or other notifications
+        // For now, we'll focus on task-related notifications
+        
+        topBar.updatePendingTasks(pendingCount);
+        System.out.println("🔔 Updated notification count: " + pendingCount + " pending tasks");
+    }
+
+    /**
+     * Start periodic refresh of tasks/notifications so the header stays up to date
+     */
+    private void startAutoRefresh() {
+        try {
+            if (autoRefreshTimeline != null) {
+                autoRefreshTimeline.stop();
+            }
+            autoRefreshTimeline = new javafx.animation.Timeline(
+                new javafx.animation.KeyFrame(javafx.util.Duration.seconds(5), e -> {
+                    try {
+                        // Reload tasks and update counts
+                        loadTasksForNotifications();
+                        updateNotificationCount();
+                    } catch (Exception ex) {
+                        System.out.println("⚠️ Auto refresh failed: " + ex.getMessage());
+                    }
+                })
+            );
+            autoRefreshTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+            autoRefreshTimeline.play();
+            // Trigger an immediate refresh so the header updates right away
+            loadTasksForNotifications();
+            updateNotificationCount();
+        } catch (Exception e) {
+            System.out.println("⚠️ Could not start auto refresh: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Small overview panel listing pending reviews and recent approvals
+     */
+    private VBox createPendingReviewsSection() {
+        VBox section = new VBox(12);
+        section.setAlignment(Pos.TOP_LEFT);
+        section.setStyle(
+            "-fx-background-color: rgba(255,255,255,0.95);" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
+            "-fx-border-color: #e5e7eb;" +
+            "-fx-border-width: 1;" +
+            "-fx-padding: 16;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 4);"
+        );
+        Label title = new Label("Pending Task Reviews");
+        title.setStyle(
+            "-fx-font-size: 18px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #1f2937;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
+        );
+
+        VBox list = new VBox(8);
+        int shown = 0;
+        if (allTasks != null) {
+            for (Task t : allTasks) {
+                if (t.getValidationStatus() == com.coincraft.models.ValidationStatus.AWAITING_APPROVAL) {
+                    Label item = new Label("⏳ " + t.getTitle());
+                    item.setStyle("-fx-font-size: 13px; -fx-text-fill: #374151;");
+                    list.getChildren().add(item);
+                    shown++;
+                    if (shown >= 5) break;
+                }
+            }
+        }
+        if (shown == 0) {
+            Label empty = new Label("No tasks pending review.");
+            empty.setStyle("-fx-font-size: 13px; -fx-text-fill: #6b7280;");
+            list.getChildren().add(empty);
+        }
+
+        HBox actions = new HBox(10);
+        actions.setAlignment(Pos.CENTER_LEFT);
+        Button openTasks = new Button("Review Tasks");
+        openTasks.setOnAction(e -> navigateToSection("tasks"));
+        openTasks.setStyle(
+            "-fx-background-color: #FA8A00; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 8; -fx-padding: 8 12;"
+        );
+        actions.getChildren().add(openTasks);
+
+        section.getChildren().addAll(title, list, actions);
+        return section;
+    }
+    
 }

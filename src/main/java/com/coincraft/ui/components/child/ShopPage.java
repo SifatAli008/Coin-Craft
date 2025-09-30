@@ -2,6 +2,7 @@ package com.coincraft.ui.components.child;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import com.coincraft.audio.SoundManager;
 import com.coincraft.models.User;
@@ -26,9 +27,16 @@ public class ShopPage {
     private ScrollPane scrollPane;
     private VBox contentContainer;
     private final User currentUser;
+    private Consumer<String> refreshCallback;
     
     public ShopPage(User user) {
         this.currentUser = user;
+        initializeUI();
+    }
+    
+    public ShopPage(User user, Consumer<String> refreshCallback) {
+        this.currentUser = user;
+        this.refreshCallback = refreshCallback;
         initializeUI();
     }
     
@@ -76,7 +84,7 @@ public class ShopPage {
         header.setPadding(new Insets(0, 0, 24, 0));
         
         // Title
-        Label titleLabel = new Label("🏪 Adventure Shop");
+        Label titleLabel = new Label("Adventure Shop");
         titleLabel.setStyle(
             "-fx-font-size: 28px;" +
             "-fx-font-weight: 700;" +
@@ -111,7 +119,7 @@ public class ShopPage {
         balanceLabel.setStyle(
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 600;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -195,7 +203,7 @@ public class ShopPage {
         priceLabel.setStyle(
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 700;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
             "-fx-background-color: rgba(255, 152, 0, 0.1);" +
             "-fx-background-radius: 8;" +
@@ -207,7 +215,7 @@ public class ShopPage {
         if (currentUser.getSmartCoins() >= item.getPrice()) {
             purchaseBtn.setText("BUY NOW");
             purchaseBtn.setStyle(
-                "-fx-background-color: #4CAF50;" +
+                "-fx-background-color: #FA8A00;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 12px;" +
                 "-fx-font-weight: 600;" +
@@ -257,6 +265,13 @@ public class ShopPage {
             // Deduct coins (in real app, this would be handled by a service)
             currentUser.setSmartCoins(currentUser.getSmartCoins() - item.getPrice());
             
+            // Save to Firebase
+            try {
+                com.coincraft.services.FirebaseService.getInstance().saveUser(currentUser);
+            } catch (Exception ex) {
+                System.out.println("⚠️ Warning: Could not save updated balance: " + ex.getMessage());
+            }
+            
             // Show success dialog
             Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
             successAlert.setTitle("Purchase Successful!");
@@ -277,6 +292,11 @@ public class ShopPage {
             
             // Refresh the shop to update buttons
             refreshShop();
+            
+            // Notify dashboard to refresh balance display
+            if (refreshCallback != null) {
+                refreshCallback.accept("balance_updated");
+            }
             
         } else {
             // Show insufficient funds dialog
@@ -365,7 +385,7 @@ public class ShopPage {
                 case "common" -> "#9E9E9E";
                 case "uncommon" -> "#4CAF50";
                 case "rare" -> "#2196F3";
-                case "legendary" -> "#FF9800";
+                case "legendary" -> "#FA8A00";
                 default -> "#9E9E9E";
             };
         }

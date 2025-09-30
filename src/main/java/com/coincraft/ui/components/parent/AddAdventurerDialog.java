@@ -102,11 +102,11 @@ public class AddAdventurerDialog {
         VBox header = new VBox(12);
         header.setAlignment(Pos.CENTER);
         
-        Label titleLabel = new Label("⚔️ Register New Adventurer");
+        Label titleLabel = new Label("Register New Adventurer");
         titleLabel.setStyle(
             "-fx-font-size: 24px;" +
             "-fx-font-weight: 700;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -246,7 +246,7 @@ public class AddAdventurerDialog {
                     "-fx-background-color: rgba(255, 255, 255, 1.0);" +
                     "-fx-text-fill: black;" +
                     "-fx-font-size: 14px;" +
-                    "-fx-border-color: #FF9800;" +
+                    "-fx-border-color: #FA8A00;" +
                     "-fx-border-width: 2;" +
                     "-fx-border-radius: 8;" +
                     "-fx-background-radius: 8;" +
@@ -339,7 +339,7 @@ public class AddAdventurerDialog {
         createButton.setPrefWidth(180);
         createButton.setPrefHeight(45);
         createButton.setStyle(
-            "-fx-background-color: #4CAF50;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
@@ -352,7 +352,7 @@ public class AddAdventurerDialog {
         createButton.setOnMouseEntered(e -> {
             SoundManager.getInstance().playButtonHover();
             createButton.setStyle(
-                "-fx-background-color: #2E7D32;" +
+                "-fx-background-color: #E67E00;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 14px;" +
                 "-fx-font-weight: 600;" +
@@ -366,7 +366,7 @@ public class AddAdventurerDialog {
         
         createButton.setOnMouseExited(e -> {
             createButton.setStyle(
-                "-fx-background-color: #4CAF50;" +
+                "-fx-background-color: #FA8A00;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 14px;" +
                 "-fx-font-weight: 600;" +
@@ -456,6 +456,28 @@ public class AddAdventurerDialog {
             newAdventurer.setAge(age);
             newAdventurer.setEmail(adventureUsername + "@coincraft.adventure"); // Use Adventure Username as email base
             newAdventurer.setSmartCoinBalance(25); // Starting balance for new adventurers
+            
+            // Deduct 25 coins from merchant when creating adventurer
+            User currentParent = null;
+            if (creatorParent != null) {
+                currentParent = creatorParent;
+            } else {
+                com.coincraft.ui.routing.DashboardRouter router = com.coincraft.ui.routing.DashboardRouter.getInstance();
+                currentParent = router.getCurrentUser();
+            }
+            
+            if (currentParent != null && currentParent.getSmartCoinBalance() >= 25) {
+                currentParent.setSmartCoinBalance(currentParent.getSmartCoinBalance() - 25);
+                // Update merchant's balance in Firebase
+                try {
+                    FirebaseService.getInstance().saveUser(currentParent);
+                    System.out.println("💰 Merchant balance updated: -25 coins for new adventurer");
+                } catch (Exception e) {
+                    System.out.println("⚠️ Warning: Could not update merchant balance: " + e.getMessage());
+                }
+            } else {
+                System.out.println("⚠️ Warning: Merchant has insufficient coins to fund new adventurer");
+            }
             newAdventurer.setLevel(1);
             newAdventurer.setDailyStreaks(0);
             newAdventurer.setLastLogin(java.time.LocalDateTime.now());
@@ -477,11 +499,11 @@ public class AddAdventurerDialog {
                 } else {
                     // Fallback: fetch current parent from router if available
                     com.coincraft.ui.routing.DashboardRouter router = com.coincraft.ui.routing.DashboardRouter.getInstance();
-                    com.coincraft.models.User currentParent = router.getCurrentUser();
-                    if (currentParent != null) {
-                        String pid = currentParent.getUserId();
+                    User fallbackParent = router.getCurrentUser();
+                    if (fallbackParent != null) {
+                        String pid = fallbackParent.getUserId();
                         if (pid == null || pid.isEmpty()) {
-                            String email = currentParent.getEmail();
+                            String email = fallbackParent.getEmail();
                             if (email != null && !email.isEmpty()) {
                                 pid = "email:" + email.toLowerCase();
                             }

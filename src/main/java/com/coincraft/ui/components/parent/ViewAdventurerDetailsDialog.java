@@ -198,7 +198,7 @@ public class ViewAdventurerDetailsDialog {
         changePasswordBtn.setPrefWidth(150);
         changePasswordBtn.setPrefHeight(32);
         changePasswordBtn.setStyle(
-            "-fx-background-color: #FF9800;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
@@ -277,7 +277,7 @@ public class ViewAdventurerDetailsDialog {
         smartCoinField = new TextField(String.valueOf(adventurer.getSmartCoinBalance()));
         smartCoinField.setPrefWidth(100);
         smartCoinField.setEditable(false);
-        smartCoinField.setStyle("-fx-background-color: #f5f5f5; -fx-text-fill: #4CAF50; -fx-font-weight: bold;");
+        smartCoinField.setStyle("-fx-background-color: #f5f5f5; -fx-text-fill: #FA8A00; -fx-font-weight: bold;");
         statsGrid.add(smartCoinField, 1, 0);
         
         // Level
@@ -293,7 +293,7 @@ public class ViewAdventurerDetailsDialog {
         streakField = new TextField(String.valueOf(adventurer.getDailyStreaks()));
         streakField.setPrefWidth(50);
         streakField.setEditable(false);
-        streakField.setStyle("-fx-background-color: #f5f5f5; -fx-text-fill: #FF9800; -fx-font-weight: bold;");
+        streakField.setStyle("-fx-background-color: #f5f5f5; -fx-text-fill: #FA8A00; -fx-font-weight: bold;");
         statsGrid.add(streakField, 1, 2);
         
         // Last login
@@ -363,7 +363,7 @@ public class ViewAdventurerDetailsDialog {
         saveBtn.setPrefWidth(140);
         saveBtn.setPrefHeight(40);
         saveBtn.setStyle(
-            "-fx-background-color: #4CAF50;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 13px;" +
             "-fx-font-weight: 600;" +

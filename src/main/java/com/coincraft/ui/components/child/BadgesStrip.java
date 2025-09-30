@@ -216,6 +216,7 @@ public class BadgesStrip {
         Label iconLabel = new Label(getBadgeIcon(badge.getCategory()));
         iconLabel.setStyle(
             "-fx-font-size: 24px;" +
+            "-fx-text-fill: #FF9800;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 3, 0, 0, 2);"
         );
         
@@ -277,6 +278,7 @@ public class BadgesStrip {
         Label iconLabel = new Label(getBadgeIcon(badge.getCategory()));
         iconLabel.setStyle(
             "-fx-font-size: 20px;" +
+            "-fx-text-fill: #FF9800;" +
             "-fx-opacity: 0.5;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 2);"
         );

@@ -128,6 +128,17 @@ public class DashboardRouter {
      * Logout and clear current session
      */
     public void logout() {
+        // Save current user data before logout
+        if (currentUser != null) {
+            try {
+                com.coincraft.services.FirebaseService firebaseService = com.coincraft.services.FirebaseService.getInstance();
+                firebaseService.saveUser(currentUser);
+                System.out.println("💾 User data saved before logout: " + currentUser.getName() + " (Balance: " + currentUser.getSmartCoinBalance() + ")");
+            } catch (Exception e) {
+                System.out.println("⚠️ Warning: Could not save user data before logout: " + e.getMessage());
+            }
+        }
+        
         // Clean up current dashboard first
         cleanupCurrentDashboard();
         

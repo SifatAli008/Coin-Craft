@@ -34,7 +34,7 @@ public class CentralizedMusicManager {
     
     private CentralizedMusicManager() {
         LOGGER.info("🎵 Initializing Centralized Music Manager");
-        loadDefaultTrack();
+        // Lazy: defer loading the media until first play
     }
     
     public static synchronized CentralizedMusicManager getInstance() {
@@ -127,6 +127,8 @@ public class CentralizedMusicManager {
             var resource = getClass().getResource("/sounds/clicking-interface-select-201946.mp3");
             if (resource != null) {
                 sfxButtonClick = new AudioClip(resource.toExternalForm());
+                sfxButtonClick.setVolume(0.7); // Set default volume for button clicks
+                LOGGER.info("🔊 Button click SFX loaded successfully");
             } else {
                 LOGGER.warning("🔊 Button click SFX not found: /sounds/clicking-interface-select-201946.mp3");
             }
@@ -146,14 +148,16 @@ public class CentralizedMusicManager {
 
     private void playClipIfAllowed(AudioClip clip) {
         if (clip == null) {
+            LOGGER.warning("🔊 Cannot play SFX: clip is null");
             return;
         }
         if (isMuted) {
             return; // respect mute state for SFX as well
         }
         try {
-            clip.setVolume(Math.max(0.0, Math.min(1.0, volume)));
+            // Sound effects volume is set when clips are loaded and when volume changes
             clip.play();
+            LOGGER.fine("🔊 SFX played successfully");
         } catch (Exception e) {
             LOGGER.warning("🔊 Error playing SFX: " + e.getMessage());
         }
@@ -163,6 +167,9 @@ public class CentralizedMusicManager {
      * Start playing music
      */
     public void play() {
+        if (musicPlayer == null) {
+            loadDefaultTrack();
+        }
         if (musicPlayer != null && !isPlaying) {
             try {
                 musicPlayer.play();
@@ -213,13 +220,21 @@ public class CentralizedMusicManager {
     }
     
     /**
-     * Set volume (0.0 to 1.0)
+     * Set volume (0.0 to 1.0) for both music and sound effects
      */
     public void setVolume(double newVolume) {
         this.volume = Math.max(0.0, Math.min(1.0, newVolume));
         
         if (musicPlayer != null) {
             musicPlayer.setVolume(this.volume);
+        }
+        
+        // Update sound effects volume
+        if (sfxButtonClick != null) {
+            sfxButtonClick.setVolume(Math.max(0.0, Math.min(1.0, this.volume * 0.7)));
+        }
+        if (sfxInputSelect != null) {
+            sfxInputSelect.setVolume(Math.max(0.0, Math.min(1.0, this.volume * 0.7)));
         }
         
         notifyStateChanged();

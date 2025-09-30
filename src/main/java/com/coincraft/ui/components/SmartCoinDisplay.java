@@ -38,12 +38,11 @@ public class SmartCoinDisplay {
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(10));
         root.setStyle(
-            "-fx-background-color: #FFF8DC;" +
+            "-fx-background-color: transparent;" +
             "-fx-background-radius: 12;" +
-            "-fx-border-color: #EAB308;" +
+            "-fx-border-color: transparent;" +
             "-fx-border-radius: 12;" +
-            "-fx-border-width: 2;" +
-            "-fx-effect: dropshadow(gaussian, rgba(234,179,8,0.3), 8, 0, 0, 4);"
+            "-fx-border-width: 0;"
         );
         root.getStyleClass().add("smartcoin-display");
         root.getStyleClass().add("pixel-card");
@@ -76,17 +75,9 @@ public class SmartCoinDisplay {
         );
         balanceLabel.getStyleClass().add("balance-label");
         
-        Label coinText = new Label("SmartCoins");
-        coinText.setStyle(
-            "-fx-font-size: 10px;" +
-            "-fx-font-weight: 500;" +
-            "-fx-text-fill: #8B7355;" +
-            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
-        );
-        
         balanceBox.getChildren().addAll(coinIcon, balanceLabel);
         
-        root.getChildren().addAll(balanceBox, coinText);
+        root.getChildren().addAll(balanceBox);
     }
     
     public void updateBalance(int newBalance) {

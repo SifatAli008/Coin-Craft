@@ -48,6 +48,20 @@ public class User {
         this.name = name;
         this.role = role;
         this.age = age;
+        setInitialCoinsForRole();
+    }
+    
+    /**
+     * Set initial coins based on user role
+     */
+    private void setInitialCoinsForRole() {
+        if (this.role == UserRole.PARENT || this.role == UserRole.TEACHER) {
+            // Merchants start with 100 coins
+            this.smartCoinBalance = 100;
+        } else if (this.role == UserRole.CHILD) {
+            // Adventurers start with 0 coins (will receive 25 from merchant)
+            this.smartCoinBalance = 0;
+        }
     }
     
     // Getters and Setters

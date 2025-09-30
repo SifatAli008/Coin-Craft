@@ -6,6 +6,8 @@ import java.util.logging.Logger;
 import com.coincraft.models.User;
 import com.coincraft.models.UserRole;
 import com.coincraft.services.FirebaseService;
+import com.coincraft.ui.util.Fonts;
+import com.coincraft.ui.util.ImageCache;
 
 import animatefx.animation.FadeIn;
 import javafx.animation.KeyFrame;
@@ -18,11 +20,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.util.Duration;
 
 /**
@@ -62,23 +64,39 @@ public class RegistrationScreen {
         root.setPadding(new Insets(0));
         root.setAlignment(Pos.CENTER);
         
-        // Load Minecraft font
-        try {
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 14);
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 16);
-            Font.loadFont(getClass().getResourceAsStream("/Fonts/minecraft/Minecraft.ttf"), 18);
-        } catch (Exception e) {
-            System.out.println("Could not load Minecraft font: " + e.getMessage());
-        }
+        // Load fonts once
+        Fonts.ensureLoaded();
         
-        // Set animated GIF background
-        String backgroundImage = getClass().getResource("/images/588a44195922117.66168b374ece8-ezgif.com-webp-to-gif-converter.gif").toExternalForm();
-        root.setStyle(
-            "-fx-background-image: url('" + backgroundImage + "');" +
-            "-fx-background-size: cover;" +
-            "-fx-background-position: center;" +
-            "-fx-background-repeat: no-repeat;"
-        );
+        // Animated background via ImageView (more efficient than CSS) with safe fallback
+        ImageView bg;
+        {
+            var cached = ImageCache.get(
+                "/images/588a44195922117.66168b374ece8-ezgif.com-webp-to-gif-converter.gif"
+            );
+            if (cached != null) {
+                bg = new ImageView(cached);
+                bg.setPreserveRatio(false);
+                bg.setSmooth(true);
+                bg.setCache(true);
+                bg.setFitWidth(1200);
+                bg.setFitHeight(800);
+                bg.fitWidthProperty().bind(root.widthProperty());
+                bg.fitHeightProperty().bind(root.heightProperty());
+            } else {
+                bg = new ImageView();
+                var res = getClass().getResource("/images/588a44195922117.66168b374ece8-ezgif.com-webp-to-gif-converter.gif");
+                if (res != null) {
+                    root.setStyle(
+                        "-fx-background-image: url('" + res.toExternalForm() + "');" +
+                        "-fx-background-size: cover;" +
+                        "-fx-background-position: center;" +
+                        "-fx-background-repeat: no-repeat;"
+                    );
+                } else {
+                    root.setStyle("-fx-background-color: linear-gradient(to bottom, #111827, #1f2937);");
+                }
+            }
+        }
         
         // Add semi-transparent dark overlay
         Region darkOverlay = new Region();
@@ -110,7 +128,7 @@ public class RegistrationScreen {
         
         centerContainer.getChildren().addAll(registrationCard, statusLabel);
         
-        root.getChildren().addAll(darkOverlay, centerContainer);
+        root.getChildren().addAll(bg, darkOverlay, centerContainer);
         try { new FadeIn(root).play(); } catch (Throwable ignored) {}
         
         // Ensure single background music instance
@@ -152,7 +170,7 @@ public class RegistrationScreen {
         gameLabel.setStyle(
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 600;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Courier New', monospace;"
         );
         
@@ -214,9 +232,9 @@ public class RegistrationScreen {
         nameField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
                 // TODO: Implement sound effects via CentralizedMusicManager if needed
-                nameField.setStyle(nameField.getStyle() + "-fx-border-color: #FF9800; -fx-border-width: 2;");
+                nameField.setStyle(nameField.getStyle() + "-fx-border-color: #FA8A00; -fx-border-width: 2;");
             } else {
-                nameField.setStyle(nameField.getStyle().replace("-fx-border-color: #FF9800; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
+                nameField.setStyle(nameField.getStyle().replace("-fx-border-color: #FA8A00; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
             }
         });
         
@@ -251,9 +269,9 @@ public class RegistrationScreen {
         emailField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
                 // TODO: Implement sound effects via CentralizedMusicManager if needed
-                emailField.setStyle(emailField.getStyle() + "-fx-border-color: #FF9800; -fx-border-width: 2;");
+                emailField.setStyle(emailField.getStyle() + "-fx-border-color: #FA8A00; -fx-border-width: 2;");
             } else {
-                emailField.setStyle(emailField.getStyle().replace("-fx-border-color: #FF9800; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
+                emailField.setStyle(emailField.getStyle().replace("-fx-border-color: #FA8A00; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
             }
         });
         
@@ -292,9 +310,9 @@ public class RegistrationScreen {
         passwordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
                 // TODO: Implement sound effects via CentralizedMusicManager if needed
-                passwordField.setStyle(passwordField.getStyle() + "-fx-border-color: #FF9800; -fx-border-width: 2;");
+                passwordField.setStyle(passwordField.getStyle() + "-fx-border-color: #FA8A00; -fx-border-width: 2;");
             } else {
-                passwordField.setStyle(passwordField.getStyle().replace("-fx-border-color: #FF9800; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
+                passwordField.setStyle(passwordField.getStyle().replace("-fx-border-color: #FA8A00; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
             }
         });
         
@@ -329,9 +347,9 @@ public class RegistrationScreen {
         confirmPasswordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
                 // TODO: Implement sound effects via CentralizedMusicManager if needed
-                confirmPasswordField.setStyle(confirmPasswordField.getStyle() + "-fx-border-color: #FF9800; -fx-border-width: 2;");
+                confirmPasswordField.setStyle(confirmPasswordField.getStyle() + "-fx-border-color: #FA8A00; -fx-border-width: 2;");
             } else {
-                confirmPasswordField.setStyle(confirmPasswordField.getStyle().replace("-fx-border-color: #FF9800; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
+                confirmPasswordField.setStyle(confirmPasswordField.getStyle().replace("-fx-border-color: #FA8A00; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
             }
         });
         
@@ -347,7 +365,7 @@ public class RegistrationScreen {
         signUpButton.setPrefWidth(580);
         signUpButton.setPrefHeight(48);
         signUpButton.setStyle(
-            "-fx-background-color: #4CAF50;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 700;" +
@@ -360,7 +378,7 @@ public class RegistrationScreen {
         signUpButton.setOnMouseEntered(e -> {
             // TODO: Implement button hover sound via CentralizedMusicManager if needed
             signUpButton.setStyle(
-                "-fx-background-color: #2E7D32;" +
+                "-fx-background-color: #E67E00;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 16px;" +
                 "-fx-font-weight: 700;" +
@@ -374,7 +392,7 @@ public class RegistrationScreen {
         });
         signUpButton.setOnMouseExited(e -> {
             signUpButton.setStyle(
-                "-fx-background-color: #4CAF50;" +
+                "-fx-background-color: #FA8A00;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 16px;" +
                 "-fx-font-weight: 700;" +
@@ -409,7 +427,7 @@ public class RegistrationScreen {
         Label backToLoginLabel = new Label("Sign in");
         backToLoginLabel.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-weight: 700;" +
             "-fx-underline: true;" +
             "-fx-cursor: hand;" +

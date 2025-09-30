@@ -1,13 +1,12 @@
 package com.coincraft.ui.components.parent;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.coincraft.models.User;
 import com.coincraft.models.MessageData;
+import com.coincraft.models.User;
 import com.coincraft.services.MessagingService;
 
 import javafx.application.Platform;
@@ -187,7 +186,7 @@ public class AdventureMessagingPortal {
         sendButton.setPrefWidth(80);
         sendButton.setPrefHeight(35);
         sendButton.setStyle(
-            "-fx-background-color: #4CAF50;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +

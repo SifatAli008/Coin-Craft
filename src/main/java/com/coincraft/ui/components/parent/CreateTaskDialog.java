@@ -1,15 +1,17 @@
 package com.coincraft.ui.components.parent;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.Task;
 import com.coincraft.models.TaskType;
 import com.coincraft.models.User;
 import com.coincraft.models.ValidationStatus;
 import com.coincraft.services.FirebaseService;
+import com.coincraft.services.SmartCoinLedgerService;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -38,20 +40,22 @@ public class CreateTaskDialog {
     // Form fields
     private TextField taskTitleField;
     private TextArea taskDescriptionArea;
-    private ComboBox<TaskType> taskTypeCombo;
+    // Removed explicit type selection from UI; default will be applied during creation
     private ComboBox<String> assignToCombo;
     private Spinner<Integer> rewardCoinsSpinner;
     private Spinner<Integer> difficultySpinner;
     private DatePicker deadlinePicker;
+    private Spinner<Integer> deadlineHourSpinner;
+    private Spinner<Integer> deadlineMinuteSpinner;
     
     // Buttons
     private Button createButton;
     private Button cancelButton;
     
     // Data
-    private List<User> availableAdventurers;
-    private User currentParent;
-    private Consumer<Task> onTaskCreated;
+    private final List<User> availableAdventurers;
+    private final User currentParent;
+    private final Consumer<Task> onTaskCreated;
     
     public CreateTaskDialog(Stage parentStage, User parent, List<User> adventurers, Consumer<Task> onTaskCreated) {
         this.currentParent = parent;
@@ -64,7 +68,7 @@ public class CreateTaskDialog {
         dialogStage = new Stage();
         dialogStage.initModality(Modality.WINDOW_MODAL);
         dialogStage.initOwner(parentStage);
-        dialogStage.setTitle("📋 Create New Quest");
+        dialogStage.setTitle("📋 Create New Task");
         dialogStage.setResizable(false);
         
         createUI();
@@ -88,7 +92,7 @@ public class CreateTaskDialog {
         root.setPadding(new Insets(30));
         root.setAlignment(Pos.TOP_CENTER);
         root.setStyle(
-            "-fx-background-color: linear-gradient(to bottom right, #E8F5E8, #F0F8F0, #E8F5E8);" +
+            "-fx-background-color: linear-gradient(to bottom right, #FFF8E1, #FFFDE7, #FFF8E1);" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -101,18 +105,18 @@ public class CreateTaskDialog {
         VBox header = new VBox(8);
         header.setAlignment(Pos.CENTER);
         
-        Label titleLabel = new Label("📋 Create New Quest");
+        Label titleLabel = new Label("📋 Create New Task");
         titleLabel.setStyle(
             "-fx-font-size: 24px;" +
             "-fx-font-weight: 700;" +
-            "-fx-text-fill: #2E7D32;" +
+            "-fx-text-fill: #E67E00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        Label subtitleLabel = new Label("Assign a new adventure to your brave explorers");
+        Label subtitleLabel = new Label("Assign a new task to your brave explorers");
         subtitleLabel.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -126,7 +130,7 @@ public class CreateTaskDialog {
         form.setMaxWidth(540);
         
         // Task Title
-        VBox titleSection = createFormSection("⚔️ Quest Title", "Give your quest an exciting name");
+        VBox titleSection = createFormSection("⚔️ Task Title", "Give your task an exciting name");
         taskTitleField = new TextField();
         taskTitleField.setPromptText("e.g., Clean Your Adventure Headquarters");
         taskTitleField.setPrefWidth(500);
@@ -134,26 +138,18 @@ public class CreateTaskDialog {
         titleSection.getChildren().add(taskTitleField);
         
         // Task Description
-        VBox descSection = createFormSection("📜 Quest Description", "Describe what the adventurer needs to do");
+        VBox descSection = createFormSection("📜 Task Description", "Describe what the adventurer needs to do");
         taskDescriptionArea = new TextArea();
-        taskDescriptionArea.setPromptText("Provide clear instructions for the quest...");
+        taskDescriptionArea.setPromptText("Provide clear instructions for the task...");
         taskDescriptionArea.setPrefWidth(500);
         taskDescriptionArea.setPrefRowCount(3);
         taskDescriptionArea.setWrapText(true);
         styleTextArea(taskDescriptionArea);
         descSection.getChildren().add(taskDescriptionArea);
         
-        // Task Type and Assignment Row
+        // Assignment Row (Quest Type removed)
         HBox typeAssignRow = new HBox(16);
         typeAssignRow.setAlignment(Pos.CENTER);
-        
-        VBox typeSection = createFormSection("🎯 Quest Type", "Choose the type of quest");
-        taskTypeCombo = new ComboBox<>();
-        taskTypeCombo.getItems().addAll(TaskType.values());
-        taskTypeCombo.setValue(TaskType.CHORE);
-        taskTypeCombo.setPrefWidth(240);
-        styleComboBox(taskTypeCombo);
-        typeSection.getChildren().add(taskTypeCombo);
         
         VBox assignSection = createFormSection("⚔️ Assign To", "Choose which adventurer");
         assignToCombo = new ComboBox<>();
@@ -166,7 +162,7 @@ public class CreateTaskDialog {
         styleComboBox(assignToCombo);
         assignSection.getChildren().add(assignToCombo);
         
-        typeAssignRow.getChildren().addAll(typeSection, assignSection);
+        typeAssignRow.getChildren().addAll(assignSection);
         
         // Reward and Difficulty Row
         HBox rewardDiffRow = new HBox(16);
@@ -179,7 +175,7 @@ public class CreateTaskDialog {
         styleSpinner(rewardCoinsSpinner);
         rewardSection.getChildren().add(rewardCoinsSpinner);
         
-        VBox difficultySection = createFormSection("⭐ Difficulty Level", "Quest difficulty (1-5)");
+        VBox difficultySection = createFormSection("⭐ Difficulty Level", "Task difficulty (1-5)");
         difficultySpinner = new Spinner<>(1, 5, 2);
         difficultySpinner.setPrefWidth(240);
         difficultySpinner.setEditable(true);
@@ -189,12 +185,36 @@ public class CreateTaskDialog {
         rewardDiffRow.getChildren().addAll(rewardSection, difficultySection);
         
         // Deadline
-        VBox deadlineSection = createFormSection("📅 Deadline (Optional)", "When should this quest be completed?");
+        VBox deadlineSection = createFormSection("📅 Deadline (Optional)", "When should this task be completed?");
         deadlinePicker = new DatePicker();
-        deadlinePicker.setPrefWidth(500);
-        deadlinePicker.setPromptText("Select deadline date...");
+        deadlinePicker.setPrefWidth(320);
+        deadlinePicker.setPromptText("Select date...");
         styleDatePicker(deadlinePicker);
-        deadlineSection.getChildren().add(deadlinePicker);
+        
+        // Time selectors (24h format)
+        HBox timeRow = new HBox(8);
+        timeRow.setAlignment(Pos.CENTER_LEFT);
+        
+        deadlineHourSpinner = new Spinner<>(0, 23, 17);
+        deadlineHourSpinner.setEditable(true);
+        deadlineHourSpinner.setPrefWidth(80);
+        styleSpinner(deadlineHourSpinner);
+        
+        Label colonLabel = new Label(":");
+        colonLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: 700;");
+        
+        deadlineMinuteSpinner = new Spinner<>(0, 59, 0);
+        deadlineMinuteSpinner.setEditable(true);
+        deadlineMinuteSpinner.setPrefWidth(80);
+        styleSpinner(deadlineMinuteSpinner);
+        
+        timeRow.getChildren().addAll(deadlineHourSpinner, colonLabel, deadlineMinuteSpinner);
+        
+        HBox deadlineRow = new HBox(12);
+        deadlineRow.setAlignment(Pos.CENTER_LEFT);
+        deadlineRow.getChildren().addAll(deadlinePicker, timeRow);
+        
+        deadlineSection.getChildren().add(deadlineRow);
         
         form.getChildren().addAll(
             titleSection,
@@ -215,7 +235,7 @@ public class CreateTaskDialog {
         titleLabel.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 700;" +
-            "-fx-text-fill: #2E7D32;" +
+            "-fx-text-fill: #E67E00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -247,15 +267,15 @@ public class CreateTaskDialog {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         cancelButton.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
+            CentralizedMusicManager.getInstance().playButtonClick();
             dialogStage.close();
         });
         
-        createButton = new Button("📋 CREATE QUEST");
+        createButton = new Button("📋 CREATE TASK");
         createButton.setPrefWidth(280);
         createButton.setPrefHeight(45);
         createButton.setStyle(
-            "-fx-background-color: #4CAF50;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 700;" +
@@ -265,7 +285,7 @@ public class CreateTaskDialog {
             "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.4), 8, 0, 0, 2);"
         );
         createButton.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
+            CentralizedMusicManager.getInstance().playButtonClick();
             handleCreateTask();
         });
         
@@ -279,7 +299,7 @@ public class CreateTaskDialog {
     
     private void addButtonHoverEffects(Button button, String hoverColor, String normalColor) {
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playInputSelect();
             String currentStyle = button.getStyle();
             button.setStyle(currentStyle.replace("-fx-background-color: " + normalColor, 
                                                  "-fx-background-color: " + hoverColor) + 
@@ -297,28 +317,23 @@ public class CreateTaskDialog {
         // Validate inputs
         String title = taskTitleField.getText().trim();
         String description = taskDescriptionArea.getText().trim();
-        TaskType type = taskTypeCombo.getValue();
+        TaskType type = TaskType.CHORE; // Default type since selector was removed
         String assignTo = assignToCombo.getValue();
         int rewardCoins = rewardCoinsSpinner.getValue();
         int difficulty = difficultySpinner.getValue();
         
         if (title.isEmpty()) {
-            showError("Please enter a quest title");
+            showError("Please enter a task title");
             return;
         }
         
         if (description.isEmpty()) {
-            showError("Please enter a quest description");
-            return;
-        }
-        
-        if (type == null) {
-            showError("Please select a quest type");
+            showError("Please enter a task description");
             return;
         }
         
         if (assignTo == null) {
-            showError("Please select who to assign this quest to");
+            showError("Please select who to assign this task to");
             return;
         }
         
@@ -328,7 +343,7 @@ public class CreateTaskDialog {
         newTask.setTitle(title);
         newTask.setDescription(description);
         newTask.setType(type);
-        newTask.setAssignedBy(currentParent.getName());
+        newTask.setAssignedBy(currentParent.getUserId());
         newTask.setAssignedTo(getAssignedUserId(assignTo));
         newTask.setRewardCoins(rewardCoins);
         newTask.setDifficultyLevel(difficulty);
@@ -338,12 +353,25 @@ public class CreateTaskDialog {
         
         // Set deadline if provided
         if (deadlinePicker.getValue() != null) {
-            newTask.setDeadline(deadlinePicker.getValue().atStartOfDay());
+            int hour = deadlineHourSpinner.getValue();
+            int minute = deadlineMinuteSpinner.getValue();
+            LocalTime time = LocalTime.of(hour, minute);
+            newTask.setDeadline(LocalDateTime.of(deadlinePicker.getValue(), time));
         }
         
         // Save task to Firebase
         FirebaseService firebaseService = FirebaseService.getInstance();
         firebaseService.saveTask(newTask);
+
+        // Immediately escrow/debit the reward from the parent account
+        try {
+            if (rewardCoins > 0) {
+                SmartCoinLedgerService.getInstance().debit(currentParent, rewardCoins, "Task escrow: " + title);
+            }
+        } catch (Exception ex) {
+            showError("Could not reserve coins from your balance: " + ex.getMessage());
+            return;
+        }
         
         // Show success message
         showSuccess(title, assignTo, rewardCoins);
@@ -361,26 +389,26 @@ public class CreateTaskDialog {
     }
     
     private void showError(String message) {
-        SoundManager.getInstance().playError();
+        CentralizedMusicManager.getInstance().playInputSelect();
         
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("❌ Quest Creation Error");
-        alert.setHeaderText("Cannot Create Quest");
+        alert.setTitle("❌ Task Creation Error");
+        alert.setHeaderText("Cannot Create Task");
         alert.setContentText(message);
         alert.showAndWait();
     }
     
     private void showSuccess(String questTitle, String assignedTo, int reward) {
-        SoundManager.getInstance().playSuccess();
+        CentralizedMusicManager.getInstance().playButtonClick();
         
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("✅ Quest Created Successfully!");
-        alert.setHeaderText("New Quest Added to Adventure Board");
+        alert.setTitle("✅ Task Created Successfully!");
+        alert.setHeaderText("New Task Added to Adventure Board");
         alert.setContentText(
-            "Quest: " + questTitle + "\n" +
+            "Task: " + questTitle + "\n" +
             "Assigned to: " + assignedTo + "\n" +
             "Reward: " + reward + " SmartCoins\n\n" +
-            "Your adventurers will see this quest on their dashboard!"
+            "Your adventurers will see this task on their dashboard!"
         );
         alert.showAndWait();
     }

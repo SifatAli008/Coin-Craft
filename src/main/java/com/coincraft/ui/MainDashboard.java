@@ -140,7 +140,7 @@ public class MainDashboard {
         // Enhanced action buttons with gaming style
         HBox actions = new HBox(12);
         Button helpBtn = createActionButton("❓ Help", "#4CAF50");
-        Button settingsBtn = createActionButton("⚙️ Settings", "#FF9800");
+        Button settingsBtn = createActionButton("⚙️ Settings", "#FA8A00");
         Button logoutBtn = createActionButton("🚪 Logout", "#F44336");
         
         actions.getChildren().addAll(helpBtn, settingsBtn, logoutBtn);
@@ -196,7 +196,7 @@ public class MainDashboard {
         switch (role) {
             case CHILD:
                 rail.getChildren().addAll(
-                    createNavButton("🏠 Home", "#FF9800", true),
+                    createNavButton("🏠 Home", "#FA8A00", true),
                     createNavButton("🗺️ Adventure", "#2196F3", false),
                     createNavButton("📋 Quests", "#4CAF50", false),
                     createNavButton("🛒 Shop", "#9C27B0", false),
@@ -207,7 +207,7 @@ public class MainDashboard {
                 
             case PARENT:
                 rail.getChildren().addAll(
-                    createNavButton("🏠 Overview", "#FF9800", true),
+                    createNavButton("🏠 Overview", "#FA8A00", true),
                     createNavButton("👶 My child", "#2196F3", false),
                     createNavButton("✅ Validate", "#4CAF50", false),
                     createNavButton("📊 Progress", "#9C27B0", false),
@@ -218,7 +218,7 @@ public class MainDashboard {
                 
             case TEACHER:
                 rail.getChildren().addAll(
-                    createNavButton("🏠 Classroom", "#FF9800", true),
+                    createNavButton("🏠 Classroom", "#FA8A00", true),
                     createNavButton("👥 Students", "#2196F3", false),
                     createNavButton("📚 Lessons", "#4CAF50", false),
                     createNavButton("🏆 Challenges", "#9C27B0", false),
@@ -229,7 +229,7 @@ public class MainDashboard {
                 
             case ADMIN:
                 rail.getChildren().addAll(
-                    createNavButton("🏠 Dashboard", "#FF9800", true),
+                    createNavButton("🏠 Dashboard", "#FA8A00", true),
                     createNavButton("👥 Users", "#2196F3", false),
                     createNavButton("📊 Analytics", "#4CAF50", false),
                     createNavButton("🔧 System", "#9C27B0", false),
@@ -240,7 +240,7 @@ public class MainDashboard {
                 
             case ELDER:
                 rail.getChildren().addAll(
-                    createNavButton("🏠 Home", "#FF9800", true),
+                    createNavButton("🏠 Home", "#FA8A00", true),
                     createNavButton("🗺️ Adventure", "#2196F3", false),
                     createNavButton("📋 Quests", "#4CAF50", false),
                     createNavButton("🛒 Shop", "#9C27B0", false),
@@ -742,7 +742,7 @@ public class MainDashboard {
         Label childCoins = new Label("💰 SmartCoins: 150");
         childCoins.setStyle(
             "-fx-font-size: 12px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -755,7 +755,7 @@ public class MainDashboard {
         actions.setAlignment(Pos.CENTER);
         
         Button validateBtn = createGameButton("✅ Validate tasks", "#4CAF50");
-        Button allowanceBtn = createGameButton("💰 Manage allowance", "#FF9800");
+        Button allowanceBtn = createGameButton("💰 Manage allowance", "#FA8A00");
         Button reportsBtn = createGameButton("📊 View reports", "#2196F3");
         
         actions.getChildren().addAll(validateBtn, allowanceBtn, reportsBtn);
@@ -785,14 +785,14 @@ public class MainDashboard {
         Label progressLabel = new Label("📈 This Week: +50 SmartCoins");
         progressLabel.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
         Label streakLabel = new Label("🔥 Daily Streak: 5 days");
         streakLabel.setStyle(
             "-fx-font-size: 12px;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -810,7 +810,7 @@ public class MainDashboard {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        Button adjustBtn = createGameButton("⚙️ ADJUST", "#FF9800");
+        Button adjustBtn = createGameButton("⚙️ ADJUST", "#FA8A00");
         adjustBtn.setPrefWidth(120);
         
         panel.getChildren().addAll(allowanceLabel, adjustBtn);
@@ -823,7 +823,7 @@ public class MainDashboard {
         Label safetyLabel = new Label("🛡️ Safety Mode: ON");
         safetyLabel.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -913,7 +913,7 @@ public class MainDashboard {
         Label analyticsLabel = new Label("📈 Class Performance: 85%");
         analyticsLabel.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -942,7 +942,7 @@ public class MainDashboard {
         Label statusLabel = new Label("🟢 System: Online");
         statusLabel.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -963,7 +963,7 @@ public class MainDashboard {
         Label newUsersLabel = new Label("📈 New Users Today: 23");
         newUsersLabel.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -998,7 +998,7 @@ public class MainDashboard {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        Button editBtn = createGameButton("✏️ Edit content", "#FF9800");
+        Button editBtn = createGameButton("✏️ Edit content", "#FA8A00");
         editBtn.setPrefWidth(150);
         
         panel.getChildren().addAll(contentLabel, editBtn);
@@ -1011,7 +1011,7 @@ public class MainDashboard {
         Label analyticsLabel = new Label("📈 System Load: 23%");
         analyticsLabel.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -1025,7 +1025,7 @@ public class MainDashboard {
         Label securityLabel = new Label("🛡️ Security: Active");
         securityLabel.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -1164,7 +1164,7 @@ public class MainDashboard {
         actions.setAlignment(Pos.CENTER);
         
         Button startQuestBtn = createGameButton("🎯 Start quest", "#4CAF50");
-        Button shopBtn = createGameButton("🛒 Shop", "#FF9800");
+        Button shopBtn = createGameButton("🛒 Shop", "#FA8A00");
         Button achievementsBtn = createGameButton("🏆 Badges", "#9C27B0");
         
         actions.getChildren().addAll(startQuestBtn, shopBtn, achievementsBtn);

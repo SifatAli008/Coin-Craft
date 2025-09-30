@@ -97,6 +97,8 @@ public class ChildBottomNav {
         Label iconLabel = new Label(icon);
         iconLabel.setStyle(
             "-fx-font-size: 24px;" +
+            "-fx-text-fill: #333333;" +
+            "-fx-background-color: transparent;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0, 0, 2);"
         );
         

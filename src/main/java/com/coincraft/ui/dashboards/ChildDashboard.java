@@ -3,9 +3,11 @@ package com.coincraft.ui.dashboards;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.coincraft.models.MessageData;
 import com.coincraft.models.Task;
 import com.coincraft.models.User;
 import com.coincraft.services.FirebaseService;
+import com.coincraft.services.MessagingService;
 import com.coincraft.ui.components.child.AdventurerTaskView;
 import com.coincraft.ui.components.child.ChildLeaderboard;
 import com.coincraft.ui.components.child.ChildSidebar;
@@ -20,6 +22,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -45,6 +48,13 @@ public class ChildDashboard extends BaseDashboard {
     private ChildSidebar sidebar;
     private ShopPage shopPage;
     
+    // Messaging
+    private final MessagingService messagingService;
+    private List<MessageData> messageHistory = new ArrayList<>();
+    private VBox messagesContainer;
+    private ScrollPane messagesScroll;
+    private TextArea messageInput;
+    
     // Content sections
     private VBox mainContent;
     private String currentSection = "home";
@@ -59,6 +69,7 @@ public class ChildDashboard extends BaseDashboard {
     public ChildDashboard(User user) {
         super(user);
         loadRealData();
+        messagingService = MessagingService.getInstance();
     }
     
     /**
@@ -130,10 +141,21 @@ public class ChildDashboard extends BaseDashboard {
      * Refresh data and update UI components
      */
     public void refreshData() {
+        // Reload the current user to ensure latest SmartCoin balance after approvals/purchases
+        try {
+            FirebaseService firebaseService = FirebaseService.getInstance();
+            User reloaded = firebaseService.loadUser(currentUser.getUserId());
+            if (reloaded != null) {
+                this.currentUser = reloaded;
+            }
+        } catch (Exception ignored) {}
+
         loadRealData();
         
         // Refresh UI components with new data
         if (topBar != null) {
+            // Ensure top bar uses the latest user instance for balance display
+            topBar.setCurrentUser(currentUser);
             topBar.updateStats(dailyStreak, totalBadges, pendingTasks);
             topBar.refresh();
         }
@@ -178,7 +200,7 @@ public class ChildDashboard extends BaseDashboard {
         
         // Add semi-transparent overlay for better contrast (same as parent dashboard)
         Region overlay = new Region();
-        overlay.setStyle("-fx-background-color: rgba(255, 255, 255, 0.05);");
+        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.15);");
         overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
         overlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         overlay.setMouseTransparent(true);
@@ -449,7 +471,7 @@ public class ChildDashboard extends BaseDashboard {
             );
         } else {
             requestBtn.setStyle(
-                "-fx-background-color: linear-gradient(to bottom, #4CAF50, #388E3C);" +
+                "-fx-background-color: linear-gradient(to bottom, #FA8A00, #E67E00);" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 16px;" +
                 "-fx-font-weight: 700;" +
@@ -472,7 +494,7 @@ public class ChildDashboard extends BaseDashboard {
             
             requestBtn.setOnMouseExited(e -> {
                 requestBtn.setStyle(
-                    "-fx-background-color: linear-gradient(to bottom, #4CAF50, #388E3C);" +
+                    "-fx-background-color: linear-gradient(to bottom, #FA8A00, #E67E00);" +
                     "-fx-text-fill: white;" +
                     "-fx-font-size: 16px;" +
                     "-fx-font-weight: 700;" +
@@ -565,12 +587,8 @@ public class ChildDashboard extends BaseDashboard {
                 break;
                 
             case "messages":
-                // Show messaging interface (if available)
-                if (hasAccess("group_messaging")) {
-                    showMessagingInterface();
-                } else {
-                    showAccessDeniedAlert("group_messaging");
-                }
+                // Child-parent chat
+                showMessagingInterface();
                 break;
                 
             case "shop":
@@ -599,7 +617,7 @@ public class ChildDashboard extends BaseDashboard {
         headerSection.setAlignment(Pos.CENTER_LEFT);
         headerSection.setPadding(new Insets(0, 0, 20, 0));
         
-        Label titleLabel = new Label("⚔️ My Quest Journal");
+        Label titleLabel = new Label("My Quest Journal");
         titleLabel.setStyle(
             "-fx-font-size: 28px;" +
             "-fx-font-weight: 700;" +
@@ -724,7 +742,7 @@ public class ChildDashboard extends BaseDashboard {
         VBox achievementsContent = new VBox(8);
         achievementsContent.setAlignment(Pos.CENTER);
         
-        Label recentBadgeLabel = new Label("🏆 Latest Badge:");
+        Label recentBadgeLabel = new Label("Latest Badge:");
         recentBadgeLabel.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-text-fill: #64748b;" +
@@ -853,6 +871,7 @@ public class ChildDashboard extends BaseDashboard {
         Label avatarLabel = new Label("👨‍🚀");
         avatarLabel.setStyle(
             "-fx-font-size: 72px;" +
+            "-fx-text-fill: #FF9800;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 4);"
         );
         
@@ -887,7 +906,7 @@ public class ChildDashboard extends BaseDashboard {
         VBox goldStats = createQuickStatCard("🪙", String.valueOf(currentUser.getSmartCoinBalance()), "Gold Coins", "#D69E2E");
         
         // Valor streak stat
-        VBox valorStats = createQuickStatCard("⚔️", String.valueOf(dailyStreak), "Valor Days", "#E53E3E");
+        VBox valorStats = createQuickStatCard("🎯", String.valueOf(dailyStreak), "Valor Days", "#E53E3E");
         
         // Heraldry stat
         VBox heraldryStats = createQuickStatCard("🛡️", String.valueOf(totalBadges), "Heraldry", "#3182CE");
@@ -1021,7 +1040,7 @@ public class ChildDashboard extends BaseDashboard {
         VBox recentSection = new VBox(8);
         recentSection.setAlignment(Pos.CENTER_LEFT);
         
-        Label recentLabel = new Label("🏆 Recent Achievements");
+        Label recentLabel = new Label("Recent Achievements");
         recentLabel.setStyle(
             "-fx-font-size: 13px;" +
             "-fx-font-weight: 600;" +
@@ -1033,8 +1052,8 @@ public class ChildDashboard extends BaseDashboard {
         HBox badgeGrid = new HBox(8);
         badgeGrid.setAlignment(Pos.CENTER_LEFT);
         
-        String[] recentBadges = {"🎯", "🌟", "⚔️", "🏃", "📚"};
-        String[] badgeNames = {"Quest Master", "Rising Star", "Brave Heart", "Speed Runner", "Book Worm"};
+        String[] recentBadges = {"🎯", "🌟", "🎯", "🏃", "📚"};
+        String[] badgeNames = {"Quest Master", "Rising Star", "Quest Hero", "Speed Runner", "Book Worm"};
         
         for (int i = 0; i < Math.min(recentBadges.length, 3); i++) {
             VBox badge = createAchievementBadge(recentBadges[i], badgeNames[i]);
@@ -1047,7 +1066,7 @@ public class ChildDashboard extends BaseDashboard {
         VBox progressSection = new VBox(8);
         progressSection.setAlignment(Pos.CENTER_LEFT);
         
-        Label progressLabel = new Label("🎯 Next Achievement");
+        Label progressLabel = new Label("Next Achievement");
         progressLabel.setStyle(
             "-fx-font-size: 13px;" +
             "-fx-font-weight: 600;" +
@@ -1174,6 +1193,7 @@ public class ChildDashboard extends BaseDashboard {
         Label avatarPlaceholder = new Label("👨‍🚀");
         avatarPlaceholder.setStyle(
             "-fx-font-size: 64px;" +
+            "-fx-text-fill: #FF9800;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 6, 0, 0, 3);"
         );
         
@@ -1304,6 +1324,7 @@ public class ChildDashboard extends BaseDashboard {
         Label currentAvatar = new Label("👨‍🚀");
         currentAvatar.setStyle(
             "-fx-font-size: 48px;" +
+            "-fx-text-fill: #FF9800;" +
             "-fx-effect: dropshadow(gaussian, rgba(139,92,246,0.4), 6, 0, 0, 3);"
         );
         
@@ -1621,23 +1642,242 @@ public class ChildDashboard extends BaseDashboard {
      * Show messaging interface for group communication
      */
     private void showMessagingInterface() {
-        Alert dialog = new Alert(Alert.AlertType.INFORMATION);
-        dialog.setTitle("Adventure Messages");
-        dialog.setHeaderText("📨 Group Chat");
-        dialog.setContentText(
-            "Welcome to the Adventure Chat!\n\n" +
-            "Here you can chat with your friends about quests and adventures. " +
-            "Remember to be kind and helpful to your fellow adventurers!\n\n" +
-            "Full messaging features coming soon!"
+        try {
+            BorderPane mainLayout = (BorderPane) ((StackPane) root).getChildren().get(2);
+            VBox page = new VBox(12);
+            page.setPadding(new Insets(16));
+            page.setAlignment(Pos.TOP_CENTER);
+            page.setMaxWidth(900);
+            
+            // Check if child has a valid parent ID
+            String parentId = currentUser.getParentId();
+            if (parentId == null || parentId.isEmpty()) {
+                showNoParentMessage(page);
+                mainLayout.setCenter(page);
+                return;
+            }
+            
+            // Header
+            Label header = new Label("💬 Messages with Parent");
+            header.setStyle(
+                "-fx-font-size: 22px;" +
+                "-fx-font-weight: 800;" +
+                "-fx-text-fill: #1f2937;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
+            );
+            
+            // Messages container
+            messagesContainer = new VBox(8);
+            messagesContainer.setPadding(new Insets(12));
+            messagesScroll = new ScrollPane(messagesContainer);
+            messagesScroll.setFitToWidth(true);
+            messagesScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            messagesScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            messagesScroll.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-background: white;" +
+                "-fx-background-radius: 12;" +
+                "-fx-border-radius: 12;" +
+                "-fx-border-color: #e5e7eb;"
+            );
+            messagesScroll.setPrefHeight(480);
+            
+            // Input row
+            HBox inputRow = new HBox(10);
+            inputRow.setAlignment(Pos.CENTER_LEFT);
+            messageInput = new TextArea();
+            messageInput.setPromptText("Write a message…  (Enter to send • Shift+Enter for new line)");
+            messageInput.setPrefRowCount(2);
+            HBox.setHgrow(messageInput, Priority.ALWAYS);
+            messageInput.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-background-radius: 10;" +
+                "-fx-border-radius: 10;" +
+                "-fx-border-color: #e5e7eb;" +
+                "-fx-border-width: 1;" +
+                "-fx-font-family: 'Segoe UI', sans-serif;"
+            );
+            messageInput.setOnKeyPressed(e -> {
+                if (e.getCode() == javafx.scene.input.KeyCode.ENTER) {
+                    if (e.isShiftDown()) {
+                        // allow newline
+                    } else {
+                        e.consume();
+                        sendChildMessage();
+                    }
+                }
+            });
+            Button sendBtn = new Button("📤 Send");
+            sendBtn.setPrefHeight(38);
+            sendBtn.setStyle(
+                "-fx-background-color: #3B82F6; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 10; -fx-padding: 8 16;"
+            );
+            sendBtn.setOnAction(e -> sendChildMessage());
+            inputRow.getChildren().addAll(messageInput, sendBtn);
+            
+            VBox content = new VBox(12);
+            content.setMaxWidth(900);
+            content.getChildren().addAll(header, messagesScroll, inputRow);
+            ScrollPane pageScroll = new ScrollPane(content);
+            pageScroll.setFitToWidth(true);
+            pageScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            pageScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            page.getChildren().add(pageScroll);
+            
+            mainLayout.setCenter(page);
+            
+            // Load and subscribe to messages
+            String conversationId = parentId + "_" + currentUser.getUserId();
+            messageHistory = messagingService.getRecent(conversationId, 100);
+            renderMessages();
+            messagingService.addListener(conversationId, new MessagingService.Listener() {
+                @Override public void onUpdate(List<MessageData> messages) {
+                    messageHistory = messages;
+                    javafx.application.Platform.runLater(() -> renderMessages());
+                }
+            });
+        } catch (Exception ex) {
+            System.out.println("Failed to open messaging UI: " + ex.getMessage());
+        }
+    }
+
+    private void sendChildMessage() {
+        String text = messageInput.getText() != null ? messageInput.getText().trim() : "";
+        if (text.isEmpty()) {
+            showMessageStatus("Please enter a message to send", false);
+            return;
+        }
+        
+        String parentId = currentUser.getParentId();
+        if (parentId == null || parentId.isEmpty()) {
+            showMessageStatus("Cannot send message: No parent linked to your account", false);
+            return;
+        }
+        
+        try {
+            String conversationId = parentId + "_" + currentUser.getUserId();
+            boolean success = messagingService.sendMessage(
+                conversationId,
+                currentUser.getUserId(),
+                currentUser.getName(),
+                parentId,
+                "Parent",
+                text
+            );
+            
+            if (success) {
+                messageInput.clear();
+                showMessageStatus("Message sent successfully! 📤", true);
+            } else {
+                showMessageStatus("Failed to send message. Please try again.", false);
+            }
+        } catch (Exception e) {
+            System.out.println("Error sending message: " + e.getMessage());
+            showMessageStatus("Error sending message: " + e.getMessage(), false);
+        }
+    }
+
+    private void renderMessages() {
+        messagesContainer.getChildren().clear();
+        
+        if (messageHistory == null || messageHistory.isEmpty()) {
+            // Show empty state
+            VBox emptyState = new VBox(16);
+            emptyState.setAlignment(Pos.CENTER);
+            emptyState.setPadding(new Insets(40));
+            
+            Label iconLabel = new Label("💬");
+            iconLabel.setStyle("-fx-font-size: 48px;");
+            
+            Label emptyLabel = new Label("No messages yet");
+            emptyLabel.setStyle(
+                "-fx-font-size: 18px;" +
+                "-fx-font-weight: 600;" +
+                "-fx-text-fill: #6b7280;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            );
+            
+            Label hintLabel = new Label("Start a conversation with your parent!");
+            hintLabel.setStyle(
+                "-fx-font-size: 14px;" +
+                "-fx-text-fill: #9ca3af;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            );
+            
+            emptyState.getChildren().addAll(iconLabel, emptyLabel, hintLabel);
+            messagesContainer.getChildren().add(emptyState);
+        } else {
+            // Show messages
+            for (MessageData m : messageHistory) {
+                messagesContainer.getChildren().add(createBubble(m));
+            }
+        }
+        
+        javafx.application.Platform.runLater(() -> {
+            if (messagesScroll != null) messagesScroll.setVvalue(1.0);
+        });
+    }
+
+    private HBox createBubble(MessageData message) {
+        boolean isChild = currentUser.getUserId().equals(message.getSenderId());
+        HBox row = new HBox();
+        row.setAlignment(isChild ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+        
+        VBox bubble = new VBox(6);
+        bubble.setMaxWidth(480);
+        bubble.setPadding(new Insets(12, 16, 12, 16));
+        
+        // Enhanced styling with better colors and effects
+        String bubbleStyle = isChild
+            ? "-fx-background-color: linear-gradient(to bottom, #22C55E, #16A34A);"
+            : "-fx-background-color: linear-gradient(to bottom, #F8FAFC, #F1F5F9);";
+        
+        bubble.setStyle(bubbleStyle +
+            "-fx-background-radius: 18;" +
+            "-fx-border-radius: 18;" +
+            "-fx-border-color: " + (isChild ? "rgba(34, 197, 94, 0.2)" : "rgba(203, 213, 225, 0.5)") + ";" +
+            "-fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, " + (isChild ? "rgba(34, 197, 94, 0.3)" : "rgba(0,0,0,0.08)") + ", 8, 0, 0, 2);"
         );
         
-        dialog.getDialogPane().setStyle(
-            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
-            "-fx-background-color: rgba(255, 255, 255, 0.95);" +
-            "-fx-background-radius: 16;"
+        // Message content with sender name
+        HBox contentRow = new HBox(8);
+        contentRow.setAlignment(Pos.CENTER_LEFT);
+        
+        Label senderLabel = new Label(isChild ? "You" : message.getSenderName());
+        senderLabel.setStyle(
+            "-fx-font-size: 12px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: " + (isChild ? "rgba(255,255,255,0.9)" : "#64748B") + ";" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        dialog.showAndWait();
+        Label content = new Label(message.getContent());
+        content.setWrapText(true);
+        content.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-text-fill: " + (isChild ? "white" : "#1E293B") + ";" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-line-spacing: 2px;"
+        );
+        
+        contentRow.getChildren().addAll(senderLabel);
+        bubble.getChildren().addAll(contentRow, content);
+        
+        // Timestamp
+        if (message.getTimestamp() != null) {
+            java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+            Label meta = new Label(message.getTimestamp().format(fmt));
+            meta.setStyle(
+                "-fx-font-size: 11px;" +
+                "-fx-text-fill: " + (isChild ? "rgba(255,255,255,0.7)" : "#94A3B8") + ";" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            );
+            bubble.getChildren().add(meta);
+        }
+        
+        row.getChildren().add(bubble);
+        return row;
     }
     
     /**
@@ -1646,7 +1886,7 @@ public class ChildDashboard extends BaseDashboard {
     private void showShopPage() {
         // Create shop page if not exists
         if (shopPage == null) {
-            shopPage = new ShopPage(currentUser);
+            shopPage = new ShopPage(currentUser, this::handleShopRefresh);
         }
         
         // Replace main content with shop page
@@ -1654,6 +1894,19 @@ public class ChildDashboard extends BaseDashboard {
         mainLayout.setCenter(shopPage.getRoot());
         
         System.out.println("Shop page displayed");
+    }
+    
+    /**
+     * Handle refresh callback from shop page
+     */
+    private void handleShopRefresh(String event) {
+        if ("balance_updated".equals(event)) {
+            // Refresh the top bar to update balance display
+            if (topBar != null) {
+                topBar.refresh();
+            }
+            System.out.println("🔄 Balance display refreshed after shop purchase");
+        }
     }
     
     /**
@@ -1670,7 +1923,7 @@ public class ChildDashboard extends BaseDashboard {
         );
         
         // Medieval welcome message with heraldic styling
-        Label welcomeTitle = new Label("⚔ Hail, Noble " + currentUser.getName() + "! ⚔");
+        Label welcomeTitle = new Label("Hail, Noble " + currentUser.getName() + "!");
         welcomeTitle.setStyle(
             "-fx-font-size: 26px;" +
             "-fx-font-weight: 600;" +
@@ -1708,7 +1961,7 @@ public class ChildDashboard extends BaseDashboard {
         actionCards.setPadding(new Insets(16, 0, 16, 0));
         
         // Premium medieval actions with enhanced colors
-        VBox questAction = createActionCard("⚔️", "Noble Quests", 
+        VBox questAction = createActionCard("🎯", "Noble Quests", 
             pendingTasks + " epic adventures", "#FF6B6B", () -> navigateToSection("tasks"));
         
         // View Achievements action
@@ -2031,4 +2284,87 @@ public class ChildDashboard extends BaseDashboard {
         System.out.println("Enhanced scrollable home page displayed");
     }
     
+    /**
+     * Show message when child has no linked parent
+     */
+    private void showNoParentMessage(VBox container) {
+        container.getChildren().clear();
+        
+        VBox messageBox = new VBox(20);
+        messageBox.setAlignment(Pos.CENTER);
+        messageBox.setPadding(new Insets(40));
+        
+        Label iconLabel = new Label("👥");
+        iconLabel.setStyle("-fx-font-size: 48px;");
+        
+        Label titleLabel = new Label("No Parent Linked");
+        titleLabel.setStyle(
+            "-fx-font-size: 24px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #1f2937;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        Label messageLabel = new Label("You don't have a parent linked to your account yet.\n" +
+                                      "Ask your parent to create your adventurer account\n" +
+                                      "or contact support for help.");
+        messageLabel.setStyle(
+            "-fx-font-size: 16px;" +
+            "-fx-text-fill: #6b7280;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-text-alignment: center;"
+        );
+        messageLabel.setWrapText(true);
+        
+        Button contactSupportBtn = new Button("📞 Contact Support");
+        contactSupportBtn.setStyle(
+            "-fx-background-color: #3B82F6;" +
+            "-fx-text-fill: white;" +
+            "-fx-font-weight: 700;" +
+            "-fx-background-radius: 8;" +
+            "-fx-padding: 12 24;"
+        );
+        contactSupportBtn.setOnAction(e -> {
+            System.out.println("Contact support requested");
+            // TODO: Implement contact support functionality
+        });
+        
+        messageBox.getChildren().addAll(iconLabel, titleLabel, messageLabel, contactSupportBtn);
+        container.getChildren().add(messageBox);
+    }
+    
+    /**
+     * Show message status feedback
+     */
+    private void showMessageStatus(String message, boolean isSuccess) {
+        // Create a temporary status label
+        Label statusLabel = new Label(message);
+        statusLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: " + (isSuccess ? "#10B981" : "#EF4444") + ";" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-padding: 8 16;" +
+            "-fx-background-color: " + (isSuccess ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)") + ";" +
+            "-fx-background-radius: 8;" +
+            "-fx-border-radius: 8;"
+        );
+        
+        // Add to messages container temporarily
+        if (messagesContainer != null) {
+            messagesContainer.getChildren().add(statusLabel);
+            
+            // Remove after 3 seconds
+            javafx.application.Platform.runLater(() -> {
+                try {
+                    Thread.sleep(3000);
+                    javafx.application.Platform.runLater(() -> {
+                        messagesContainer.getChildren().remove(statusLabel);
+                    });
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+        }
+    }
 }

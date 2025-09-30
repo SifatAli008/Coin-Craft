@@ -65,7 +65,7 @@ public class ParentSidebar {
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(0, 0, 8, 0));
         
-        Label titleLabel = new Label("⚔️ Merchant Hub");
+        Label titleLabel = new Label("Merchant Hub");
         titleLabel.setStyle(
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
@@ -85,11 +85,11 @@ public class ParentSidebar {
     }
     
     private void createNavigationButtons() {
-        overviewButton = createNavButton("🏠", "Overview", "overview");
-        childrenButton = createNavButton("⚔️", "My Adventurers", "children");
-        tasksButton = createNavButton("📋", "Task Management", "tasks");
-        messagingButton = createNavButton("💬", "Messaging", "messaging");
-        settingsButton = createNavButton("⚙️", "Settings", "settings");
+        overviewButton = createNavButton("Overview", "overview");
+        childrenButton = createNavButton("My Adventurers", "children");
+        tasksButton = createNavButton("Task Management", "tasks");
+        messagingButton = createNavButton("Messaging", "messaging");
+        settingsButton = createNavButton("Settings", "settings");
         
         root.getChildren().addAll(
             overviewButton,
@@ -103,31 +103,25 @@ public class ParentSidebar {
         setActiveSection("overview");
     }
     
-    private VBox createNavButton(String icon, String text, String section) {
+    private VBox createNavButton(String text, String section) {
         VBox button = new VBox(4);
         button.setAlignment(Pos.CENTER_LEFT);
-        button.setPadding(new Insets(8, 12, 8, 12));
+        button.setPadding(new Insets(12, 16, 12, 16));
         button.setStyle(
             "-fx-background-color: transparent;" +
             "-fx-background-radius: 8;" +
             "-fx-cursor: hand;"
         );
         
-        Label iconLabel = new Label(icon);
-        iconLabel.setStyle(
-            "-fx-font-size: 16px;" +
-            "-fx-text-fill: #666666;"
-        );
-        
         Label textLabel = new Label(text);
         textLabel.setStyle(
-            "-fx-font-size: 13px;" +
+            "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #333333;" +
             "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
-        button.getChildren().addAll(iconLabel, textLabel);
+        button.getChildren().add(textLabel);
         
         // Add hover effects
         button.setOnMouseEntered(e -> {
@@ -263,6 +257,15 @@ public class ParentSidebar {
                 "-fx-border-width: 1;" +
                 "-fx-border-radius: 8;"
             );
+            
+            // Update text color for active button
+            Label activeTextLabel = (Label) activeButton.getChildren().get(0);
+            activeTextLabel.setStyle(
+                "-fx-font-size: 14px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-text-fill: #FF9800;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
+            );
         }
     }
     
@@ -271,6 +274,15 @@ public class ParentSidebar {
             "-fx-background-color: transparent;" +
             "-fx-background-radius: 8;" +
             "-fx-cursor: hand;"
+        );
+        
+        // Reset text color
+        Label textLabel = (Label) button.getChildren().get(0);
+        textLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #333333;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
     }
     

@@ -857,6 +857,7 @@ public class FirebaseService {
                                 task.getDescription() + "|" + 
                                 task.getType() + "|" + 
                                 task.getAssignedBy() + "|" + 
+                                (task.getAssignedTo() != null ? task.getAssignedTo() : "") + "|" + // new field (v2)
                                 task.getRewardCoins() + "|" + 
                                 task.getDifficultyLevel() + "|" + 
                                 task.isCompleted() + "|" + 
@@ -905,23 +906,54 @@ public class FirebaseService {
                 task.setDescription(parts[2]);
                 task.setType(com.coincraft.models.TaskType.valueOf(parts[3]));
                 task.setAssignedBy(parts[4]);
-                task.setRewardCoins(Integer.parseInt(parts[5]));
-                task.setDifficultyLevel(Integer.parseInt(parts[6]));
-                task.setCompleted(Boolean.parseBoolean(parts[7]));
-                task.setValidationStatus(com.coincraft.models.ValidationStatus.valueOf(parts[8]));
+                
+                // Backward-compatible parsing: v1 had no assignedTo.
+                // v2 adds assignedTo at index 5 and shifts subsequent fields by +1.
+                int idx = 5;
+                boolean v1Format = parts.length >= 10 && parts[idx] != null && parts[idx].matches("-?\\d+");
+                if (v1Format) {
+                    // No assignedTo stored
+                    task.setAssignedTo("");
+                } else {
+                    // New format with assignedTo
+                    if (parts.length > idx) task.setAssignedTo(parts[idx]);
+                    idx++;
+                }
+                
+                int rewardIndex = idx;
+                int difficultyIndex = idx + 1;
+                int completedIndex = idx + 2;
+                int validationIndex = idx + 3;
+                int deadlineIndex = idx + 4;
+                int createdAtIndex = idx + 5;
+                int completedAtIndex = idx + 6;
+                int notesIndex = idx + 7;
+                
+                if (parts.length > rewardIndex && !parts[rewardIndex].isEmpty()) {
+                    task.setRewardCoins(Integer.parseInt(parts[rewardIndex]));
+                }
+                if (parts.length > difficultyIndex && !parts[difficultyIndex].isEmpty()) {
+                    task.setDifficultyLevel(Integer.parseInt(parts[difficultyIndex]));
+                }
+                if (parts.length > completedIndex && !parts[completedIndex].isEmpty()) {
+                    task.setCompleted(Boolean.parseBoolean(parts[completedIndex]));
+                }
+                if (parts.length > validationIndex && !parts[validationIndex].isEmpty()) {
+                    task.setValidationStatus(com.coincraft.models.ValidationStatus.valueOf(parts[validationIndex]));
+                }
                 
                 // Parse optional fields
-                if (parts.length > 9 && !parts[9].isEmpty()) {
-                    task.setDeadline(LocalDateTime.parse(parts[9]));
+                if (parts.length > deadlineIndex && !parts[deadlineIndex].isEmpty()) {
+                    task.setDeadline(LocalDateTime.parse(parts[deadlineIndex]));
                 }
-                if (parts.length > 10 && !parts[10].isEmpty()) {
-                    task.setCreatedAt(LocalDateTime.parse(parts[10]));
+                if (parts.length > createdAtIndex && !parts[createdAtIndex].isEmpty()) {
+                    task.setCreatedAt(LocalDateTime.parse(parts[createdAtIndex]));
                 }
-                if (parts.length > 11 && !parts[11].isEmpty()) {
-                    task.setCompletedAt(LocalDateTime.parse(parts[11]));
+                if (parts.length > completedAtIndex && !parts[completedAtIndex].isEmpty()) {
+                    task.setCompletedAt(LocalDateTime.parse(parts[completedAtIndex]));
                 }
-                if (parts.length > 12 && !parts[12].isEmpty()) {
-                    task.setCompletionNotes(parts[12]);
+                if (parts.length > notesIndex && !parts[notesIndex].isEmpty()) {
+                    task.setCompletionNotes(parts[notesIndex]);
                 }
                 
                 return task;
@@ -1131,6 +1163,28 @@ public class FirebaseService {
             config.getAuthDomain(),
             config.getDatabaseURL() != null ? "Connected" : "Not Available"
         );
+    }
+    
+    /**
+     * Get the current ID token
+     */
+    public String getCurrentIdToken() {
+        return currentIdToken;
+    }
+    
+    /**
+     * Set the current ID token
+     */
+    public void setCurrentIdToken(String idToken) {
+        this.currentIdToken = idToken;
+        LOGGER.info("🔑 Firebase ID token updated");
+    }
+    
+    /**
+     * Get the Firestore service instance
+     */
+    public FirestoreService getFirestoreService() {
+        return firestoreService;
     }
     
     /**

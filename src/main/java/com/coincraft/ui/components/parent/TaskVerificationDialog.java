@@ -1,6 +1,5 @@
 package com.coincraft.ui.components.parent;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -10,7 +9,7 @@ import com.coincraft.models.Task;
 import com.coincraft.models.User;
 import com.coincraft.models.ValidationStatus;
 import com.coincraft.services.FirebaseService;
-import com.coincraft.services.RewardService;
+import com.coincraft.services.SmartCoinLedgerService;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -20,7 +19,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -53,12 +51,14 @@ public class TaskVerificationDialog {
         dialogStage = new Stage();
         dialogStage.initModality(Modality.WINDOW_MODAL);
         dialogStage.initOwner(parentStage);
-        dialogStage.setTitle("📋 Verify Quest Completion");
-        dialogStage.setResizable(false);
+        dialogStage.setTitle("📋 Verify Task Completion");
+        dialogStage.setResizable(true);
         
         createUI();
         
-        Scene scene = new Scene(root, 600, 500);
+        Scene scene = new Scene(root, 720, 560);
+        dialogStage.setMinWidth(680);
+        dialogStage.setMinHeight(520);
         
         // Load CSS styles
         try {
@@ -77,7 +77,7 @@ public class TaskVerificationDialog {
         root.setPadding(new Insets(30));
         root.setAlignment(Pos.TOP_CENTER);
         root.setStyle(
-            "-fx-background-color: linear-gradient(to bottom right, #FFF3E0, #E8F5E8, #FFF3E0);" +
+            "-fx-background-color: linear-gradient(to bottom right, #FFF3E0, #FFF8E1, #FFF3E0);" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -91,19 +91,19 @@ public class TaskVerificationDialog {
         VBox header = new VBox(8);
         header.setAlignment(Pos.CENTER);
         
-        Label titleLabel = new Label("📋 Verify Quest Completion");
+        Label titleLabel = new Label("📋 Verify Task Completion");
         titleLabel.setStyle(
-            "-fx-font-size: 24px;" +
+            "-fx-font-size: 26px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #F57C00;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         Label subtitleLabel = new Label("Review the adventurer's completion evidence and decide whether to approve or reject");
         subtitleLabel.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #4CAF50;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-text-fill: #FA8A00;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         header.getChildren().addAll(titleLabel, subtitleLabel);
@@ -142,7 +142,7 @@ public class TaskVerificationDialog {
         rewardInfo.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -150,7 +150,7 @@ public class TaskVerificationDialog {
         difficultyInfo.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
@@ -181,7 +181,8 @@ public class TaskVerificationDialog {
         
         completionNotesArea = new TextArea(task.getCompletionNotes());
         completionNotesArea.setEditable(false);
-        completionNotesArea.setPrefRowCount(4);
+        completionNotesArea.setPrefRowCount(6);
+        completionNotesArea.setPrefWidth(640);
         completionNotesArea.setWrapText(true);
         completionNotesArea.setStyle(
             "-fx-background-color: #F5F5F5;" +
@@ -191,7 +192,7 @@ public class TaskVerificationDialog {
             "-fx-background-radius: 8;" +
             "-fx-padding: 12;" +
             "-fx-font-size: 14px;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         Label feedbackLabel = new Label("💬 Your Feedback (Optional):");
@@ -204,7 +205,8 @@ public class TaskVerificationDialog {
         
         feedbackArea = new TextArea();
         feedbackArea.setPromptText("Provide feedback for the adventurer...");
-        feedbackArea.setPrefRowCount(2);
+        feedbackArea.setPrefRowCount(3);
+        feedbackArea.setPrefWidth(640);
         feedbackArea.setWrapText(true);
         feedbackArea.setStyle(
             "-fx-background-color: white;" +
@@ -214,7 +216,7 @@ public class TaskVerificationDialog {
             "-fx-background-radius: 8;" +
             "-fx-padding: 12;" +
             "-fx-font-size: 14px;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
         evidenceSection.getChildren().addAll(evidenceLabel, completionNotesArea, feedbackLabel, feedbackArea);
@@ -270,7 +272,7 @@ public class TaskVerificationDialog {
         approveButton.setPrefWidth(150);
         approveButton.setPrefHeight(40);
         approveButton.setStyle(
-            "-fx-background-color: #4CAF50;" +
+            "-fx-background-color: #FA8A00;" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 700;" +
@@ -311,8 +313,8 @@ public class TaskVerificationDialog {
         // Confirm approval
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmAlert.setTitle("✅ Confirm Approval");
-        confirmAlert.setHeaderText("Approve Quest Completion?");
-        confirmAlert.setContentText("Are you sure you want to approve this quest completion?\n\nThe adventurer will receive " + task.getRewardCoins() + " SmartCoins.");
+        confirmAlert.setHeaderText("Approve Task Completion?");
+        confirmAlert.setContentText("Are you sure you want to approve this task completion?\n\nThe adventurer will receive " + task.getRewardCoins() + " SmartCoins.");
         
         confirmAlert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
         
@@ -325,15 +327,15 @@ public class TaskVerificationDialog {
         String feedback = feedbackArea.getText().trim();
         
         if (feedback.isEmpty()) {
-            showError("Please provide feedback explaining why the quest is being rejected");
+            showError("Please provide feedback explaining why the task is being rejected");
             return;
         }
         
         // Confirm rejection
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmAlert.setTitle("❌ Confirm Rejection");
-        confirmAlert.setHeaderText("Reject Quest Completion?");
-        confirmAlert.setContentText("Are you sure you want to reject this quest completion?\n\nThe adventurer will need to complete the quest again.");
+        confirmAlert.setHeaderText("Reject Task Completion?");
+        confirmAlert.setContentText("Are you sure you want to reject this task completion?\n\nThe adventurer will need to complete the task again.");
         
         confirmAlert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
         
@@ -360,26 +362,30 @@ public class TaskVerificationDialog {
         FirebaseService firebaseService = FirebaseService.getInstance();
         firebaseService.saveTask(task);
         
-        // Award coins to the assigned adventurer
+        // Transfer coins from assigning parent/merchant to the adventurer via centralized ledger
         if (task.getAssignedTo() != null && !task.getAssignedTo().equals("ALL_ADVENTURERS")) {
             User adventurer = firebaseService.getUserById(task.getAssignedTo());
-            if (adventurer != null) {
-                RewardService rewardService = RewardService.getInstance();
-                boolean rewardSuccess = rewardService.awardCoinsForTask(adventurer, task);
-                
-                if (rewardSuccess) {
-                    LOGGER.info("Successfully awarded coins to adventurer " + adventurer.getName());
-                } else {
-                    LOGGER.warning("Failed to award coins to adventurer " + adventurer.getName());
+            User parent = firebaseService.getUserById(task.getAssignedBy());
+            if (adventurer != null && parent != null) {
+                try {
+                    SmartCoinLedgerService.getInstance().transfer(
+                        parent,
+                        adventurer,
+                        task.getRewardCoins(),
+                        "Task approved: " + task.getTitle()
+                    );
+                    LOGGER.info(() -> "Transferred reward coins for task '" + task.getTitle() + "'");
+                } catch (Exception ex) {
+                    LOGGER.warning("Failed to transfer coins: " + ex.getMessage());
                 }
             }
         }
         
         // Show success message
         Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
-        successAlert.setTitle("✅ Quest Approved!");
-        successAlert.setHeaderText("Quest Completion Approved");
-        successAlert.setContentText("The adventurer will receive " + task.getRewardCoins() + " SmartCoins for completing this quest!");
+        successAlert.setTitle("✅ Task Approved!");
+        successAlert.setHeaderText("Task Completion Approved");
+        successAlert.setContentText("The adventurer will receive " + task.getRewardCoins() + " SmartCoins for completing this task!");
         successAlert.showAndWait();
         
         // Callback to parent
@@ -387,6 +393,12 @@ public class TaskVerificationDialog {
             onTaskVerified.accept(task);
         }
         
+        // Attempt to refresh both dashboards' headers if present
+        try {
+            // Parent: reload self in storage and suggest a UI refresh via dashboard if available
+            FirebaseService.getInstance().loadUser(task.getAssignedBy());
+        } catch (Exception ignored) {}
+
         dialogStage.close();
     }
     
@@ -405,12 +417,25 @@ public class TaskVerificationDialog {
         // Save to Firebase
         FirebaseService firebaseService = FirebaseService.getInstance();
         firebaseService.saveTask(task);
+
+        // Refund reserved coins to the assigning parent
+        try {
+            if (task.getAssignedBy() != null && task.getRewardCoins() > 0) {
+                User parent = firebaseService.getUserById(task.getAssignedBy());
+                if (parent != null) {
+                    com.coincraft.services.SmartCoinLedgerService.getInstance()
+                        .credit(parent, task.getRewardCoins(), "Task rejected refund: " + task.getTitle());
+                }
+            }
+        } catch (Exception ex) {
+            LOGGER.warning("Failed to refund coins to parent: " + ex.getMessage());
+        }
         
         // Show rejection message
         Alert rejectAlert = new Alert(Alert.AlertType.INFORMATION);
-        rejectAlert.setTitle("❌ Quest Rejected");
-        rejectAlert.setHeaderText("Quest Completion Rejected");
-        rejectAlert.setContentText("The quest has been rejected. The adventurer can attempt to complete it again.");
+        rejectAlert.setTitle("❌ Task Rejected");
+        rejectAlert.setHeaderText("Task Completion Rejected");
+        rejectAlert.setContentText("The task has been rejected. The adventurer can attempt to complete it again.");
         rejectAlert.showAndWait();
         
         // Callback to parent

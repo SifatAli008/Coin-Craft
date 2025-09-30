@@ -184,7 +184,7 @@ public class TaskCardList {
             emptyLabel.setStyle(
                 "-fx-font-size: 14px;" +
                 "-fx-font-weight: 500;" +
-                "-fx-text-fill: #4CAF50;" +
+                "-fx-text-fill: #FA8A00;" +
                 "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
                 "-fx-padding: 20;"
             );
@@ -221,7 +221,7 @@ public class TaskCardList {
         
         // Task type icon
         Label typeIcon = new Label(getTaskTypeIcon(task.getType()));
-        typeIcon.setStyle("-fx-font-size: 32px;");
+        typeIcon.setStyle("-fx-font-size: 32px; -fx-text-fill: #FA8A00;");
         
         // Task title
         Label titleLabel = new Label(task.getTitle());
@@ -273,7 +273,7 @@ public class TaskCardList {
         if (task.getProgressPercentage() >= 100) {
             button.setText("✅ COMPLETE");
             button.setStyle(
-                "-fx-background-color: #4CAF50;" +
+                "-fx-background-color: #FA8A00;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 14px;" +
                 "-fx-font-weight: 600;" +
@@ -338,7 +338,7 @@ public class TaskCardList {
         
         // Task type icon (large)
         Label typeIcon = new Label(getTaskTypeIcon(task.getType()));
-        typeIcon.setStyle("-fx-font-size: 24px;");
+        typeIcon.setStyle("-fx-font-size: 24px; -fx-text-fill: #FA8A00;");
         
         // Clean task title
         Label titleLabel = new Label(task.getTitle());
@@ -399,7 +399,7 @@ public class TaskCardList {
         header.setAlignment(Pos.CENTER_LEFT);
         
         Label typeIcon = new Label(getTaskTypeIcon(task.getType()));
-        typeIcon.setStyle("-fx-font-size: 20px;");
+        typeIcon.setStyle("-fx-font-size: 20px; -fx-text-fill: #FA8A00;");
         
         Label titleLabel = new Label(task.getTitle());
         titleLabel.setStyle(
@@ -416,7 +416,7 @@ public class TaskCardList {
         rewardLabel.setStyle(
             "-fx-font-size: 12px;" +
             "-fx-font-weight: 600;" +
-            "-fx-text-fill: #FF9800;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
             "-fx-background-color: #FFF8DC;" +
             "-fx-background-radius: 8;" +
@@ -494,7 +494,7 @@ public class TaskCardList {
         if (task.getProgressPercentage() >= 100) {
             button.setText("✅ DONE");
             button.setStyle(
-                "-fx-background-color: #4CAF50;" +
+                "-fx-background-color: #FA8A00;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 12px;" +
                 "-fx-font-weight: 700;" +
@@ -547,7 +547,7 @@ public class TaskCardList {
         if (task.getProgressPercentage() >= 100) {
             button.setText("✅ COMPLETE QUEST");
             button.setStyle(
-                "-fx-background-color: #4CAF50;" +
+                "-fx-background-color: #FA8A00;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 14px;" +
                 "-fx-font-weight: 700;" +
@@ -668,7 +668,7 @@ public class TaskCardList {
     private String getTaskTypeColor(TaskType type) {
         switch (type) {
             case LEARNING: return "#2196F3";
-            case CHORE: return "#FF9800";
+            case CHORE: return "#FA8A00";
             case CREATIVE: return "#9C27B0";
             case PHYSICAL: return "#4CAF50";
             case SOCIAL: return "#E91E63";

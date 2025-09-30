@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.coincraft.models.User;
-import com.coincraft.models.UserRole;
 import com.coincraft.services.FirebaseService;
 
 import javafx.geometry.Insets;
@@ -16,7 +15,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
-import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
@@ -24,7 +22,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
 /**
  * Comprehensive settings page for Parent Dashboard
@@ -124,7 +121,7 @@ public class SettingsPage {
         Label roleDisplay = new Label("Merchant (Parent)");
         roleDisplay.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-weight: 600;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
@@ -147,38 +144,181 @@ public class SettingsPage {
     }
     
     private void createFamilySection() {
-        VBox familySection = createSectionCard("👥 Family Management", 
-            "Manage your adventurers and family settings");
+        VBox familySection = createSectionCard("🏦 Family Balance & Active Adventures", 
+            "Manage your merchant coins and adventurer accounts");
         
-        VBox familyContent = new VBox(16);
-        familyContent.setPadding(new Insets(16));
+        VBox familyContent = new VBox(20);
+        familyContent.setPadding(new Insets(20));
         
-        // Family stats
-        HBox statsRow = new HBox(20);
-        statsRow.setAlignment(Pos.CENTER_LEFT);
+        // Merchant Balance Section (like Active Adventures)
+        VBox merchantBalanceCard = new VBox(16);
+        merchantBalanceCard.setStyle(
+            "-fx-background-color: rgba(255, 255, 255, 0.9);" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
+            "-fx-border-color: rgba(250, 138, 0, 0.3);" +
+            "-fx-border-width: 2;" +
+            "-fx-padding: 20;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 8, 0, 0, 4);"
+        );
         
-        VBox totalAdventurersCard = createStatCard("Adventurers", String.valueOf(children.size()), "#4CAF50");
-        VBox activeAdventurersCard = createStatCard("Active", String.valueOf(getActiveAdventurersCount()), "#2196F3");
-        VBox totalCoinsCard = createStatCard("Total Coins", String.valueOf(getTotalFamilyCoins()), "#FF9800");
+        // Merchant balance header
+        HBox merchantHeader = new HBox(12);
+        merchantHeader.setAlignment(Pos.CENTER_LEFT);
         
-        statsRow.getChildren().addAll(totalAdventurersCard, activeAdventurersCard, totalCoinsCard);
+        Label merchantIcon = new Label("🏪");
+        merchantIcon.setStyle("-fx-font-size: 24px;");
         
-        // Adventurer list
-        Label adventurerLabel = new Label("Adventurer Accounts:");
-        adventurerLabel.setStyle(
-            "-fx-font-size: 16px;" +
-            "-fx-font-weight: 600;" +
+        VBox merchantInfo = new VBox(4);
+        Label merchantTitle = new Label("Merchant Account");
+        merchantTitle.setStyle(
+            "-fx-font-size: 18px;" +
+            "-fx-font-weight: 700;" +
             "-fx-text-fill: #333333;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
+        Label merchantSubtitle = new Label("Your coin vault for managing adventures");
+        merchantSubtitle.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-text-fill: #666666;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        merchantInfo.getChildren().addAll(merchantTitle, merchantSubtitle);
+        
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        // Merchant coin balance
+        VBox balanceInfo = new VBox(4);
+        Label balanceLabel = new Label("Current Balance");
+        balanceLabel.setStyle(
+            "-fx-font-size: 12px;" +
+            "-fx-text-fill: #666666;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        Label balanceValue = new Label(currentUser.getSmartCoinBalance() + " coins");
+        balanceValue.setStyle(
+            "-fx-font-size: 24px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #FA8A00;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        balanceInfo.getChildren().addAll(balanceLabel, balanceValue);
+        
+        merchantHeader.getChildren().addAll(merchantIcon, merchantInfo, spacer, balanceInfo);
+        
+        // Purchase coins button
+        Button purchaseButton = new Button("💰 Purchase More Coins");
+        purchaseButton.setPrefHeight(45);
+        purchaseButton.setPrefWidth(200);
+        purchaseButton.setStyle(
+            "-fx-background-color: #FA8A00;" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 14px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-background-radius: 8;" +
+            "-fx-border-radius: 8;" +
+            "-fx-cursor: hand;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        purchaseButton.setOnMouseEntered(e -> {
+            purchaseButton.setStyle(
+                "-fx-background-color: #E67E00;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 14px;" +
+                "-fx-font-weight: 600;" +
+                "-fx-background-radius: 8;" +
+                "-fx-border-radius: 8;" +
+                "-fx-cursor: hand;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            );
+        });
+        
+        purchaseButton.setOnMouseExited(e -> {
+            purchaseButton.setStyle(
+                "-fx-background-color: #FA8A00;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 14px;" +
+            "-fx-font-weight: 600;" +
+                "-fx-background-radius: 8;" +
+                "-fx-border-radius: 8;" +
+                "-fx-cursor: hand;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            );
+        });
+        
+        purchaseButton.setOnAction(e -> {
+            // TODO: Implement coin purchase functionality
+            System.out.println("💰 Coin purchase requested!");
+        });
+        
+        merchantBalanceCard.getChildren().addAll(merchantHeader, purchaseButton);
+        
+        // Active Adventures Section
+        VBox activeAdventuresCard = new VBox(16);
+        activeAdventuresCard.setStyle(
+            "-fx-background-color: rgba(255, 255, 255, 0.9);" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
+            "-fx-border-color: rgba(33, 150, 243, 0.3);" +
+            "-fx-border-width: 2;" +
+            "-fx-padding: 20;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 8, 0, 0, 4);"
+        );
+        
+        // Active Adventures header
+        HBox adventuresHeader = new HBox(12);
+        adventuresHeader.setAlignment(Pos.CENTER_LEFT);
+        
+        Label adventuresIcon = new Label("⚔️");
+        adventuresIcon.setStyle("-fx-font-size: 24px;");
+        
+        VBox adventuresInfo = new VBox(4);
+        Label adventuresTitle = new Label("Active Adventures");
+        adventuresTitle.setStyle(
+            "-fx-font-size: 18px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #333333;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        Label adventuresSubtitle = new Label("Manage your adventurer accounts");
+        adventuresSubtitle.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-text-fill: #666666;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+        );
+        
+        adventuresInfo.getChildren().addAll(adventuresTitle, adventuresSubtitle);
+        
+        Region spacer2 = new Region();
+        HBox.setHgrow(spacer2, Priority.ALWAYS);
+        
+        // Adventure stats
+        HBox adventureStats = new HBox(16);
+        VBox totalAdventurersCard = createStatCard("Total", String.valueOf(children.size()), "#4CAF50");
+        VBox activeAdventurersCard = createStatCard("Active", String.valueOf(getActiveAdventurersCount()), "#2196F3");
+        VBox totalCoinsCard = createStatCard("Family Coins", String.valueOf(getTotalFamilyCoins()), "#FA8A00");
+        
+        adventureStats.getChildren().addAll(totalAdventurersCard, activeAdventurersCard, totalCoinsCard);
+        
+        adventuresHeader.getChildren().addAll(adventuresIcon, adventuresInfo, spacer2);
+        
+        // Adventurer list
         VBox adventurerList = new VBox(8);
         if (children.isEmpty()) {
             Label noAdventurersLabel = new Label("No adventurers added yet. Use the 'Children' tab to add adventurers.");
             noAdventurersLabel.setStyle(
                 "-fx-font-size: 14px;" +
                 "-fx-text-fill: #666666;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-padding: 20;" +
+                "-fx-text-alignment: center;"
             );
             adventurerList.getChildren().add(noAdventurersLabel);
         } else {
@@ -188,7 +328,9 @@ public class SettingsPage {
             }
         }
         
-        familyContent.getChildren().addAll(statsRow, adventurerLabel, adventurerList);
+        activeAdventuresCard.getChildren().addAll(adventuresHeader, adventureStats, adventurerList);
+        
+        familyContent.getChildren().addAll(merchantBalanceCard, activeAdventuresCard);
         familySection.getChildren().add(familyContent);
         root.getChildren().add(familySection);
     }
@@ -278,7 +420,7 @@ public class SettingsPage {
         buttonRow.setPadding(new Insets(16));
         
         Button saveButton = createActionButton("💾 Save Changes", "#4CAF50", this::saveSettings);
-        Button resetButton = createActionButton("🔄 Reset to Defaults", "#FF9800", this::resetSettings);
+        Button resetButton = createActionButton("🔄 Reset to Defaults", "#FA8A00", this::resetSettings);
         Button exportButton = createActionButton("📤 Export Data", "#2196F3", this::exportData);
         
         buttonRow.getChildren().addAll(saveButton, resetButton, exportButton);
@@ -434,7 +576,7 @@ public class SettingsPage {
         Label coinsLabel = new Label(child.getSmartCoinBalance() + " coins");
         coinsLabel.setStyle(
             "-fx-font-size: 12px;" +
-            "-fx-text-fill: #4CAF50;" +
+            "-fx-text-fill: #FA8A00;" +
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
