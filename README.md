@@ -11,10 +11,19 @@ CoinCraft makes learning money fun for kids through a gamified experience. It us
 ### Core Features (MVP)
 - **Role-Based Dashboards**: Separate interfaces for Children, Parents, and Administrators
 - **Interactive Child Dashboard**: Avatar display, SmartCoin balance, progress tracking, gamified UI
-- **Parent Management Portal**: Task validation, family analytics, child monitoring tools
+- **Parent Management Portal**: Task validation, family analytics, child monitoring tools, shop management
+- **Shop Management System**: Parents create products, children purchase with SmartCoins
+  - Real image upload support for products
+  - Complete CRUD operations (Create, Read, Update, Delete)
+  - Firebase integration with local storage fallback
+  - Unified product card design across dashboards
+- **Task System**: Comprehensive chore tracking with real-time parent validation
+  - Task assignment by parents
+  - Completion evidence submission by children
+  - Approval/rejection workflow with feedback
+  - Task status tracking (Pending, Awaiting Approval, Approved, Rejected)
 - **Level-Based Learning**: 10 progressive levels covering different financial topics
 - **Gamification Elements**: Badges, achievements, leaderboards, daily streaks, pixel-themed UI
-- **Task System**: Comprehensive chore tracking with real-time parent validation
 - **Avatar Customization**: 2D character customization with unlockable items and animations
 - **Audio System**: Background music, sound effects, and audio feedback
 - **Cross-Platform Support**: Windows launcher with automatic JavaFX setup
@@ -30,12 +39,14 @@ CoinCraft makes learning money fun for kids through a gamified experience. It us
 ## Technical Architecture
 
 ### Technology Stack
-- **Frontend**: JavaFX 19+ for rich desktop UI
+- **Frontend**: JavaFX 19+ for rich desktop UI with modern styling
 - **Backend**: Java 17+ with threading for real-time features
-- **Database**: Firebase Firestore (mock implementation for MVP)
-- **Authentication**: Firebase Auth (mock implementation for MVP)
-- **Build Tool**: Maven
+- **Database**: Firebase Firestore with REST API integration
+- **Storage**: Firebase Storage with local fallback for images
+- **Authentication**: Firebase Auth with Google OAuth support
+- **Build Tool**: Gradle 8.5
 - **Testing**: JUnit 5
+- **Messaging**: WebSocket bridge for real-time notifications
 
 ### Project Structure
 ```
@@ -45,32 +56,45 @@ src/
 │   │   └── com/coincraft/
 │   │       ├── CoinCraftApplication.java    # Main application entry
 │   │       ├── audio/                       # Audio system
-│   │       │   └── SoundManager.java
+│   │       │   ├── SoundManager.java
+│   │       │   └── CentralizedMusicManager.java
 │   │       ├── models/                      # Data models
 │   │       │   ├── User.java, Task.java, Badge.java
+│   │       │   ├── Product.java             # Shop product model
 │   │       │   ├── Avatar.java, AvatarItem.java
 │   │       │   └── UserRole.java, ValidationStatus.java
 │   │       ├── services/                    # Business logic
-│   │       │   ├── FirebaseService.java
+│   │       │   ├── FirebaseService.java     # Main Firebase service
 │   │       │   ├── FirebaseAuthService.java
-│   │       │   ├── FirestoreService.java
+│   │       │   ├── FirestoreService.java    # Firestore CRUD operations
+│   │       │   ├── FirebaseStorageService.java
+│   │       │   ├── FirebaseDataManager.java
 │   │       │   └── RewardService.java
 │   │       └── ui/                          # User interface
 │   │           ├── dashboards/              # Role-based dashboards
-│   │           │   ├── ChildDashboard.java
-│   │           │   ├── ParentDashboard.java
+│   │           │   ├── ChildDashboard.java  # Task panel, shop browsing
+│   │           │   ├── ParentDashboard.java # Task validation, shop management
 │   │           │   └── AdminDashboard.java
 │   │           ├── components/              # UI components
 │   │           │   ├── child/               # Child-specific components
+│   │           │   │   ├── TaskCardList.java
+│   │           │   │   ├── TaskCompletionDialog.java
+│   │           │   │   └── ShopPage.java
 │   │           │   ├── parent/              # Parent-specific components
+│   │           │   │   ├── AddProductDialog.java
+│   │           │   │   ├── EditProductDialog.java
+│   │           │   │   └── ParentSidebar.java
+│   │           │   ├── shared/              # Shared components
+│   │           │   │   └── ProductCard.java # Unified product card
 │   │           │   └── theme/               # Pixel-themed components
 │   │           ├── routing/                 # Navigation system
 │   │           └── LoginScreen.java, RegistrationScreen.java
 │   └── resources/
 │       ├── styles/                          # CSS styling
 │       ├── images/                          # Visual assets & GIFs
-│       ├── sounds/                          # Audio files
-│       └── fonts/                           # Custom pixel fonts
+│       ├── sounds/                          # Audio files (WAV, MP3)
+│       ├── fonts/                           # Custom pixel fonts
+│       └── firebase-config.json             # Firebase configuration
 └── test/
     └── java/                                # Unit tests
 ```
@@ -79,7 +103,7 @@ src/
 
 ### Prerequisites
 - Java 17 or higher
-- Maven 3.8+
+- Gradle 8.5+ (wrapper included)
 - JavaFX 19+ (included in dependencies)
 
 ### Installation and Running
@@ -92,7 +116,7 @@ src/
 
 2. **Build the project**
    ```bash
-   mvn clean compile
+   gradlew build
    ```
 
 3. **Run the application**
@@ -102,14 +126,14 @@ src/
    launch-coincraft.bat
    ```
    
-   **Option B: Using Maven**
+   **Option B: Using Gradle**
    ```bash
-   mvn javafx:run
+   gradlew run
    ```
 
 4. **Run tests**
    ```bash
-   mvn test
+   gradlew test
    ```
 
 ### Development Mode
@@ -168,6 +192,61 @@ The app will connect to this URL for realtime messaging events.
 - **Avatar Items**: Customization rewards
 - **Daily Streaks**: Consistency rewards
 
+## Task Assignment Workflow
+
+### Task Creation & Assignment
+Parents can create and assign tasks to their children:
+1. **Create Task**: Parents define task details, rewards, and deadlines
+2. **Assign to Child**: Task appears in child's task dashboard
+3. **Task Visibility**: Children see all assigned tasks with clear status indicators
+
+### Task Completion Process
+Children complete tasks and submit evidence:
+1. **View Tasks**: See all assigned tasks with details and rewards
+2. **Complete Task**: Click "Complete Task" button
+3. **Submit Evidence**: Provide completion notes and proof
+4. **Awaiting Review**: Task status changes to "Awaiting Approval"
+
+### Parent Validation
+Parents review and approve/reject completed tasks:
+1. **Review Queue**: See all tasks awaiting approval
+2. **Approve Tasks**: Award SmartCoins and mark as complete
+3. **Reject Tasks**: Provide feedback for improvement
+4. **Re-submission**: Children can resubmit rejected tasks
+
+### Task Status System
+- **Pending**: Task assigned but not yet completed
+- **Awaiting Approval**: Task completed, waiting for parent review
+- **Approved**: Task approved, SmartCoins awarded
+- **Rejected**: Task needs improvement, feedback provided
+- **Auto-Approved**: Automatic approval for certain task types
+
+## Shop Management System
+
+### For Parents (Merchants)
+Parents can manage a personalized shop for their children:
+- **Add Products**: Create custom rewards with name, description, price, and image
+- **Edit Products**: Update product details, pricing, and images anytime
+- **Toggle Status**: Activate or deactivate products from the shop
+- **Delete Products**: Remove products with confirmation dialog
+- **Image Support**: Upload real images or use emojis for product icons
+- **Firebase Integration**: Products automatically sync with cloud storage
+
+### For Children (Adventurers)
+Children can browse and purchase from their parent's shop:
+- **Browse Products**: View all active products in a modern grid layout
+- **Purchase Items**: Buy products using earned SmartCoins
+- **Visual Feedback**: See product images, descriptions, and prices
+- **Real-Time Updates**: Shop reflects parent changes immediately
+- **Balance Tracking**: SmartCoin balance updates after purchases
+
+### Product Card Features
+- **Large Product Images**: 150x150px containers with 120x120px image display
+- **Inline Title & Status**: Product name and active status side by side
+- **Modern Design**: Clean white cards with subtle shadows and rounded corners
+- **Responsive Buttons**: Different actions based on dashboard (parent vs child)
+- **Unified UI/UX**: Consistent design across both dashboards
+
 ## User Roles
 
 - **Child (7-14)**: Primary player, completes tasks and learns
@@ -180,24 +259,50 @@ The app will connect to this URL for realtime messaging events.
 This MVP has been significantly expanded with comprehensive features:
 - ✅ Core project structure and models
 - ✅ Role-based dashboard system (Child, Parent, Admin)
-- ✅ Firebase integration with authentication services
-- ✅ Comprehensive UI component library
+- ✅ Firebase integration with Firestore REST API
+- ✅ Shop management system with product CRUD operations
+- ✅ Task assignment workflow with parent validation
+- ✅ Comprehensive UI component library with modern styling
 - ✅ Audio system with sound effects and background music
 - ✅ Parent validation and task management system
 - ✅ Child-focused gamified interface with avatars and badges
 - ✅ Family analytics and monitoring tools
 - ✅ Settings and configuration management
 - ✅ Pixel-themed custom UI components
+- ✅ Image upload and display for products
 - ✅ Cross-platform launcher with JavaFX auto-setup
+- ✅ WebSocket bridge for real-time messaging
+
+## Recent Updates
+
+### Version 2.0 - Shop Management System (October 2025)
+- ✨ Complete shop management for parents
+- ✨ Product CRUD with Firebase/Firestore integration
+- ✨ Real image upload and display support
+- ✨ Enhanced product cards with larger images (150x150px)
+- ✨ Inline title and status layout
+- ✨ Edit and delete product dialogs
+- ✨ Confirmation dialogs for destructive actions
+- ✨ Unified ProductCard component
+
+### Version 1.5 - Task Assignment Workflow (October 2025)
+- ✨ Task assignment by parents to children
+- ✨ Task completion with evidence submission
+- ✨ Parent review and approval system
+- ✨ Task status tracking (Pending, Awaiting Approval, Approved, Rejected)
+- ✨ Enhanced task panel UI with modern styling
+- ✨ Removed quest terminology, switched to task-focused language
 
 ## Future Enhancements
 
-- Real Firebase integration
+- Full Firebase Admin SDK integration
 - Mobile app versions (iOS/Android)
 - Advanced multiplayer features
-- Content management system
-- Analytics and reporting
+- Content management system for educators
+- Enhanced analytics and reporting dashboards
 - Additional languages support
+- Marketplace for sharing custom content
+- Integration with real banking APIs (future phase)
 
 ## Contributing
 
