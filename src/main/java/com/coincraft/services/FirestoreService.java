@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import com.coincraft.models.Task;
 import com.coincraft.models.MessageData;
 import com.coincraft.models.User;
+import com.coincraft.models.Product;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import okhttp3.MediaType;
@@ -634,5 +635,166 @@ public class FirestoreService {
         }
         
         return tasks;
+    }
+    
+    // ===================== PRODUCT OPERATIONS =====================
+    
+    /**
+     * Save product data to Firestore
+     */
+    public boolean saveProduct(Product product) {
+        try {
+            String url = config.getFirestoreUrl() + "/products/" + product.getId();
+            
+            Map<String, Object> productData = convertProductToFirestore(product);
+            Map<String, Object> document = new HashMap<>();
+            document.put("fields", productData);
+            
+            String jsonBody = objectMapper.writeValueAsString(document);
+            
+            RequestBody body = RequestBody.create(jsonBody, MediaType.get("application/json"));
+            Request request = new Request.Builder()
+                    .url(url)
+                    .patch(body) // Use PATCH to create or update
+                    .addHeader("Authorization", "Bearer " + idToken)
+                    .build();
+            
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (response.isSuccessful()) {
+                    LOGGER.info(() -> "Product saved successfully: " + product.getId());
+                    return true;
+                } else {
+                    LOGGER.warning(() -> "Failed to save product: " + response.code() + " - " + response.message());
+                    return false;
+                }
+            }
+            
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Error saving product: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Load all products from Firestore
+     */
+    public List<Product> loadAllProducts() {
+        List<Product> products = new ArrayList<>();
+        try {
+            String url = config.getFirestoreUrl() + "/products";
+            
+            Request request = new Request.Builder()
+                    .url(url)
+                    .get()
+                    .addHeader("Authorization", "Bearer " + idToken)
+                    .build();
+            
+            try (Response response = httpClient.newCall(request).execute()) {
+                ResponseBody body = response.body();
+                if (response.isSuccessful() && body != null) {
+                    String responseBody = body.string();
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> result = (Map<String, Object>) objectMapper.readValue(responseBody, Map.class);
+                    
+                    if (result.containsKey("documents")) {
+                        @SuppressWarnings("unchecked")
+                        List<Map<String, Object>> documents = (List<Map<String, Object>>) result.get("documents");
+                        
+                        for (Map<String, Object> doc : documents) {
+                            if (doc.containsKey("fields")) {
+                                @SuppressWarnings("unchecked")
+                                Map<String, Object> fields = (Map<String, Object>) doc.get("fields");
+                                Product product = convertFirestoreToProduct(fields);
+                                if (product != null) {
+                                    products.add(product);
+                                }
+                            }
+                        }
+                    }
+                    
+                    LOGGER.info(() -> "Loaded " + products.size() + " products from Firestore");
+                } else {
+                    LOGGER.warning(() -> "Failed to load products from Firestore: " + response.code());
+                }
+            }
+            
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Error loading products from Firestore: " + e.getMessage());
+        }
+        
+        return products;
+    }
+    
+    /**
+     * Update product in Firestore
+     */
+    public boolean updateProduct(Product product) {
+        return saveProduct(product); // Same as save for Firestore
+    }
+    
+    /**
+     * Delete product from Firestore
+     */
+    public boolean deleteProduct(String productId) {
+        try {
+            String url = config.getFirestoreUrl() + "/products/" + productId;
+            
+            Request request = new Request.Builder()
+                    .url(url)
+                    .delete()
+                    .addHeader("Authorization", "Bearer " + idToken)
+                    .build();
+            
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (response.isSuccessful()) {
+                    LOGGER.info(() -> "Product deleted successfully: " + productId);
+                    return true;
+                } else {
+                    LOGGER.warning(() -> "Failed to delete product: " + response.code() + " - " + response.message());
+                    return false;
+                }
+            }
+            
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Error deleting product: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    // Helper methods for Product conversion
+    private Map<String, Object> convertProductToFirestore(Product product) {
+        Map<String, Object> fields = new HashMap<>();
+        
+        addStringField(fields, "id", product.getId());
+        addStringField(fields, "name", product.getName());
+        addStringField(fields, "description", product.getDescription());
+        addIntegerField(fields, "price", product.getPrice());
+        addStringField(fields, "imageUrl", product.getImageUrl());
+        addStringField(fields, "category", product.getCategory());
+        addBooleanField(fields, "active", product.isActive());
+        addStringField(fields, "parentId", product.getParentId());
+        
+        return fields;
+    }
+    
+    private Product convertFirestoreToProduct(Map<String, Object> fields) {
+        try {
+            Product product = new Product();
+            
+            product.setId(getStringValue(fields, "id"));
+            product.setName(getStringValue(fields, "name"));
+            product.setDescription(getStringValue(fields, "description"));
+            product.setPrice(getIntegerValue(fields, "price"));
+            product.setImageUrl(getStringValue(fields, "imageUrl"));
+            product.setCategory(getStringValue(fields, "category"));
+            product.setActive(getBooleanValue(fields, "active"));
+            product.setParentId(getStringValue(fields, "parentId"));
+            
+            return product;
+            
+        } catch (Exception e) {
+            LOGGER.severe(() -> "Error converting Firestore data to Product: " + e.getMessage());
+            return null;
+        }
     }
 }

@@ -27,6 +27,7 @@ public class ParentSidebar {
     private VBox overviewButton;
     private VBox childrenButton;
     private VBox tasksButton;
+    private VBox shopButton;
     private VBox messagingButton;
     private VBox settingsButton;
     
@@ -88,6 +89,7 @@ public class ParentSidebar {
         overviewButton = createNavButton("Overview", "overview");
         childrenButton = createNavButton("My Adventurers", "children");
         tasksButton = createNavButton("Task Management", "tasks");
+        shopButton = createNavButton("🛒 Shop Management", "shop");
         messagingButton = createNavButton("Messaging", "messaging");
         settingsButton = createNavButton("Settings", "settings");
         
@@ -95,6 +97,7 @@ public class ParentSidebar {
             overviewButton,
             childrenButton,
             tasksButton,
+            shopButton,
             messagingButton,
             settingsButton
         );
@@ -243,6 +246,7 @@ public class ParentSidebar {
         resetButtonStyle(overviewButton);
         resetButtonStyle(childrenButton);
         resetButtonStyle(tasksButton);
+        resetButtonStyle(shopButton);
         resetButtonStyle(messagingButton);
         resetButtonStyle(settingsButton);
         
@@ -291,6 +295,7 @@ public class ParentSidebar {
             case "overview" -> overviewButton;
             case "children" -> childrenButton;
             case "tasks" -> tasksButton;
+            case "shop" -> shopButton;
             case "messaging" -> messagingButton;
             case "settings" -> settingsButton;
             default -> null;

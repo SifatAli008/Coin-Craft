@@ -6,18 +6,25 @@ import java.util.List;
 import com.coincraft.models.Task;
 import com.coincraft.models.User;
 import com.coincraft.models.UserRole;
+import com.coincraft.models.Product;
 import com.coincraft.services.FirebaseService;
 import com.coincraft.ui.components.parent.AddAdventurerDialog;
+import com.coincraft.ui.components.parent.AddProductDialog;
+import com.coincraft.ui.components.parent.EditProductDialog;
 import com.coincraft.ui.components.parent.ChildMonitorCard;
 import com.coincraft.ui.components.parent.FamilyAnalytics;
 import com.coincraft.ui.components.parent.ParentSidebar;
 import com.coincraft.ui.components.parent.ParentTopBar;
 import com.coincraft.ui.components.parent.SettingsPage;
 import com.coincraft.ui.components.parent.TaskManagementPage;
+import com.coincraft.ui.components.shared.ProductCard;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -482,6 +489,7 @@ public class ParentDashboard extends BaseDashboard {
             case "overview" -> showOverviewContent();
             case "children" -> showChildrenContent();
             case "tasks" -> showTasksContent();
+            case "shop" -> showShopManagementContent();
             case "analytics" -> showAnalyticsContent();
             case "messaging" -> showMessagingContent();
             case "settings" -> showSettingsContent();
@@ -835,6 +843,201 @@ public class ParentDashboard extends BaseDashboard {
 
         section.getChildren().addAll(title, list, actions);
         return section;
+    }
+    
+    private void showShopManagementContent() {
+        mainContent.getChildren().clear();
+        
+        Label titleLabel = new Label("🛒 Shop Management");
+        titleLabel.setStyle(
+            "-fx-font-size: 24px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #1e293b;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
+        );
+        
+        Label subtitleLabel = new Label("Create and manage products that children can purchase with SmartCoins");
+        subtitleLabel.setStyle(
+            "-fx-font-size: 16px;" +
+            "-fx-text-fill: #64748b;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
+        );
+        
+        // Header section
+        VBox headerSection = new VBox(8);
+        headerSection.setAlignment(Pos.CENTER_LEFT);
+        headerSection.setPadding(new Insets(0, 0, 20, 0));
+        headerSection.getChildren().addAll(titleLabel, subtitleLabel);
+        
+        // Add Product Button
+        Button addProductButton = new Button("➕ Add New Product");
+        addProductButton.setStyle(
+            "-fx-background-color: #10B981;" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 16px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-padding: 12 24;" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
+            "-fx-cursor: hand;" +
+            "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;"
+        );
+        addProductButton.setOnAction(e -> openAddProductDialog());
+        
+        // Products Grid
+        VBox productsGrid = createProductsGrid();
+        
+        // Layout
+        VBox content = new VBox(20);
+        content.setAlignment(Pos.TOP_CENTER);
+        content.setMaxWidth(1200);
+        content.getChildren().addAll(headerSection, addProductButton, productsGrid);
+        
+        mainContent.getChildren().add(content);
+    }
+    
+    private VBox createProductsGrid() {
+        VBox grid = new VBox(16);
+        grid.setAlignment(Pos.TOP_CENTER);
+        
+        // Load products for this parent
+        List<Product> products = FirebaseService.getInstance().loadProductsByParent(currentUser.getId());
+        
+        if (products.isEmpty()) {
+            VBox emptyState = new VBox(16);
+            emptyState.setAlignment(Pos.CENTER);
+            emptyState.setPadding(new Insets(40, 20, 40, 20));
+            
+            Label emptyIcon = new Label("🛒");
+            emptyIcon.setStyle("-fx-font-size: 48px;");
+            
+            Label emptyTitle = new Label("No Products Created Yet");
+            emptyTitle.setStyle(
+                "-fx-font-size: 18px;" +
+                "-fx-font-weight: 600;" +
+                "-fx-text-fill: #374151;" +
+                "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;"
+            );
+            
+            Label emptySubtitle = new Label("Create your first product to start the shop!");
+            emptySubtitle.setStyle(
+                "-fx-font-size: 14px;" +
+                "-fx-text-fill: #6B7280;" +
+                "-fx-font-family: 'Segoe UI', sans-serif;"
+            );
+            
+            emptyState.getChildren().addAll(emptyIcon, emptyTitle, emptySubtitle);
+            grid.getChildren().add(emptyState);
+        } else {
+            // Create product cards in rows of 3
+            for (int i = 0; i < products.size(); i += 3) {
+                HBox row = new HBox(20);
+                row.setAlignment(Pos.CENTER);
+                
+                for (int j = i; j < Math.min(i + 3, products.size()); j++) {
+                    Product product = products.get(j);
+                    ProductCard productCard = new ProductCard(
+                        product,
+                        "✏️ Edit", this::openEditProductDialog,
+                        product.isActive() ? "⏸️ Deactivate" : "▶️ Activate", this::toggleProductStatus,
+                        "🗑️ Delete", this::deleteProduct
+                    );
+                    row.getChildren().add(productCard);
+                }
+                
+                // Fill remaining space if needed
+                while (row.getChildren().size() < 3) {
+                    Region spacer = new Region();
+                    spacer.setPrefWidth(300);
+                    row.getChildren().add(spacer);
+                }
+                
+                grid.getChildren().add(row);
+            }
+        }
+        
+        return grid;
+    }
+    
+    
+    private void openAddProductDialog() {
+        AddProductDialog dialog = new AddProductDialog(currentUser.getId());
+        dialog.showAndWait().ifPresent(product -> {
+            // Product was saved in the dialog
+            showShopManagementContent(); // Refresh the view
+        });
+    }
+    
+    private void openEditProductDialog(Product product) {
+        EditProductDialog dialog = new EditProductDialog(product);
+        dialog.showAndWait().ifPresent(updatedProduct -> {
+            // Product was updated in the dialog
+            showShopManagementContent(); // Refresh the view
+        });
+    }
+    
+    private void toggleProductStatus(Product product) {
+        product.setActive(!product.isActive());
+        FirebaseService.getInstance().updateProduct(product);
+        showShopManagementContent(); // Refresh the view
+    }
+    
+    private void deleteProduct(Product product) {
+        Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmationAlert.setTitle("Delete Product");
+        confirmationAlert.setHeaderText("Are you sure you want to delete this product?");
+        confirmationAlert.setContentText(
+            "Product: " + product.getName() + "\n\n" +
+            "This action cannot be undone. The product will be permanently removed " +
+            "and children will no longer be able to purchase it."
+        );
+        
+        // Style the confirmation dialog
+        confirmationAlert.getDialogPane().setStyle(
+            "-fx-background-color: #ffffff;" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-radius: 12;" +
+            "-fx-border-color: #e2e8f0;" +
+            "-fx-border-width: 1;" +
+            "-fx-font-family: 'Segoe UI', sans-serif;"
+        );
+        
+        // Style the buttons
+        ButtonType deleteButtonType = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        confirmationAlert.getButtonTypes().setAll(deleteButtonType, cancelButtonType);
+        
+        Button deleteButton = (Button) confirmationAlert.getDialogPane().lookupButton(deleteButtonType);
+        Button cancelButton = (Button) confirmationAlert.getDialogPane().lookupButton(cancelButtonType);
+        
+        deleteButton.setStyle(
+            "-fx-background-color: #ef4444;" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 13px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-background-radius: 8;" +
+            "-fx-border-radius: 8;" +
+            "-fx-padding: 8 16;" +
+            "-fx-font-family: 'Segoe UI', sans-serif;"
+        );
+        
+        cancelButton.setStyle(
+            "-fx-background-color: #6b7280;" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 13px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-background-radius: 8;" +
+            "-fx-border-radius: 8;" +
+            "-fx-padding: 8 16;" +
+            "-fx-font-family: 'Segoe UI', sans-serif;"
+        );
+        
+        confirmationAlert.showAndWait().ifPresent(buttonType -> {
+            if (buttonType == deleteButtonType) {
+                FirebaseService.getInstance().deleteProduct(product.getId());
+                showShopManagementContent(); // Refresh the view
+            }
+        });
     }
     
 }

@@ -1,20 +1,21 @@
 package com.coincraft.ui.components.child;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.User;
+import com.coincraft.models.Product;
+import com.coincraft.services.FirebaseService;
+import com.coincraft.ui.components.shared.ProductCard;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
@@ -70,12 +71,18 @@ public class ShopPage {
         // Shop header
         VBox header = createShopHeader();
         
-        // Categories
-        VBox avatarSection = createShopCategory("🎭 Avatar Items", getAvatarItems());
-        VBox toolsSection = createShopCategory("🛠️ Adventure Tools", getToolItems());
-        VBox specialSection = createShopCategory("✨ Special Items", getSpecialItems());
+        // Load real products from Firebase
+        List<Product> products = FirebaseService.getInstance().loadActiveProducts();
         
-        contentContainer.getChildren().addAll(header, avatarSection, toolsSection, specialSection);
+        if (products.isEmpty()) {
+            // Show empty state
+            VBox emptyState = createEmptyShopState();
+            contentContainer.getChildren().addAll(header, emptyState);
+        } else {
+            // Display products using unified ProductCard
+            VBox productsSection = createModernProductsSection(products);
+            contentContainer.getChildren().addAll(header, productsSection);
+        }
     }
     
     private VBox createShopHeader() {
@@ -129,145 +136,95 @@ public class ShopPage {
         return header;
     }
     
-    private VBox createShopCategory(String categoryTitle, List<ShopItem> items) {
-        VBox category = new VBox(16);
-        category.setAlignment(Pos.CENTER);
-        
-        // Category header
-        Label categoryLabel = new Label(categoryTitle);
-        categoryLabel.setStyle(
-            "-fx-font-size: 20px;" +
-            "-fx-font-weight: 600;" +
-            "-fx-text-fill: #1a1a1a;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
-        );
-        
-        // Items grid
-        GridPane itemsGrid = new GridPane();
-        itemsGrid.setHgap(16);
-        itemsGrid.setVgap(16);
-        itemsGrid.setAlignment(Pos.CENTER);
-        
-        int column = 0;
-        int row = 0;
-        for (ShopItem item : items) {
-            VBox itemCard = createShopItemCard(item);
-            itemsGrid.add(itemCard, column, row);
-            
-            column++;
-            if (column >= 4) { // 4 items per row
-                column = 0;
-                row++;
-            }
-        }
-        
-        category.getChildren().addAll(categoryLabel, itemsGrid);
-        return category;
-    }
     
-    private VBox createShopItemCard(ShopItem item) {
-        VBox card = new VBox(12);
-        card.setAlignment(Pos.CENTER);
-        card.setPrefWidth(200);
-        card.setMaxWidth(200);
-        card.setPrefHeight(220);
-        card.setPadding(new Insets(20));
-        card.setStyle(
-            "-fx-background-color: rgba(255, 255, 255, 0.95);" +
-            "-fx-background-radius: 16;" +
-            "-fx-border-radius: 16;" +
-            "-fx-border-color: " + item.getRarityColor() + ";" +
-            "-fx-border-width: 2;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 20, 0, 0, 10);" +
-            "-fx-cursor: hand;"
+    // Shop item categories
+    private VBox createEmptyShopState() {
+        VBox emptyState = new VBox(16);
+        emptyState.setAlignment(Pos.CENTER);
+        emptyState.setPadding(new Insets(40, 20, 40, 20));
+        
+        Label emptyIcon = new Label("🛒");
+        emptyIcon.setStyle("-fx-font-size: 48px;");
+        
+        Label emptyTitle = new Label("Shop Coming Soon!");
+        emptyTitle.setStyle(
+            "-fx-font-size: 18px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #374151;" +
+            "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;"
         );
         
-        // Item icon
-        Label iconLabel = new Label(item.getIcon());
-        iconLabel.setStyle("-fx-font-size: 40px;");
-        
-        // Item name
-        Label nameLabel = new Label(item.getName());
-        nameLabel.setStyle(
+        Label emptySubtitle = new Label("Your parents haven't added any products yet. Ask them to create some items for you to purchase!");
+        emptySubtitle.setStyle(
             "-fx-font-size: 14px;" +
-            "-fx-font-weight: 600;" +
-            "-fx-text-fill: #333333;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-            "-fx-text-alignment: center;" +
-            "-fx-wrap-text: true;"
+            "-fx-text-fill: #6B7280;" +
+            "-fx-font-family: 'Segoe UI', sans-serif;" +
+            "-fx-text-alignment: center;"
         );
-        nameLabel.setMaxWidth(160);
+        emptySubtitle.setWrapText(true);
+        emptySubtitle.setMaxWidth(400);
         
-        // Price
-        Label priceLabel = new Label("💰 " + item.getPrice() + " coins");
-        priceLabel.setStyle(
-            "-fx-font-size: 16px;" +
-            "-fx-font-weight: 700;" +
-            "-fx-text-fill: #FA8A00;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-            "-fx-background-color: rgba(255, 152, 0, 0.1);" +
-            "-fx-background-radius: 8;" +
-            "-fx-padding: 4 8;"
-        );
-        
-        // Purchase button
-        Button purchaseBtn = new Button();
-        if (currentUser.getSmartCoins() >= item.getPrice()) {
-            purchaseBtn.setText("BUY NOW");
-            purchaseBtn.setStyle(
-                "-fx-background-color: #FA8A00;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 12px;" +
-                "-fx-font-weight: 600;" +
-                "-fx-background-radius: 20;" +
-                "-fx-border-radius: 20;" +
-                "-fx-cursor: hand;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-                "-fx-padding: 8 16;" +
-                "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.3), 15, 0, 0, 5);"
-            );
-            purchaseBtn.setOnAction(e -> purchaseItem(item));
-        } else {
-            purchaseBtn.setText("NOT ENOUGH COINS");
-            purchaseBtn.setDisable(true);
-            purchaseBtn.setStyle(
-                "-fx-background-color: #9E9E9E;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 10px;" +
-                "-fx-font-weight: 600;" +
-                "-fx-background-radius: 20;" +
-                "-fx-border-radius: 20;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-                "-fx-padding: 8 16;"
-            );
-        }
-        
-        purchaseBtn.setPrefWidth(140);
-        
-        // Hover effects
-        card.setOnMouseEntered(e -> {
-            CentralizedMusicManager.getInstance().playButtonHover();
-            card.setStyle(card.getStyle() + "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
-        });
-        
-        card.setOnMouseExited(e -> {
-            card.setStyle(card.getStyle().replace("-fx-scale-x: 1.05; -fx-scale-y: 1.05;", ""));
-        });
-        
-        card.getChildren().addAll(iconLabel, nameLabel, priceLabel, purchaseBtn);
-        return card;
+        emptyState.getChildren().addAll(emptyIcon, emptyTitle, emptySubtitle);
+        return emptyState;
     }
     
-    private void purchaseItem(ShopItem item) {
+    private VBox createModernProductsSection(List<Product> products) {
+        VBox section = new VBox(20);
+        section.setAlignment(Pos.TOP_CENTER);
+        
+        // Section title
+        Label sectionTitle = new Label("🛍️ Available Products");
+        sectionTitle.setStyle(
+            "-fx-font-size: 20px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #1e293b;" +
+            "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;"
+        );
+        
+        // Products grid
+        VBox productsGrid = new VBox(16);
+        productsGrid.setAlignment(Pos.TOP_CENTER);
+        
+        // Create product cards in rows of 3
+        for (int i = 0; i < products.size(); i += 3) {
+            HBox row = new HBox(20);
+            row.setAlignment(Pos.CENTER);
+            
+            for (int j = i; j < Math.min(i + 3, products.size()); j++) {
+                Product product = products.get(j);
+                ProductCard productCard = new ProductCard(
+                    product,
+                    "🛒 Purchase", this::purchaseProduct,
+                    null, null,
+                    null, null
+                );
+                row.getChildren().add(productCard);
+            }
+            
+            // Fill remaining space if needed
+            while (row.getChildren().size() < 3) {
+                Region spacer = new Region();
+                spacer.setPrefWidth(320);
+                row.getChildren().add(spacer);
+            }
+            
+            productsGrid.getChildren().add(row);
+        }
+        
+        section.getChildren().addAll(sectionTitle, productsGrid);
+        return section;
+    }
+    
+    private void purchaseProduct(Product product) {
         CentralizedMusicManager.getInstance().playButtonClick();
         
-        if (currentUser.getSmartCoins() >= item.getPrice()) {
-            // Deduct coins (in real app, this would be handled by a service)
-            currentUser.setSmartCoins(currentUser.getSmartCoins() - item.getPrice());
+        if (currentUser.getSmartCoins() >= product.getPrice()) {
+            // Deduct coins
+            currentUser.setSmartCoins(currentUser.getSmartCoins() - product.getPrice());
             
             // Save to Firebase
             try {
-                com.coincraft.services.FirebaseService.getInstance().saveUser(currentUser);
+                FirebaseService.getInstance().saveUser(currentUser);
             } catch (Exception ex) {
                 System.out.println("⚠️ Warning: Could not save updated balance: " + ex.getMessage());
             }
@@ -275,120 +232,38 @@ public class ShopPage {
             // Show success dialog
             Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
             successAlert.setTitle("Purchase Successful!");
-            successAlert.setHeaderText("🎉 " + item.getName() + " Purchased!");
+            successAlert.setHeaderText("🎉 " + product.getName() + " Purchased!");
             successAlert.setContentText(
-                "Congratulations! You've successfully purchased " + item.getName() + "!\n\n" +
+                "Congratulations! You've successfully purchased " + product.getName() + "!\n\n" +
                 "Remaining Balance: " + currentUser.getSmartCoins() + " SmartCoins\n\n" +
-                "Your new item will appear in your inventory!"
+                "Enjoy your new item!"
             );
-            
-            successAlert.getDialogPane().setStyle(
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-                "-fx-background-color: rgba(255, 255, 255, 0.95);" +
-                "-fx-background-radius: 16;"
-            );
-            
             successAlert.showAndWait();
             
-            // Refresh the shop to update buttons
-            refreshShop();
+            // Refresh the shop content
+            contentContainer.getChildren().clear();
+            createShopContent();
             
-            // Notify dashboard to refresh balance display
+            // Notify parent dashboard if callback is available
             if (refreshCallback != null) {
-                refreshCallback.accept("balance_updated");
+                refreshCallback.accept("purchase");
             }
-            
         } else {
             // Show insufficient funds dialog
-            Alert errorAlert = new Alert(Alert.AlertType.WARNING);
-            errorAlert.setTitle("Insufficient Coins");
-            errorAlert.setHeaderText("💰 Not Enough SmartCoins");
+            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+            errorAlert.setTitle("Insufficient Funds");
+            errorAlert.setHeaderText("Not Enough SmartCoins!");
             errorAlert.setContentText(
-                "You need " + item.getPrice() + " SmartCoins to purchase " + item.getName() + ".\n\n" +
-                "Your current balance: " + currentUser.getSmartCoins() + " SmartCoins\n" +
-                "You need " + (item.getPrice() - currentUser.getSmartCoins()) + " more coins!\n\n" +
-                "Complete more quests to earn SmartCoins!"
+                "You need " + product.getPrice() + " SmartCoins to purchase " + product.getName() + ".\n\n" +
+                "Your current balance: " + currentUser.getSmartCoins() + " SmartCoins\n\n" +
+                "Complete more tasks to earn SmartCoins!"
             );
-            
-            errorAlert.getDialogPane().setStyle(
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-                "-fx-background-color: rgba(255, 255, 255, 0.95);" +
-                "-fx-background-radius: 16;"
-            );
-            
-            CentralizedMusicManager.getInstance().playError();
             errorAlert.showAndWait();
         }
     }
     
-    private void refreshShop() {
-        contentContainer.getChildren().clear();
-        createShopContent();
-    }
-    
-    // Shop item categories
-    private List<ShopItem> getAvatarItems() {
-        List<ShopItem> items = new ArrayList<>();
-        items.add(new ShopItem("Cool Hat", "🎩", 50, "common", "A stylish hat for your avatar"));
-        items.add(new ShopItem("Magic Cape", "🧙‍♂️", 100, "rare", "A mysterious cape with special powers"));
-        items.add(new ShopItem("Golden Crown", "👑", 200, "legendary", "A crown fit for a SmartCoin champion"));
-        items.add(new ShopItem("Ninja Mask", "🥷", 75, "uncommon", "Stealth mode activated!"));
-        return items;
-    }
-    
-    private List<ShopItem> getToolItems() {
-        List<ShopItem> items = new ArrayList<>();
-        items.add(new ShopItem("Calculator Pro", "🧮", 30, "common", "Advanced math calculations"));
-        items.add(new ShopItem("Piggy Bank", "🐷", 80, "uncommon", "Store your coins safely"));
-        items.add(new ShopItem("Treasure Map", "🗺️", 120, "rare", "Find hidden quests"));
-        items.add(new ShopItem("Magic Wand", "🪄", 150, "legendary", "Unlock special abilities"));
-        return items;
-    }
-    
-    private List<ShopItem> getSpecialItems() {
-        List<ShopItem> items = new ArrayList<>();
-        items.add(new ShopItem("Extra Life", "💖", 100, "rare", "Get an extra chance on quests"));
-        items.add(new ShopItem("Double XP", "⭐", 75, "uncommon", "Double experience for 1 day"));
-        items.add(new ShopItem("Coin Magnet", "🧲", 200, "legendary", "Attract more SmartCoins"));
-        items.add(new ShopItem("Time Freeze", "⏰", 150, "rare", "Pause quest timers"));
-        return items;
-    }
-    
     public StackPane getRoot() {
         return root;
-    }
-    
-    // Shop item class
-    public static class ShopItem {
-        private final String name;
-        private final String icon;
-        private final int price;
-        private final String rarity;
-        private final String description;
-        
-        public ShopItem(String name, String icon, int price, String rarity, String description) {
-            this.name = name;
-            this.icon = icon;
-            this.price = price;
-            this.rarity = rarity;
-            this.description = description;
-        }
-        
-        public String getName() { return name; }
-        public String getIcon() { return icon; }
-        public int getPrice() { return price; }
-        public String getRarity() { return rarity; }
-        public String getDescription() { return description; }
-        
-        public String getRarityColor() {
-            return switch (rarity) {
-                case "common" -> "#9E9E9E";
-                case "uncommon" -> "#4CAF50";
-                case "rare" -> "#2196F3";
-                case "legendary" -> "#FA8A00";
-                default -> "#9E9E9E";
-            };
-        }
     }
     
 }

@@ -1,15 +1,18 @@
 package com.coincraft.ui.components.child;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.Task;
 import com.coincraft.models.TaskType;
 import com.coincraft.models.User;
+import com.coincraft.models.ValidationStatus;
+import com.coincraft.services.FirebaseService;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
@@ -22,11 +25,13 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 /**
  * Task card slider component for Child Dashboard
  * Displays active tasks as horizontal scrollable cards
  * Features navigation buttons and modern card design
+ * Supports task completion workflow with parent review
  */
 public class TaskCardList {
     private StackPane root;
@@ -35,12 +40,34 @@ public class TaskCardList {
     private Button leftButton;
     private Button rightButton;
     private final User currentUser;
-    private final List<Task> activeTasks;
+    private List<Task> activeTasks;
     
     public TaskCardList(User user) {
         this.currentUser = user;
-        this.activeTasks = generateMockTasks(); // In real app, load from database
+        this.activeTasks = new ArrayList<>();
+        loadRealTasks();
         initializeUI();
+    }
+    
+    /**
+     * Load real tasks from Firebase for this child
+     */
+    private void loadRealTasks() {
+        try {
+            FirebaseService firebaseService = FirebaseService.getInstance();
+            List<Task> allTasks = firebaseService.loadUserTasks(currentUser.getUserId());
+            
+            // Filter to show only active tasks (not yet approved/auto-approved)
+            activeTasks = allTasks.stream()
+                .filter(task -> task.getValidationStatus() != ValidationStatus.APPROVED 
+                             && task.getValidationStatus() != ValidationStatus.AUTO_APPROVED)
+                .collect(Collectors.toList());
+            
+            System.out.println("📋 Loaded " + activeTasks.size() + " active tasks for " + currentUser.getName());
+        } catch (Exception e) {
+            System.out.println("⚠️ Could not load tasks: " + e.getMessage());
+            activeTasks = new ArrayList<>();
+        }
     }
     
     private void initializeUI() {
@@ -170,6 +197,7 @@ public class TaskCardList {
      * Refresh the task cards display
      */
     public void refresh() {
+        loadRealTasks();
         cardContainer.getChildren().clear();
         refreshTaskCards();
     }
@@ -180,15 +208,33 @@ public class TaskCardList {
     private void refreshTaskCards() {
         if (activeTasks.isEmpty()) {
             // Show empty state
-            Label emptyLabel = new Label("🎉 All quests completed! New adventures coming soon!");
-            emptyLabel.setStyle(
-                "-fx-font-size: 14px;" +
-                "-fx-font-weight: 500;" +
-                "-fx-text-fill: #FA8A00;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-                "-fx-padding: 20;"
+            VBox emptyState = new VBox(16);
+            emptyState.setAlignment(Pos.CENTER);
+            emptyState.setPadding(new Insets(40, 20, 40, 20));
+            
+            Label emptyIcon = new Label("🎯");
+            emptyIcon.setStyle("-fx-font-size: 48px;");
+            
+            Label emptyTitle = new Label("No Tasks Assigned");
+            emptyTitle.setStyle(
+                "-fx-font-size: 18px;" +
+                "-fx-font-weight: 600;" +
+                "-fx-text-fill: #374151;" +
+                "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;"
             );
-            cardContainer.getChildren().add(emptyLabel);
+            
+            Label emptySubtitle = new Label("All tasks completed! New tasks will appear here when assigned by your parents.");
+            emptySubtitle.setStyle(
+                "-fx-font-size: 14px;" +
+                "-fx-text-fill: #6B7280;" +
+                "-fx-font-family: 'Segoe UI', sans-serif;" +
+                "-fx-text-alignment: center;"
+            );
+            emptySubtitle.setWrapText(true);
+            emptySubtitle.setMaxWidth(400);
+            
+            emptyState.getChildren().addAll(emptyIcon, emptyTitle, emptySubtitle);
+            cardContainer.getChildren().add(emptyState);
             return;
         }
         
@@ -203,21 +249,52 @@ public class TaskCardList {
      * Create a slider task card for horizontal scrolling
      */
     private VBox createSliderTaskCard(Task task) {
-        VBox card = new VBox(8);
-        card.setPadding(new Insets(16));
+        VBox card = new VBox(12);
+        card.setPadding(new Insets(20));
         card.setAlignment(Pos.CENTER);
-        card.setPrefWidth(320);
-        card.setMaxWidth(320);
-        card.setPrefHeight(180);
-        card.setMaxHeight(180);
+        card.setPrefWidth(340);
+        card.setMaxWidth(340);
+        card.setPrefHeight(200);
+        card.setMaxHeight(200);
+        
+        // Background color based on validation status
+        String backgroundColor = getStatusBackgroundColor(task);
+        
         card.setStyle(
-            "-fx-background-color: rgba(255, 255, 255, 0.95);" +
-            "-fx-background-radius: 16;" +
-            "-fx-border-radius: 16;" +
-            "-fx-border-color: " + getTaskTypeColor(task.getType()) + ";" +
-            "-fx-border-width: 2;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 20, 0, 0, 10);"
+            "-fx-background-color: " + backgroundColor + ";" +
+            "-fx-background-radius: 20;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 25, 0, 0, 12);"
         );
+        
+        // Status badge for awaiting approval or rejected tasks
+        VBox content = new VBox(6);
+        content.setAlignment(Pos.CENTER);
+        
+        if (task.getValidationStatus() == ValidationStatus.AWAITING_APPROVAL) {
+            Label statusBadge = new Label("⏳ UNDER REVIEW");
+            statusBadge.setStyle(
+                "-fx-font-size: 10px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-text-fill: white;" +
+                "-fx-background-color: #FF9800;" +
+                "-fx-background-radius: 8;" +
+                "-fx-padding: 4 8;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            );
+            content.getChildren().add(statusBadge);
+        } else if (task.getValidationStatus() == ValidationStatus.REJECTED) {
+            Label statusBadge = new Label("❌ REJECTED");
+            statusBadge.setStyle(
+                "-fx-font-size: 10px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-text-fill: white;" +
+                "-fx-background-color: #F44336;" +
+                "-fx-background-radius: 8;" +
+                "-fx-padding: 4 8;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
+            );
+            content.getChildren().add(statusBadge);
+        }
         
         // Task type icon
         Label typeIcon = new Label(getTaskTypeIcon(task.getType()));
@@ -227,39 +304,55 @@ public class TaskCardList {
         Label titleLabel = new Label(task.getTitle());
         titleLabel.setStyle(
             "-fx-font-size: 16px;" +
-            "-fx-font-weight: 600;" +
-            "-fx-text-fill: #333333;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #000000;" +
+            "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;" +
             "-fx-text-alignment: center;" +
             "-fx-wrap-text: true;"
         );
-        titleLabel.setMaxWidth(290);
+        titleLabel.setMaxWidth(300);
         titleLabel.setPrefHeight(32);
         
-        // Progress bar
-        ProgressBar progressBar = new ProgressBar(task.getProgressPercentage() / 100.0);
-        progressBar.setPrefWidth(280);
-        progressBar.setPrefHeight(8);
-        progressBar.setStyle(
-            "-fx-accent: " + getTaskTypeColor(task.getType()) + ";" +
-            "-fx-background-color: rgba(224, 224, 224, 0.8);" +
-            "-fx-background-radius: 4;"
+        // Reward information
+        Label rewardLabel = new Label("💰 " + task.getRewardCoins() + " SmartCoins");
+        rewardLabel.setStyle(
+            "-fx-font-size: 13px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #059669;" +
+            "-fx-font-family: 'Segoe UI', sans-serif;"
         );
         
-        // Progress percentage
-        Label progressLabel = new Label(String.format("%.0f%% Complete", task.getProgressPercentage()));
-        progressLabel.setStyle(
-            "-fx-font-size: 12px;" +
-            "-fx-font-weight: 500;" +
-            "-fx-text-fill: #666666;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
-        );
+        // Progress bar (only for active tasks, not for those under review)
+        if (task.getValidationStatus() != ValidationStatus.AWAITING_APPROVAL) {
+            ProgressBar progressBar = new ProgressBar(task.getProgressPercentage() / 100.0);
+            progressBar.setPrefWidth(280);
+            progressBar.setPrefHeight(8);
+            progressBar.setStyle(
+                "-fx-accent: " + getTaskTypeColor(task.getType()) + ";" +
+                "-fx-background-color: rgba(224, 224, 224, 0.8);" +
+                "-fx-background-radius: 4;"
+            );
+            content.getChildren().add(progressBar);
+        }
         
         // Action button
         Button actionButton = createSliderActionButton(task);
         
-        card.getChildren().addAll(typeIcon, titleLabel, progressBar, progressLabel, actionButton);
+        content.getChildren().addAll(typeIcon, titleLabel, rewardLabel, actionButton);
+        card.getChildren().add(content);
         return card;
+    }
+    
+    /**
+     * Get background color based on task validation status
+     */
+    private String getStatusBackgroundColor(Task task) {
+        return switch (task.getValidationStatus()) {
+            case AWAITING_APPROVAL -> "rgba(255, 152, 0, 0.1)"; // Light orange for under review
+            case REJECTED -> "rgba(244, 67, 54, 0.1)"; // Light red for rejected
+            case PENDING -> "rgba(255, 255, 255, 0.95)"; // White for pending
+            default -> "rgba(255, 255, 255, 0.95)"; // White default
+        };
     }
     
     /**
@@ -267,46 +360,94 @@ public class TaskCardList {
      */
     private Button createSliderActionButton(Task task) {
         Button button = new Button();
-        button.setPrefWidth(260);
-        button.setPrefHeight(32);
+        button.setPrefWidth(280);
+        button.setPrefHeight(36);
         
-        if (task.getProgressPercentage() >= 100) {
-            button.setText("✅ COMPLETE");
+        // Different buttons based on validation status
+        if (task.getValidationStatus() == ValidationStatus.AWAITING_APPROVAL) {
+            // Task is awaiting parent review
+            button.setText("⏳ AWAITING REVIEW");
+            button.setStyle(
+                "-fx-background-color: #FF9800;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 14px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-background-radius: 20;" +
+                "-fx-border-radius: 20;" +
+                "-fx-cursor: default;" +
+                "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;" +
+                "-fx-opacity: 0.9;"
+            );
+            button.setDisable(true);
+            
+        } else if (task.getValidationStatus() == ValidationStatus.REJECTED) {
+            // Task was rejected, allow resubmission
+            button.setText("🔄 RESUBMIT TASK");
+            button.setStyle(
+                "-fx-background-color: #F44336;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 14px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-background-radius: 20;" +
+                "-fx-border-radius: 20;" +
+                "-fx-cursor: hand;" +
+                "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;" +
+                "-fx-effect: dropshadow(gaussian, rgba(244,67,54,0.3), 15, 0, 0, 5);"
+            );
+            button.setOnAction(e -> {
+                CentralizedMusicManager.getInstance().playButtonClick();
+                openTaskCompletionDialog(task);
+            });
+            addButtonHoverEffect(button);
+            
+        } else if (!task.isCompleted()) {
+            // Task is pending/active - child can complete it
+            button.setText("✅ COMPLETE TASK");
             button.setStyle(
                 "-fx-background-color: #FA8A00;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 14px;" +
-                "-fx-font-weight: 600;" +
-                "-fx-background-radius: 18;" +
-                "-fx-border-radius: 18;" +
+                "-fx-font-weight: 700;" +
+                "-fx-background-radius: 20;" +
+                "-fx-border-radius: 20;" +
                 "-fx-cursor: hand;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;" +
                 "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.3), 15, 0, 0, 5);"
             );
             button.setOnAction(e -> {
                 CentralizedMusicManager.getInstance().playButtonClick();
-                completeTask(task);
+                openTaskCompletionDialog(task);
             });
+            addButtonHoverEffect(button);
+            
         } else {
+            // Completed but not yet submitted (edge case)
             button.setText("📋 VIEW DETAILS");
             button.setStyle(
                 "-fx-background-color: #2196F3;" +
                 "-fx-text-fill: white;" +
                 "-fx-font-size: 14px;" +
-                "-fx-font-weight: 600;" +
-                "-fx-background-radius: 18;" +
-                "-fx-border-radius: 18;" +
+                "-fx-font-weight: 700;" +
+                "-fx-background-radius: 20;" +
+                "-fx-border-radius: 20;" +
                 "-fx-cursor: hand;" +
-                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-font-family: 'Segoe UI', 'Minecraft', sans-serif;" +
                 "-fx-effect: dropshadow(gaussian, rgba(33,150,243,0.3), 15, 0, 0, 5);"
             );
             button.setOnAction(e -> {
                 CentralizedMusicManager.getInstance().playButtonClick();
                 viewTaskDetails(task);
             });
+            addButtonHoverEffect(button);
         }
         
-        // Hover effects
+        return button;
+    }
+    
+    /**
+     * Add hover effect to button
+     */
+    private void addButtonHoverEffect(Button button) {
         button.setOnMouseEntered(e -> {
             CentralizedMusicManager.getInstance().playButtonHover();
             button.setStyle(button.getStyle() + "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
@@ -316,8 +457,6 @@ public class TaskCardList {
             String baseStyle = button.getStyle().replace("-fx-scale-x: 1.05; -fx-scale-y: 1.05;", "");
             button.setStyle(baseStyle);
         });
-        
-        return button;
     }
     
     /**
@@ -331,9 +470,6 @@ public class TaskCardList {
         card.setStyle(
             "-fx-background-color: rgba(255, 255, 255, 0.9);" +
             "-fx-background-radius: 12;" +
-            "-fx-border-radius: 12;" +
-            "-fx-border-color: " + getTaskTypeColor(task.getType()) + ";" +
-            "-fx-border-width: 2;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 8);"
         );
         
@@ -390,9 +526,6 @@ public class TaskCardList {
         card.setStyle(
             "-fx-background-color: rgba(255, 255, 255, 0.9);" +
             "-fx-background-radius: 16;" +
-            "-fx-border-radius: 16;" +
-            "-fx-border-color: " + getTaskTypeColor(task.getType()) + ";" +
-            "-fx-border-width: 2;" +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 10);"
         );
         
@@ -508,7 +641,7 @@ public class TaskCardList {
                 "-fx-pref-width: 150;" +
                 "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.4), 4, 0, 0, 2);"
             );
-            button.setOnAction(e -> completeTask(task));
+            button.setOnAction(e -> openTaskCompletionDialog(task));
         } else {
             button.setText("📋 VIEW");
             button.setStyle(
@@ -561,7 +694,7 @@ public class TaskCardList {
                 "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.4), 8, 0, 0, 2);"
             );
             
-            button.setOnAction(e -> completeTask(task));
+            button.setOnAction(e -> openTaskCompletionDialog(task));
             
         } else {
             button.setText("📋 VIEW DETAILS");
@@ -595,41 +728,40 @@ public class TaskCardList {
     }
     
     /**
-     * Complete a task
+     * Open task completion dialog for child to submit evidence
      */
-    private void completeTask(Task task) {
-        CentralizedMusicManager.getInstance().playButtonClick();
-        
-        Alert dialog = new Alert(Alert.AlertType.INFORMATION);
-        dialog.setTitle("Quest Completed!");
-        dialog.setHeaderText("🎉 Congratulations, Adventurer!");
-        dialog.setContentText(
-            "You've completed: " + task.getTitle() + "\n\n" +
-            "Rewards earned:\n" +
-            "💰 " + task.getRewardCoins() + " SmartCoins\n" +
-            "⭐ " + (task.getRewardCoins() * 2) + " Experience Points\n\n" +
-            "Keep up the great work!"
-        );
-        
-        // Style the dialog
-        dialog.getDialogPane().setStyle(
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
-            "-fx-background-color: rgba(255, 255, 255, 0.95);" +
-            "-fx-background-radius: 16;"
-        );
-        
-        // Update user stats
-        currentUser.setSmartCoinBalance(currentUser.getSmartCoinBalance() + task.getRewardCoins());
-        currentUser.setExperiencePoints(currentUser.getExperiencePoints() + (task.getRewardCoins() * 2));
-        
-        // Remove completed task
-        activeTasks.remove(task);
-        
-        // Play success sound
-        CentralizedMusicManager.getInstance().playSuccess();
-        
-        dialog.showAndWait();
-        refresh(); // Refresh the display
+    private void openTaskCompletionDialog(Task task) {
+        try {
+            // Get the stage from the root node
+            Stage parentStage = (Stage) root.getScene().getWindow();
+            
+            // Open the task completion dialog
+            TaskCompletionDialog dialog = new TaskCompletionDialog(
+                parentStage,
+                task,
+                completedTask -> {
+                    // Callback when task is completed
+                    CentralizedMusicManager.getInstance().playSuccess();
+                    
+                    // Refresh the task list to show updated status
+                    Platform.runLater(() -> {
+                        refresh();
+                    });
+                }
+            );
+            
+            dialog.show();
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error opening task completion dialog: " + e.getMessage());
+            
+            // Fallback: Show error message
+            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+            errorAlert.setTitle("Error");
+            errorAlert.setHeaderText("Cannot Open Task Completion Dialog");
+            errorAlert.setContentText("An error occurred. Please try again.");
+            errorAlert.showAndWait();
+        }
     }
     
     /**
@@ -642,17 +774,40 @@ public class TaskCardList {
         dialog.setTitle("Quest Details");
         dialog.setHeaderText(getTaskTypeIcon(task.getType()) + " " + task.getTitle());
         
-        String content = task.getDescription() + "\n\n";
-        content += "Progress: " + String.format("%.0f%%", task.getProgressPercentage()) + " complete\n";
-        content += "Reward: " + task.getRewardCoins() + " SmartCoins\n";
+        StringBuilder content = new StringBuilder();
+        content.append(task.getDescription()).append("\n\n");
         
-        if (task.getDeadline() != null) {
-            content += "Deadline: " + task.getDeadline().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy")) + "\n";
+        // Status information
+        content.append("Status: ").append(getStatusDisplayText(task)).append("\n");
+        
+        if (task.getValidationStatus() != ValidationStatus.AWAITING_APPROVAL) {
+            content.append("Progress: ").append(String.format("%.0f%%", task.getProgressPercentage())).append(" complete\n");
         }
         
-        content += "\nTip: " + getTaskTip(task.getType());
+        content.append("Reward: ").append(task.getRewardCoins()).append(" SmartCoins\n");
         
-        dialog.setContentText(content);
+        if (task.getDeadline() != null) {
+            content.append("Deadline: ").append(task.getDeadline().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy"))).append("\n");
+        }
+        
+        // Show rejection feedback if rejected
+        if (task.getValidationStatus() == ValidationStatus.REJECTED && task.getCompletionNotes() != null) {
+            content.append("\n❌ REJECTION FEEDBACK:\n");
+            content.append(task.getCompletionNotes()).append("\n");
+            content.append("\nYou can resubmit this task after addressing the feedback.");
+        }
+        
+        // Show awaiting approval message
+        if (task.getValidationStatus() == ValidationStatus.AWAITING_APPROVAL) {
+            content.append("\n⏳ Your completion is under review by a parent/guardian.");
+            content.append("\nYou'll receive your reward once approved!");
+        }
+        
+        if (task.getValidationStatus() == ValidationStatus.PENDING || task.getValidationStatus() == ValidationStatus.REJECTED) {
+            content.append("\n\nTip: ").append(getTaskTip(task.getType()));
+        }
+        
+        dialog.setContentText(content.toString());
         
         // Style the dialog
         dialog.getDialogPane().setStyle(
@@ -662,6 +817,19 @@ public class TaskCardList {
         );
         
         dialog.showAndWait();
+    }
+    
+    /**
+     * Get display text for task status
+     */
+    private String getStatusDisplayText(Task task) {
+        return switch (task.getValidationStatus()) {
+            case AWAITING_APPROVAL -> "⏳ Under Review";
+            case REJECTED -> "❌ Rejected - Needs Resubmission";
+            case APPROVED -> "✅ Approved";
+            case AUTO_APPROVED -> "✅ Auto-Approved";
+            default -> "📋 Active";
+        };
     }
     
     /**
@@ -706,42 +874,6 @@ public class TaskCardList {
         };
     }
     
-    /**
-     * Generate mock tasks for demonstration
-     */
-    private List<Task> generateMockTasks() {
-        List<Task> tasks = new ArrayList<>();
-        
-        Task task1 = new Task("T001", "Math Adventure: Fractions", 
-            "Complete 10 fraction problems in your workbook", TaskType.LEARNING, currentUser.getId());
-        task1.setRewardCoins(25);
-        task1.setProgressPercentage(75);
-        task1.setDeadline(LocalDateTime.now().plusDays(2));
-        tasks.add(task1);
-        
-        Task task2 = new Task("T002", "Clean Your Adventure Base", 
-            "Organize your room and make your bed", TaskType.CHORE, currentUser.getId());
-        task2.setRewardCoins(15);
-        task2.setProgressPercentage(100);
-        task2.setDeadline(LocalDateTime.now().plusDays(1));
-        tasks.add(task2);
-        
-        Task task3 = new Task("T003", "Draw Your Dream Castle", 
-            "Create a colorful drawing of your ideal castle", TaskType.CREATIVE, currentUser.getId());
-        task3.setRewardCoins(20);
-        task3.setProgressPercentage(50);
-        task3.setDeadline(LocalDateTime.now().plusDays(5));
-        tasks.add(task3);
-        
-        Task task4 = new Task("T004", "Daily Exercise Quest", 
-            "Do 20 jumping jacks and run around the yard", TaskType.PHYSICAL, currentUser.getId());
-        task4.setRewardCoins(10);
-        task4.setProgressPercentage(100);
-        task4.setDeadline(LocalDateTime.now());
-        tasks.add(task4);
-        
-        return tasks;
-    }
     
     /**
      * Get the root UI component

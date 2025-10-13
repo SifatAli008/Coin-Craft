@@ -37,10 +37,10 @@ public class FirebaseStorageService {
      */
     public static String uploadAvatarImage(String userId, File imageFile) {
         try {
-            LOGGER.info("Avatar upload using local storage for user: " + userId);
+            LOGGER.info(() -> "Avatar upload using local storage for user: " + userId);
             return "local://avatars/" + userId + ".png";
         } catch (Exception e) {
-            LOGGER.warning("Failed to upload avatar: " + e.getMessage());
+            LOGGER.warning(() -> "Failed to upload avatar: " + e.getMessage());
             return null;
         }
     }
@@ -50,10 +50,10 @@ public class FirebaseStorageService {
      */
     public static File downloadAvatarImage(String userId) {
         try {
-            LOGGER.info("Avatar download using local storage for user: " + userId);
+            LOGGER.info(() -> "Avatar download using local storage for user: " + userId);
             return new File("local/avatars/" + userId + ".png");
         } catch (Exception e) {
-            LOGGER.warning("Failed to download avatar: " + e.getMessage());
+            LOGGER.warning(() -> "Failed to download avatar: " + e.getMessage());
             return null;
         }
     }
@@ -81,11 +81,11 @@ public class FirebaseStorageService {
      */
     public static boolean deleteAvatarImage(String userId) {
         try {
-            LOGGER.info("Avatar deletion using local storage for user: " + userId);
+            LOGGER.info(() -> "Avatar deletion using local storage for user: " + userId);
             File avatarFile = new File("local/avatars/" + userId + ".png");
             return avatarFile.delete();
         } catch (Exception e) {
-            LOGGER.warning("Failed to delete avatar: " + e.getMessage());
+            LOGGER.warning(() -> "Failed to delete avatar: " + e.getMessage());
             return false;
         }
     }
@@ -95,10 +95,10 @@ public class FirebaseStorageService {
      */
     public static String uploadGameAsset(String assetName, File assetFile) {
         try {
-            LOGGER.info("Game asset upload using local storage: " + assetName);
+            LOGGER.info(() -> "Game asset upload using local storage: " + assetName);
             return "local://game-assets/" + assetName;
         } catch (Exception e) {
-            LOGGER.warning("Failed to upload game asset: " + e.getMessage());
+            LOGGER.warning(() -> "Failed to upload game asset: " + e.getMessage());
             return null;
         }
     }
@@ -107,7 +107,7 @@ public class FirebaseStorageService {
      * Get download URL for a file
      */
     public static String getDownloadUrl(String filePath) {
-        LOGGER.info("Getting download URL for local file: " + filePath);
+        LOGGER.info(() -> "Getting download URL for local file: " + filePath);
         return "file://" + filePath;
     }
     
@@ -116,11 +116,11 @@ public class FirebaseStorageService {
      */
     public static java.util.List<String> listFiles(String path) {
         try {
-            LOGGER.info("Listing files in local storage path: " + path);
+            LOGGER.info(() -> "Listing files in local storage path: " + path);
             // Return empty list for now - in a real implementation, this would scan local directory
             return new java.util.ArrayList<>();
         } catch (Exception e) {
-            LOGGER.warning("Failed to list files: " + e.getMessage());
+            LOGGER.warning(() -> "Failed to list files: " + e.getMessage());
             return new java.util.ArrayList<>();
         }
     }

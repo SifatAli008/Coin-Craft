@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import com.coincraft.models.Task;
 import com.coincraft.models.User;
 import com.coincraft.models.UserRole;
+import com.coincraft.models.Product;
 
 /**
  * Firebase service for authentication and Firestore database operations
@@ -1497,6 +1498,354 @@ public class FirebaseService {
             Files.writeString(progressFile, json.toString());
         } catch (IOException e) {
             LOGGER.warning("Failed to save game progress locally: %s".formatted(e.getMessage()));
+        }
+    }
+    
+    // ==================== PRODUCT OPERATIONS ====================
+    
+    /**
+     * Save a product to Firebase
+     */
+    public void saveProduct(Product product) {
+        try {
+            if (initialized && firestoreService != null && currentIdToken != null) {
+                firestoreService.setIdToken(currentIdToken);
+                boolean firebaseSuccess = firestoreService.saveProduct(product);
+                if (firebaseSuccess) {
+                    LOGGER.info("Product saved to Firebase: %s".formatted(product.getName()));
+                    return;
+                } else {
+                    LOGGER.warning("Firebase save failed, falling back to local storage");
+                }
+            } else {
+                LOGGER.info("Firestore service not available, using local storage");
+            }
+            
+            // Save to local storage as fallback
+            saveProductLocally(product);
+            LOGGER.info("Product saved locally: %s".formatted(product.getName()));
+            
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to save product: %s".formatted(e.getMessage()));
+        }
+    }
+    
+    /**
+     * Load all products from Firebase
+     */
+    public List<Product> loadAllProducts() {
+        try {
+            if (initialized && firestoreService != null && currentIdToken != null) {
+                firestoreService.setIdToken(currentIdToken);
+                List<Product> firebaseProducts = firestoreService.loadAllProducts();
+                if (!firebaseProducts.isEmpty()) {
+                    LOGGER.info("Loaded %d products from Firebase".formatted(firebaseProducts.size()));
+                    return firebaseProducts;
+                } else {
+                    LOGGER.info("No products found in Firebase, trying local storage");
+                }
+            } else {
+                LOGGER.info("Firestore service not available, using local storage");
+            }
+            
+            // Load from local storage as fallback
+            return loadAllProductsLocally();
+            
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to load all products: %s".formatted(e.getMessage()));
+            return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Load products by parent ID
+     */
+    public List<Product> loadProductsByParent(String parentId) {
+        try {
+            List<Product> allProducts = loadAllProducts();
+            List<Product> parentProducts = new ArrayList<>();
+            
+            for (Product product : allProducts) {
+                if (product.getParentId().equals(parentId)) {
+                    parentProducts.add(product);
+                }
+            }
+            
+            return parentProducts;
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to load products for parent %s: %s".formatted(parentId, e.getMessage()));
+            return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Load active products for children to purchase
+     */
+    public List<Product> loadActiveProducts() {
+        try {
+            List<Product> allProducts = loadAllProducts();
+            List<Product> activeProducts = new ArrayList<>();
+            
+            for (Product product : allProducts) {
+                if (product.isActive()) {
+                    activeProducts.add(product);
+                }
+            }
+            
+            return activeProducts;
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to load active products: %s".formatted(e.getMessage()));
+            return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Update a product
+     */
+    public void updateProduct(Product product) {
+        try {
+            if (initialized && firestoreService != null && currentIdToken != null) {
+                firestoreService.setIdToken(currentIdToken);
+                boolean firebaseSuccess = firestoreService.updateProduct(product);
+                if (firebaseSuccess) {
+                    LOGGER.info("Product updated in Firebase: %s".formatted(product.getName()));
+                    return;
+                } else {
+                    LOGGER.warning("Firebase update failed, falling back to local storage");
+                }
+            } else {
+                LOGGER.info("Firestore service not available, using local storage");
+            }
+            
+            // Update in local storage
+            updateProductLocally(product);
+            LOGGER.info("Product updated locally: %s".formatted(product.getName()));
+            
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to update product: %s".formatted(e.getMessage()));
+        }
+    }
+    
+    /**
+     * Delete a product
+     */
+    public void deleteProduct(String productId) {
+        try {
+            if (initialized && firestoreService != null && currentIdToken != null) {
+                firestoreService.setIdToken(currentIdToken);
+                boolean firebaseSuccess = firestoreService.deleteProduct(productId);
+                if (firebaseSuccess) {
+                    LOGGER.info("Product deleted from Firebase: %s".formatted(productId));
+                    return;
+                } else {
+                    LOGGER.warning("Firebase delete failed, falling back to local storage");
+                }
+            } else {
+                LOGGER.info("Firestore service not available, using local storage");
+            }
+            
+            // Delete from local storage
+            deleteProductLocally(productId);
+            LOGGER.info("Product deleted locally: %s".formatted(productId));
+            
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to delete product: %s".formatted(e.getMessage()));
+        }
+    }
+    
+    /**
+     * Save product to local storage as fallback
+     */
+    private void saveProductLocally(Product product) {
+        try {
+            // Create data directory if it doesn't exist
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Files.createDirectories(dataDir);
+            
+            // Create products file
+            Path productsFile = dataDir.resolve("products.txt");
+            
+            // Load existing products
+            List<Product> existingProducts = loadProductsFromFile(productsFile);
+            
+            // Add or update the product
+            boolean found = false;
+            for (int i = 0; i < existingProducts.size(); i++) {
+                if (existingProducts.get(i).getId() != null && existingProducts.get(i).getId().equals(product.getId())) {
+                    existingProducts.set(i, product);
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                // Generate ID if not set
+                if (product.getId() == null || product.getId().isEmpty()) {
+                    product.setId("product_" + System.currentTimeMillis());
+                }
+                existingProducts.add(product);
+            }
+            
+            // Save back to file
+            saveProductsToFile(productsFile, existingProducts);
+            
+        } catch (IOException e) {
+            LOGGER.warning("Failed to save product locally: %s".formatted(e.getMessage()));
+        }
+    }
+    
+    /**
+     * Load all products from local storage
+     */
+    private List<Product> loadAllProductsLocally() {
+        try {
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Path productsFile = dataDir.resolve("products.txt");
+            
+            if (Files.exists(productsFile)) {
+                return loadProductsFromFile(productsFile);
+            } else {
+                // Create some sample products for testing
+                createSampleProducts();
+                return loadProductsFromFile(productsFile);
+            }
+            
+        } catch (IOException e) {
+            LOGGER.warning("Failed to load products locally: %s".formatted(e.getMessage()));
+            return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Load products from file
+     */
+    private List<Product> loadProductsFromFile(Path filePath) throws IOException {
+        List<Product> products = new ArrayList<>();
+        
+        if (Files.exists(filePath)) {
+            try (BufferedReader reader = Files.newBufferedReader(filePath)) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!line.trim().isEmpty()) {
+                        try {
+                            Product product = parseProductFromLine(line);
+                            if (product != null) {
+                                products.add(product);
+                            }
+                        } catch (Exception e) {
+                            LOGGER.warning("Failed to parse product line: %s".formatted(line));
+                        }
+                    }
+                }
+            }
+        }
+        
+        return products;
+    }
+    
+    /**
+     * Save products to file
+     */
+    private void saveProductsToFile(Path filePath, List<Product> products) throws IOException {
+        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(filePath))) {
+            for (Product product : products) {
+                writer.println(productToString(product));
+            }
+        }
+    }
+    
+    /**
+     * Parse product from line (simple format: id|name|description|price|imageUrl|category|active|parentId)
+     */
+    private Product parseProductFromLine(String line) {
+        String[] parts = line.split("\\|");
+        if (parts.length >= 8) {
+            Product product = new Product();
+            product.setId(parts[0]);
+            product.setName(parts[1]);
+            product.setDescription(parts[2]);
+            product.setPrice(Integer.parseInt(parts[3]));
+            product.setImageUrl(parts[4]);
+            product.setCategory(parts[5]);
+            product.setActive(Boolean.parseBoolean(parts[6]));
+            product.setParentId(parts[7]);
+            return product;
+        }
+        return null;
+    }
+    
+    /**
+     * Convert product to string for file storage
+     */
+    private String productToString(Product product) {
+        return String.format("%s|%s|%s|%d|%s|%s|%s|%s",
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getImageUrl(),
+                product.getCategory(),
+                product.isActive(),
+                product.getParentId());
+    }
+    
+    /**
+     * Update product in local storage
+     */
+    private void updateProductLocally(Product product) {
+        try {
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Path productsFile = dataDir.resolve("products.txt");
+            
+            List<Product> existingProducts = loadProductsFromFile(productsFile);
+            
+            for (int i = 0; i < existingProducts.size(); i++) {
+                if (existingProducts.get(i).getId().equals(product.getId())) {
+                    existingProducts.set(i, product);
+                    break;
+                }
+            }
+            
+            saveProductsToFile(productsFile, existingProducts);
+            
+        } catch (IOException e) {
+            LOGGER.warning("Failed to update product locally: %s".formatted(e.getMessage()));
+        }
+    }
+    
+    /**
+     * Delete product from local storage
+     */
+    private void deleteProductLocally(String productId) {
+        try {
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Path productsFile = dataDir.resolve("products.txt");
+            
+            List<Product> existingProducts = loadProductsFromFile(productsFile);
+            existingProducts.removeIf(product -> product.getId().equals(productId));
+            
+            saveProductsToFile(productsFile, existingProducts);
+            
+        } catch (IOException e) {
+            LOGGER.warning("Failed to delete product locally: %s".formatted(e.getMessage()));
+        }
+    }
+    
+    /**
+     * Create empty products file (no sample data)
+     */
+    private void createSampleProducts() {
+        try {
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Files.createDirectories(dataDir);
+            Path productsFile = dataDir.resolve("products.txt");
+            
+            // Create empty file - parents will add their own products
+            Files.writeString(productsFile, "");
+            LOGGER.info("Created empty products file - ready for parent-created products");
+            
+        } catch (IOException e) {
+            LOGGER.warning("Failed to create products file: %s".formatted(e.getMessage()));
         }
     }
 }

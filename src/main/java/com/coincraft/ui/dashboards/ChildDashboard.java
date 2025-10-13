@@ -6,6 +6,7 @@ import java.util.List;
 import com.coincraft.models.MessageData;
 import com.coincraft.models.Task;
 import com.coincraft.models.User;
+import com.coincraft.models.ValidationStatus;
 import com.coincraft.services.FirebaseService;
 import com.coincraft.services.MessagingService;
 import com.coincraft.ui.components.child.ChildSidebar;
@@ -99,9 +100,12 @@ public class ChildDashboard extends BaseDashboard {
         pendingTasks = 0;
         
         for (Task task : userTasks) {
-            if (task.isCompleted()) {
+            // Count tasks that are finalized (approved/auto-approved) as completed
+            if (task.getValidationStatus() == ValidationStatus.APPROVED || 
+                task.getValidationStatus() == ValidationStatus.AUTO_APPROVED) {
                 completedTasks++;
             } else {
+                // Count all other tasks (pending, awaiting approval, rejected) as pending
                 pendingTasks++;
             }
         }
@@ -309,13 +313,11 @@ public class ChildDashboard extends BaseDashboard {
         titleLabel.setStyle(
             "-fx-font-size: 18px;" +
             "-fx-font-weight: 700;" +
-            "-fx-text-fill: #FFFFFF;" +
+            "-fx-text-fill: #000000;" +
             "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
             "-fx-background-color: linear-gradient(135deg, #667EEA 0%, #764BA2 50%, #F093FB 100%);" +
             "-fx-padding: 16 24;" +
             "-fx-background-radius: 12;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0.2, 0, 4), " +
-                      "dropshadow(gaussian, rgba(102,126,234,0.4), 12, 0, 0, 0);" +
             "-fx-border-color: rgba(255,255,255,0.2);" +
             "-fx-border-width: 1;" +
             "-fx-border-radius: 12;"
@@ -477,8 +479,8 @@ public class ChildDashboard extends BaseDashboard {
                 showQuestsPage();
             }
             case "tasks" -> {
-                // Tasks functionality removed - redirect to quests
-                showQuestsPage();
+                // Show actual task panel with assigned tasks
+                showTasksPage();
             }
             case "messages" -> {
                 // Child-parent chat
@@ -499,7 +501,6 @@ public class ChildDashboard extends BaseDashboard {
     /**
      * Show dedicated tasks page
      */
-    @SuppressWarnings("unused")
     private void showTasksPage() {
         mainContent.getChildren().clear();
         
@@ -508,15 +509,15 @@ public class ChildDashboard extends BaseDashboard {
         headerSection.setAlignment(Pos.CENTER_LEFT);
         headerSection.setPadding(new Insets(0, 0, 20, 0));
         
-        Label titleLabel = new Label("My Quest Journal");
+        Label titleLabel = new Label("My Task Dashboard");
         titleLabel.setStyle(
-            "-fx-font-size: 28px;" +
+            "-fx-font-size: 32px;" +
             "-fx-font-weight: 700;" +
             "-fx-text-fill: #1e293b;" +
             "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
-        Label subtitleLabel = new Label("Track your adventures and complete epic quests!");
+        Label subtitleLabel = new Label("Complete your assigned tasks and earn SmartCoins!");
         subtitleLabel.setStyle(
             "-fx-font-size: 16px;" +
             "-fx-text-fill: #64748b;" +
@@ -537,7 +538,7 @@ public class ChildDashboard extends BaseDashboard {
         
         // Create task card list
         TaskCardList taskView = new TaskCardList(currentUser);
-        VBox activeTasksCard = createModernCard("⚔️ Noble Quests", taskView.getRoot());
+        VBox activeTasksCard = createModernCard("📋 Assigned Tasks", taskView.getRoot());
         activeTasksSection.getChildren().add(activeTasksCard);
         
         // Right column - Task stats and progress (30% width)
@@ -577,13 +578,13 @@ public class ChildDashboard extends BaseDashboard {
     private VBox createTaskStatsSection() {
         VBox statsSection = new VBox(16);
         
-        // Quest progress card
+        // Task progress card
         VBox progressCard = createTaskProgressCard();
         
-        // Quest tips card
-        VBox tipsCard = createQuestTipsCard();
+        // Task achievements card
+        VBox achievementsCard = createTaskAchievementsCard();
         
-        statsSection.getChildren().addAll(progressCard, tipsCard);
+        statsSection.getChildren().addAll(progressCard, achievementsCard);
         return statsSection;
     }
     
@@ -612,7 +613,7 @@ public class ChildDashboard extends BaseDashboard {
         );
         
         int totalTasks = completedTasks + pendingTasks;
-        Label totalLabel = new Label("📊 " + totalTasks + " Total Quests");
+        Label totalLabel = new Label("📊 " + totalTasks + " Total Tasks");
         totalLabel.setStyle(
             "-fx-font-size: 14px;" +
             "-fx-font-weight: 600;" +
@@ -620,39 +621,71 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
         );
         
-        progressContent.getChildren().addAll(completedLabel, pendingLabel, totalLabel);
+        // Add completion percentage if there are tasks
+        if (totalTasks > 0) {
+            double completionRate = (double) completedTasks / totalTasks * 100;
+            Label completionRateLabel = new Label("🎯 " + String.format("%.0f%% Complete", completionRate));
+            completionRateLabel.setStyle(
+                "-fx-font-size: 14px;" +
+                "-fx-font-weight: 600;" +
+                "-fx-text-fill: #8B5CF6;" +
+                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
+            );
+            progressContent.getChildren().addAll(completedLabel, pendingLabel, totalLabel, completionRateLabel);
+        } else {
+            progressContent.getChildren().addAll(completedLabel, pendingLabel, totalLabel);
+        }
         
-        return createModernCard("⚔️ Quest Progress", progressContent);
+        return createModernCard("📈 Task Progress", progressContent);
     }
     
     
     /**
-     * Create quest tips card
+     * Create task achievements card
      */
-    private VBox createQuestTipsCard() {
-        VBox tipsContent = new VBox(8);
-        tipsContent.setAlignment(Pos.CENTER_LEFT);
+    private VBox createTaskAchievementsCard() {
+        VBox achievementsContent = new VBox(12);
+        achievementsContent.setAlignment(Pos.CENTER);
         
-        String[] tips = {
-            "⚔️ Complete thy quests daily for valor bonuses",
-            "🏰 Focus on high-reward quests first, noble knight",
-            "🛡️ Check difficulty levels before embarking",
-            "🔥 Maintain thy daily valor for extra gold coins"
-        };
+        // Daily streak
+        Label streakLabel = new Label("🔥 " + dailyStreak + " Day Streak");
+        streakLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #EF4444;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
+        );
         
-        for (String tip : tips) {
-            Label tipLabel = new Label(tip);
-            tipLabel.setStyle(
-                "-fx-font-size: 12px;" +
-                "-fx-text-fill: #64748b;" +
-                "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
-                "-fx-padding: 4 0;"
-            );
-            tipLabel.setWrapText(true);
-            tipsContent.getChildren().add(tipLabel);
-        }
+        // Total badges earned
+        Label badgesLabel = new Label("🏆 " + totalBadges + " Badges Earned");
+        badgesLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #F59E0B;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
+        );
         
-        return createModernCard("📜 Wisdom of the Realm", tipsContent);
+        // Current level
+        Label levelLabel = new Label("⭐ Level " + currentUser.getLevel());
+        levelLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #8B5CF6;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
+        );
+        
+        // SmartCoins earned
+        Label coinsLabel = new Label("💰 " + currentUser.getSmartCoinBalance() + " SmartCoins");
+        coinsLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #10B981;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
+        );
+        
+        achievementsContent.getChildren().addAll(streakLabel, badgesLabel, levelLabel, coinsLabel);
+        
+        return createModernCard("🏅 Achievements", achievementsContent);
     }
     
     /**
