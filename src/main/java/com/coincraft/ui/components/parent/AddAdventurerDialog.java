@@ -2,7 +2,7 @@ package com.coincraft.ui.components.parent;
 
 import java.util.function.Consumer;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.User;
 import com.coincraft.models.UserRole;
 import com.coincraft.services.FirebaseService;
@@ -302,7 +302,7 @@ public class AddAdventurerDialog {
         );
         
         cancelButton.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             cancelButton.setStyle(
                 "-fx-background-color: #757575;" +
                 "-fx-text-fill: white;" +
@@ -330,7 +330,7 @@ public class AddAdventurerDialog {
         });
         
         cancelButton.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
+            CentralizedMusicManager.getInstance().playButtonClick();
             dialogStage.close();
         });
         
@@ -350,7 +350,7 @@ public class AddAdventurerDialog {
         );
         
         createButton.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             createButton.setStyle(
                 "-fx-background-color: #E67E00;" +
                 "-fx-text-fill: white;" +
@@ -378,7 +378,7 @@ public class AddAdventurerDialog {
         });
         
         createButton.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
+            CentralizedMusicManager.getInstance().playButtonClick();
             handleCreateAdventurer();
         });
         
@@ -586,7 +586,7 @@ public class AddAdventurerDialog {
             
         } catch (Exception e) {
             // Handle any errors during adventurer creation
-            SoundManager.getInstance().playError();
+            CentralizedMusicManager.getInstance().playError();
             System.err.println("❌ ERROR: Failed to create adventurer: " + e.getMessage());
             e.printStackTrace();
             
@@ -652,7 +652,7 @@ public class AddAdventurerDialog {
     }
     
     private void showError(String message) {
-        SoundManager.getInstance().playError();
+        CentralizedMusicManager.getInstance().playError();
         
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("❌ Registration Error");
@@ -663,7 +663,7 @@ public class AddAdventurerDialog {
     }
     
     private void showSuccess(String name, String adventureUsername, String password) {
-        SoundManager.getInstance().playSuccess();
+        CentralizedMusicManager.getInstance().playSuccess();
         
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("🎉 Adventurer Created Successfully!");

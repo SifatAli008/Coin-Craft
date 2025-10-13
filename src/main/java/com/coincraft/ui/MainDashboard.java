@@ -194,60 +194,50 @@ public class MainDashboard {
         UserRole role = (currentUser != null) ? currentUser.getRole() : UserRole.CHILD;
         
         switch (role) {
-            case CHILD:
-                rail.getChildren().addAll(
-                    createNavButton("🏠 Home", "#FA8A00", true),
-                    createNavButton("🗺️ Adventure", "#2196F3", false),
-                    createNavButton("📋 Quests", "#4CAF50", false),
-                    createNavButton("🛒 Shop", "#9C27B0", false),
-                    createNavButton("🏆 Badges", "#FFD700", false),
-                    createNavButton("👤 Profile", "#607D8B", false)
-                );
-                break;
+            case CHILD -> rail.getChildren().addAll(
+                createNavButton("🏠 Home", "#FA8A00", true),
+                createNavButton("🗺️ Adventure", "#2196F3", false),
+                createNavButton("📋 Quests", "#4CAF50", false),
+                createNavButton("🛒 Shop", "#9C27B0", false),
+                createNavButton("🏆 Badges", "#FFD700", false),
+                createNavButton("👤 Profile", "#607D8B", false)
+            );
                 
-            case PARENT:
-                rail.getChildren().addAll(
-                    createNavButton("🏠 Overview", "#FA8A00", true),
-                    createNavButton("👶 My child", "#2196F3", false),
-                    createNavButton("✅ Validate", "#4CAF50", false),
-                    createNavButton("📊 Progress", "#9C27B0", false),
-                    createNavButton("💰 Allowance", "#FFD700", false),
-                    createNavButton("⚙️ Settings", "#607D8B", false)
-                );
-                break;
+            case PARENT -> rail.getChildren().addAll(
+                createNavButton("🏠 Overview", "#FA8A00", true),
+                createNavButton("👶 My child", "#2196F3", false),
+                createNavButton("✅ Validate", "#4CAF50", false),
+                createNavButton("📊 Progress", "#9C27B0", false),
+                createNavButton("💰 Allowance", "#FFD700", false),
+                createNavButton("⚙️ Settings", "#607D8B", false)
+            );
                 
-            case TEACHER:
-                rail.getChildren().addAll(
-                    createNavButton("🏠 Classroom", "#FA8A00", true),
-                    createNavButton("👥 Students", "#2196F3", false),
-                    createNavButton("📚 Lessons", "#4CAF50", false),
-                    createNavButton("🏆 Challenges", "#9C27B0", false),
-                    createNavButton("📈 Analytics", "#FFD700", false),
-                    createNavButton("📋 Reports", "#607D8B", false)
-                );
-                break;
+            case TEACHER -> rail.getChildren().addAll(
+                createNavButton("🏠 Classroom", "#FA8A00", true),
+                createNavButton("👥 Students", "#2196F3", false),
+                createNavButton("📚 Lessons", "#4CAF50", false),
+                createNavButton("🏆 Challenges", "#9C27B0", false),
+                createNavButton("📈 Analytics", "#FFD700", false),
+                createNavButton("📋 Reports", "#607D8B", false)
+            );
                 
-            case ADMIN:
-                rail.getChildren().addAll(
-                    createNavButton("🏠 Dashboard", "#FA8A00", true),
-                    createNavButton("👥 Users", "#2196F3", false),
-                    createNavButton("📊 Analytics", "#4CAF50", false),
-                    createNavButton("🔧 System", "#9C27B0", false),
-                    createNavButton("📝 Content", "#FFD700", false),
-                    createNavButton("🛡️ Security", "#F44336", false)
-                );
-                break;
+            case ADMIN -> rail.getChildren().addAll(
+                createNavButton("🏠 Dashboard", "#FA8A00", true),
+                createNavButton("👥 Users", "#2196F3", false),
+                createNavButton("📊 Analytics", "#4CAF50", false),
+                createNavButton("🔧 System", "#9C27B0", false),
+                createNavButton("📝 Content", "#FFD700", false),
+                createNavButton("🛡️ Security", "#F44336", false)
+            );
                 
-            case ELDER:
-                rail.getChildren().addAll(
-                    createNavButton("🏠 Home", "#FA8A00", true),
-                    createNavButton("🗺️ Adventure", "#2196F3", false),
-                    createNavButton("📋 Quests", "#4CAF50", false),
-                    createNavButton("🛒 Shop", "#9C27B0", false),
-                    createNavButton("🏆 Badges", "#FFD700", false),
-                    createNavButton("👤 Profile", "#607D8B", false)
-                );
-                break;
+            case ELDER -> rail.getChildren().addAll(
+                createNavButton("🏠 Home", "#FA8A00", true),
+                createNavButton("🗺️ Adventure", "#2196F3", false),
+                createNavButton("📋 Quests", "#4CAF50", false),
+                createNavButton("🛒 Shop", "#9C27B0", false),
+                createNavButton("🏆 Badges", "#FFD700", false),
+                createNavButton("👤 Profile", "#607D8B", false)
+            );
         }
 
         return rail;
@@ -340,20 +330,14 @@ public class MainDashboard {
         
         UserRole role = (currentUser != null) ? currentUser.getRole() : UserRole.CHILD;
         
-        switch (role) {
-            case CHILD:
-                return createChildContent();
-            case PARENT:
-                return createParentContent();
-            case TEACHER:
-                return createTeacherContent();
-            case ADMIN:
-                return createAdminContent();
-            case ELDER:
-                return createChildContent(); // Elders use child-like interface
-            default:
-                return createChildContent(); // Default to child view
-        }
+        return switch (role) {
+            case CHILD -> createChildContent();
+            case PARENT -> createParentContent();
+            case TEACHER -> createTeacherContent();
+            case ADMIN -> createAdminContent();
+            case ELDER -> createChildContent(); // Elders use child-like interface
+            default -> createChildContent(); // Default to child view
+        };
     }
     
     private HBox createChildContent() {
@@ -1067,33 +1051,6 @@ public class MainDashboard {
         return centerPanel;
     }
     
-    private VBox createRightPanel() {
-        VBox rightPanel = new VBox(20);
-        rightPanel.setPadding(new Insets(20));
-        rightPanel.setStyle(
-            "-fx-background-color: rgba(255, 255, 255, 0.85);" +
-            "-fx-background-radius: 15;" +
-            "-fx-border-radius: 15;" +
-            "-fx-border-color: rgba(226, 232, 240, 0.8);" +
-            "-fx-border-width: 1;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 12, 0, 0, 4);"
-        );
-        
-        // Task panel
-        taskPanel = new TaskPanel();
-        
-        // Leaderboard panel
-        leaderboardPanel = new LeaderboardPanel();
-        
-        // Create gaming-style cards
-        VBox questCard = createGameCard("⚔️ Active Quests", taskPanel.getRoot());
-        VBox leaderCard = createGameCard("🏆 Leaderboard", leaderboardPanel.getRoot());
-        
-        rightPanel.getChildren().addAll(questCard, leaderCard);
-        
-        return rightPanel;
-    }
-    
     private HBox createFooter() {
         HBox footer = new HBox(20);
         footer.setPadding(new Insets(15, 20, 15, 20));
@@ -1204,18 +1161,10 @@ public class MainDashboard {
     
     private void handleActionButton(String action) {
         switch (action) {
-            case "❓ HELP":
-                showInfoDialog("Help", "Welcome to CoinCraft! Use the navigation to explore different areas and complete quests to earn SmartCoins!");
-                break;
-            case "⚙️ SETTINGS":
-                showInfoDialog("Settings", "Settings panel coming soon! You'll be able to adjust sound, music, and game preferences.");
-                break;
-            case "🚪 LOGOUT":
-                showInfoDialog("Logout", "Logout functionality coming soon!");
-                break;
-            case "🎵 MUSIC":
-                toggleMusic();
-                break;
+            case "❓ HELP" -> showInfoDialog("Help", "Welcome to CoinCraft! Use the navigation to explore different areas and complete quests to earn SmartCoins!");
+            case "⚙️ SETTINGS" -> showInfoDialog("Settings", "Settings panel coming soon! You'll be able to adjust sound, music, and game preferences.");
+            case "🚪 LOGOUT" -> showInfoDialog("Logout", "Logout functionality coming soon!");
+            case "🎵 MUSIC" -> toggleMusic();
         }
     }
     

@@ -27,12 +27,11 @@ public class ChildTopBar {
     
     // Real data for stats
     private int dailyStreak = 0;
-    private int totalBadges = 0;
     private int activeTasks = 0;
     
     public ChildTopBar(User user) {
         this.currentUser = user;
-        calculateStats();
+        // Stats will be set via updateStats() with real data
         initializeUI();
     }
 
@@ -42,26 +41,14 @@ public class ChildTopBar {
     public void setCurrentUser(User user) {
         if (user != null) {
             this.currentUser = user;
-            calculateStats();
         }
-    }
-    
-    /**
-     * Calculate real stats from user data
-     */
-    private void calculateStats() {
-        // Calculate based on user level and achievements (simplified)
-        dailyStreak = Math.max(1, currentUser.getLevel() * 2);
-        totalBadges = Math.max(3, currentUser.getLevel() * 3);
-        activeTasks = Math.max(1, currentUser.getLevel());
     }
     
     /**
      * Update stats with real data
      */
-    public void updateStats(int streak, int badges, int tasks) {
+    public void updateStats(int streak, int tasks) {
         this.dailyStreak = streak;
-        this.totalBadges = badges;
         this.activeTasks = tasks;
     }
     
@@ -298,34 +285,6 @@ public class ChildTopBar {
         
         card.getChildren().addAll(labelLabel, valueLabel);
         return card;
-    }
-    
-    /**
-     * Create a compact coin display
-     */
-    private HBox createCompactCoinDisplay() {
-        HBox coinSection = new HBox(4);
-        coinSection.setAlignment(Pos.CENTER);
-        coinSection.setStyle(
-            "-fx-background-color: #FFF8DC;" +
-            "-fx-background-radius: 8;" +
-            "-fx-border-color: #EAB308;" +
-            "-fx-border-radius: 8;" +
-            "-fx-border-width: 1;" +
-            "-fx-padding: 4 8;"
-        );
-        
-        // Balance
-        Label balanceLabel = new Label(String.valueOf(currentUser.getSmartCoinBalance()));
-        balanceLabel.setStyle(
-            "-fx-font-size: 13px;" +
-            "-fx-font-weight: 700;" +
-            "-fx-text-fill: #B8860B;" +
-            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
-        );
-        
-        coinSection.getChildren().add(balanceLabel);
-        return coinSection;
     }
     
     /**

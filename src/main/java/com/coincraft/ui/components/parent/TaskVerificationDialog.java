@@ -4,7 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.Task;
 import com.coincraft.models.User;
 import com.coincraft.models.ValidationStatus;
@@ -250,7 +250,7 @@ public class TaskVerificationDialog {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         cancelButton.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
+            CentralizedMusicManager.getInstance().playButtonClick();
             dialogStage.close();
         });
         
@@ -295,7 +295,7 @@ public class TaskVerificationDialog {
     
     private void addButtonHoverEffects(Button button, String hoverColor, String normalColor) {
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             String currentStyle = button.getStyle();
             button.setStyle(currentStyle.replace("-fx-background-color: " + normalColor, 
                                                  "-fx-background-color: " + hoverColor) + 
@@ -345,7 +345,7 @@ public class TaskVerificationDialog {
     }
     
     private void approveTask() {
-        SoundManager.getInstance().playSuccess();
+        CentralizedMusicManager.getInstance().playSuccess();
         
         // Update task status
         task.setValidationStatus(ValidationStatus.APPROVED);
@@ -403,7 +403,7 @@ public class TaskVerificationDialog {
     }
     
     private void rejectTask() {
-        SoundManager.getInstance().playError();
+        CentralizedMusicManager.getInstance().playError();
         
         // Update task status
         task.setValidationStatus(ValidationStatus.REJECTED);
@@ -447,7 +447,7 @@ public class TaskVerificationDialog {
     }
     
     private void showError(String message) {
-        SoundManager.getInstance().playError();
+        CentralizedMusicManager.getInstance().playError();
         
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("❌ Verification Error");

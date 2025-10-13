@@ -1,5 +1,6 @@
 package com.coincraft.services;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -11,6 +12,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * Firebase Authentication service using REST API
@@ -50,9 +52,11 @@ public class FirebaseAuthService {
                     .build();
             
             try (Response response = httpClient.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String responseBody = response.body().string();
-                    Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
+                ResponseBody responseBody = response.body();
+                if (response.isSuccessful() && responseBody != null) {
+                    String bodyString = responseBody.string();
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> responseMap = objectMapper.readValue(bodyString, Map.class);
                     
                     AuthResult result = new AuthResult();
                     result.setSuccess(true);
@@ -61,16 +65,16 @@ public class FirebaseAuthService {
                     result.setEmail((String) responseMap.get("email"));
                     result.setDisplayName(displayName);
                     
-                    LOGGER.info("User registered successfully: " + email);
+                    LOGGER.info(() -> "User registered successfully: " + email);
                     return result;
                 } else {
-                    LOGGER.warning("Registration failed: " + response.code());
+                    LOGGER.warning(() -> "Registration failed: " + response.code());
                     return createErrorResult("Registration failed: " + response.message());
                 }
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Registration error: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Registration error: " + e.getMessage());
             return createErrorResult("Registration error: " + e.getMessage());
         }
     }
@@ -96,9 +100,11 @@ public class FirebaseAuthService {
                     .build();
             
             try (Response response = httpClient.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String responseBody = response.body().string();
-                    Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
+                ResponseBody responseBody = response.body();
+                if (response.isSuccessful() && responseBody != null) {
+                    String bodyString = responseBody.string();
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> responseMap = objectMapper.readValue(bodyString, Map.class);
                     
                     AuthResult result = new AuthResult();
                     result.setSuccess(true);
@@ -107,16 +113,16 @@ public class FirebaseAuthService {
                     result.setEmail((String) responseMap.get("email"));
                     result.setDisplayName((String) responseMap.get("displayName"));
                     
-                    LOGGER.info("User signed in successfully: " + email);
+                    LOGGER.info(() -> "User signed in successfully: " + email);
                     return result;
                 } else {
-                    LOGGER.warning("Sign in failed: " + response.code());
+                    LOGGER.warning(() -> "Sign in failed: " + response.code());
                     return createErrorResult("Sign in failed: Invalid credentials");
                 }
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Sign in error: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Sign in error: " + e.getMessage());
             return createErrorResult("Sign in error: " + e.getMessage());
         }
     }
@@ -143,8 +149,8 @@ public class FirebaseAuthService {
                 return response.isSuccessful();
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Token verification error: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Token verification error: " + e.getMessage());
             return false;
         }
     }
@@ -161,9 +167,6 @@ public class FirebaseAuthService {
             requestBody.put("requestUri", "http://localhost");
             requestBody.put("returnSecureToken", true);
 
-            Map<String, Object> postBody = new HashMap<>();
-            postBody.put("providerId", "google.com");
-            postBody.put("access_token", googleAccessToken);
             // Non-spec field names are wrapped in url-encoded style inside JSON per REST API
             requestBody.put("postBody", "providerId=google.com&access_token=" + googleAccessToken);
             requestBody.put("returnIdpCredential", true);
@@ -178,9 +181,11 @@ public class FirebaseAuthService {
                     .build();
             
             try (Response response = httpClient.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String responseBody = response.body().string();
-                    Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
+                ResponseBody responseBody = response.body();
+                if (response.isSuccessful() && responseBody != null) {
+                    String bodyString = responseBody.string();
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> responseMap = objectMapper.readValue(bodyString, Map.class);
                     
                     AuthResult result = new AuthResult();
                     result.setSuccess(true);
@@ -189,18 +194,26 @@ public class FirebaseAuthService {
                     result.setEmail((String) responseMap.get("email"));
                     result.setDisplayName((String) responseMap.get("displayName"));
                     
-                    LOGGER.info("Google sign-in successful for user: " + result.getEmail());
+                    LOGGER.info(() -> "Google sign-in successful for user: " + result.getEmail());
                     return result;
                 } else {
                     String errorBody = null;
-                    try { errorBody = response.body() != null ? response.body().string() : null; } catch (Exception ignored) {}
-                    LOGGER.warning("Google sign-in failed: " + response.code() + (errorBody != null ? " body=" + errorBody : ""));
+                    try { 
+                        ResponseBody errorResponseBody = response.body();
+                        if (errorResponseBody != null) {
+                            errorBody = errorResponseBody.string();
+                        }
+                    } catch (IOException ignored) {
+                        // errorBody remains null
+                    }
+                    final String errorBodyForLog = errorBody;
+                    LOGGER.warning(() -> "Google sign-in failed: " + response.code() + (errorBodyForLog != null ? " body=" + errorBodyForLog : ""));
                     return createErrorResult("Google sign-in failed: Invalid token or configuration" + (errorBody != null ? " (" + errorBody + ")" : ""));
                 }
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Google sign-in error: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Google sign-in error: " + e.getMessage());
             return createErrorResult("Google sign-in failed: " + e.getMessage());
         }
     }
@@ -230,18 +243,26 @@ public class FirebaseAuthService {
                     result.setSuccess(true);
                     result.setEmail(email);
                     
-                    LOGGER.info("Password reset email sent successfully to: " + email);
+                    LOGGER.info(() -> "Password reset email sent successfully to: " + email);
                     return result;
                 } else {
                     String errorBody = null;
-                    try { errorBody = response.body() != null ? response.body().string() : null; } catch (Exception ignored) {}
-                    LOGGER.warning("Password reset failed: " + response.code() + (errorBody != null ? " body=" + errorBody : ""));
+                    try { 
+                        ResponseBody errorResponseBody = response.body();
+                        if (errorResponseBody != null) {
+                            errorBody = errorResponseBody.string();
+                        }
+                    } catch (IOException ignored) {
+                        // errorBody remains null
+                    }
+                    final String errorBodyForLog = errorBody;
+                    LOGGER.warning(() -> "Password reset failed: " + response.code() + (errorBodyForLog != null ? " body=" + errorBodyForLog : ""));
                     return createErrorResult("Password reset failed: " + (errorBody != null ? errorBody : "Invalid email"));
                 }
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Password reset error: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Password reset error: " + e.getMessage());
             return createErrorResult("Password reset error: " + e.getMessage());
         }
     }
@@ -256,7 +277,7 @@ public class FirebaseAuthService {
             AuthResult existingResult = signInUser(googleUser.getEmail(), "google_oauth_user");
             
             if (existingResult.isSuccess()) {
-                LOGGER.info("Google user signed in with existing account: " + googleUser.getEmail());
+                LOGGER.info(() -> "Google user signed in with existing account: " + googleUser.getEmail());
                 return existingResult;
             }
             
@@ -278,9 +299,11 @@ public class FirebaseAuthService {
                     .build();
             
             try (Response response = httpClient.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String responseBody = response.body().string();
-                    Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
+                ResponseBody responseBody = response.body();
+                if (response.isSuccessful() && responseBody != null) {
+                    String bodyString = responseBody.string();
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> responseMap = objectMapper.readValue(bodyString, Map.class);
                     
                     AuthResult result = new AuthResult();
                     result.setSuccess(true);
@@ -289,16 +312,16 @@ public class FirebaseAuthService {
                     result.setEmail((String) responseMap.get("email"));
                     result.setDisplayName((String) responseMap.get("displayName"));
                     
-                    LOGGER.info("Google user registered successfully: " + result.getEmail());
+                    LOGGER.info(() -> "Google user registered successfully: " + result.getEmail());
                     return result;
                 } else {
-                    LOGGER.warning("Google user registration failed: " + response.code());
+                    LOGGER.warning(() -> "Google user registration failed: " + response.code());
                     return createErrorResult("Google user registration failed");
                 }
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Google user sign-in error: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Google user sign-in error: " + e.getMessage());
             return createErrorResult("Google user sign-in failed: " + e.getMessage());
         }
     }

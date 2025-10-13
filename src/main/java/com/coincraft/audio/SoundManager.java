@@ -1,12 +1,13 @@
 package com.coincraft.audio;
 
 /**
- * Temporary stub for SoundManager to avoid compilation errors
- * TODO: Remove all SoundManager references and use CentralizedMusicManager instead
+ * Deprecated stub for SoundManager to maintain backward compatibility
+ * This class delegates all calls to CentralizedMusicManager.
+ * Future refactoring: Remove this class once all SoundManager references are updated to use CentralizedMusicManager directly.
  */
 @Deprecated
 public class SoundManager {
-    private static SoundManager instance = new SoundManager();
+    private static final SoundManager instance = new SoundManager();
     
     public static SoundManager getInstance() {
         return instance;

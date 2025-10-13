@@ -3,7 +3,7 @@ package com.coincraft.ui.components.child;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.Badge;
 import com.coincraft.models.BadgeCategory;
 import com.coincraft.models.BadgeLevel;
@@ -30,6 +30,7 @@ public class BadgesStrip {
     private HBox badgeContainer;
     private Button leftButton;
     private Button rightButton;
+    @SuppressWarnings("unused")
     private final User currentUser;
     private final List<Badge> earnedBadges;
     private final List<Badge> availableBadges;
@@ -124,7 +125,7 @@ public class BadgesStrip {
      */
     private void addButtonHoverEffects(Button button) {
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             button.setStyle(button.getStyle() + 
                 "-fx-scale-x: 1.1; -fx-scale-y: 1.1;" +
                 "-fx-background-color: rgba(255, 152, 0, 0.9);" +
@@ -150,7 +151,7 @@ public class BadgesStrip {
      * Scroll left in the badge slider
      */
     private void scrollLeft() {
-        SoundManager.getInstance().playButtonClick();
+        CentralizedMusicManager.getInstance().playButtonClick();
         double currentValue = scrollPane.getHvalue();
         scrollPane.setHvalue(Math.max(0, currentValue - 0.2));
     }
@@ -159,7 +160,7 @@ public class BadgesStrip {
      * Scroll right in the badge slider
      */
     private void scrollRight() {
-        SoundManager.getInstance().playButtonClick();
+        CentralizedMusicManager.getInstance().playButtonClick();
         double currentValue = scrollPane.getHvalue();
         scrollPane.setHvalue(Math.min(1, currentValue + 0.2));
     }
@@ -237,13 +238,13 @@ public class BadgesStrip {
         
         // Click handler
         item.setOnMouseClicked(e -> {
-            SoundManager.getInstance().playButtonClick();
+            CentralizedMusicManager.getInstance().playButtonClick();
             showBadgeDetails(badge, true);
         });
         
         // Hover effects
         item.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             item.setStyle(item.getStyle() + "-fx-scale-x: 1.1; -fx-scale-y: 1.1;");
         });
         
@@ -297,7 +298,7 @@ public class BadgesStrip {
         
         // Click handler
         item.setOnMouseClicked(e -> {
-            SoundManager.getInstance().playButtonClick();
+            CentralizedMusicManager.getInstance().playButtonClick();
             showBadgeDetails(badge, false);
         });
         
@@ -364,23 +365,38 @@ public class BadgesStrip {
         if (isEarned) {
             dialog.setTitle("Badge Earned!");
             dialog.setHeaderText("🏆 " + badge.getName());
-            dialog.setContentText(
-                "Congratulations! You've earned this badge!\n\n" +
-                "Description: " + badge.getDescription() + "\n\n" +
-                "Category: " + badge.getCategory().toString() + "\n" +
-                "Level: " + badge.getLevel().toString() + "\n\n" +
-                "Keep up the amazing work, adventurer!"
-            );
+            dialog.setContentText("""
+                Congratulations! You've earned this badge!
+                
+                Description: %s
+                
+                Category: %s
+                Level: %s
+                
+                Keep up the amazing work, adventurer!
+                """.formatted(
+                    badge.getDescription(),
+                    badge.getCategory().toString(),
+                    badge.getLevel().toString()
+                ));
         } else {
             dialog.setTitle("Future Badge");
             dialog.setHeaderText("🔮 " + badge.getName());
-            dialog.setContentText(
-                "This badge is waiting for you to earn it!\n\n" +
-                "What you need to do:\n" + badge.getDescription() + "\n\n" +
-                "Category: " + badge.getCategory().toString() + "\n" +
-                "Level: " + badge.getLevel().toString() + "\n\n" +
-                "Keep adventuring to unlock this badge!"
-            );
+            dialog.setContentText("""
+                This badge is waiting for you to earn it!
+                
+                What you need to do:
+                %s
+                
+                Category: %s
+                Level: %s
+                
+                Keep adventuring to unlock this badge!
+                """.formatted(
+                    badge.getDescription(),
+                    badge.getCategory().toString(),
+                    badge.getLevel().toString()
+                ));
         }
         
         // Style the dialog
@@ -397,15 +413,15 @@ public class BadgesStrip {
      * Get icon for badge category
      */
     private String getBadgeIcon(BadgeCategory category) {
-        switch (category) {
-            case LEARNING: return "🎓";
-            case CREATIVITY: return "🎭";
-            case FITNESS: return "🏋️‍♀️";
-            case SOCIAL: return "👫";
-            case ACHIEVEMENT: return "🏆";
-            case SPECIAL: return "✨";
-            default: return "🎖️";
-        }
+        return switch (category) {
+            case LEARNING -> "🎓";
+            case CREATIVITY -> "🎭";
+            case FITNESS -> "🏋️‍♀️";
+            case SOCIAL -> "👫";
+            case ACHIEVEMENT -> "🏆";
+            case SPECIAL -> "✨";
+            default -> "🎖️";
+        };
     }
     
     /**

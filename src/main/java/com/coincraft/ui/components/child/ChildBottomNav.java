@@ -2,7 +2,7 @@ package com.coincraft.ui.components.child;
 
 import java.util.function.Consumer;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.User;
 
 import javafx.geometry.Insets;
@@ -20,8 +20,8 @@ import javafx.scene.layout.VBox;
  */
 public class ChildBottomNav {
     private HBox root;
-    private User currentUser;
-    private Consumer<String> navigationCallback;
+    private final User currentUser;
+    private final Consumer<String> navigationCallback;
     private String activeSection = "home";
     
     // Navigation buttons
@@ -41,6 +41,11 @@ public class ChildBottomNav {
         root = new HBox();
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(15, 20, 15, 20));
+        // Attach current user context for accessibility/diagnostics
+        if (currentUser != null) {
+            root.setUserData(currentUser.getUserId());
+            root.setAccessibleHelp("user:" + currentUser.getUserId());
+        }
         root.setStyle(
             "-fx-background-color: rgba(255, 255, 255, 0.9);" +
             "-fx-background-radius: 20 20 0 0;" +
@@ -115,7 +120,7 @@ public class ChildBottomNav {
         
         // Click handler
         button.setOnMouseClicked(e -> {
-            SoundManager.getInstance().playButtonClick();
+            CentralizedMusicManager.getInstance().playButtonClick();
             if (navigationCallback != null) {
                 navigationCallback.accept(section);
             }
@@ -123,7 +128,7 @@ public class ChildBottomNav {
         
         // Hover effects
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             if (!section.equals(activeSection)) {
                 button.setStyle(
                     "-fx-cursor: hand;" +
@@ -204,14 +209,14 @@ public class ChildBottomNav {
      * Get button for section
      */
     private VBox getButtonForSection(String section) {
-        switch (section) {
-            case "home": return homeButton;
-            case "tasks": return tasksButton;
-            case "messages": return messagesButton;
-            case "shop": return shopButton;
-            case "profile": return profileButton;
-            default: return null;
-        }
+        return switch (section) {
+            case "home" -> homeButton;
+            case "tasks" -> tasksButton;
+            case "messages" -> messagesButton;
+            case "shop" -> shopButton;
+            case "profile" -> profileButton;
+            default -> null;
+        };
     }
     
     /**

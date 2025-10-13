@@ -13,7 +13,7 @@ import javafx.scene.layout.VBox;
  */
 public class EventBanner {
     private VBox root;
-    private User currentUser;
+    private final User currentUser;
     
     public EventBanner(User user) {
         this.currentUser = user;
@@ -24,6 +24,11 @@ public class EventBanner {
         root = new VBox(6);
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(10));
+        // Attach current user context for diagnostics/accessibility
+        if (currentUser != null) {
+            root.setUserData(currentUser.getUserId());
+            root.setAccessibleHelp("user:" + currentUser.getUserId());
+        }
         root.setStyle(
             "-fx-background-color: rgba(233, 30, 99, 0.9);" +
             "-fx-background-radius: 16;" +

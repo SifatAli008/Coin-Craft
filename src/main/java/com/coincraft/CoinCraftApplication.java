@@ -160,7 +160,7 @@ public class CoinCraftApplication extends Application {
             System.out.println("Registration screen loaded successfully");
         } catch (Exception e) {
             System.err.println("Error showing registration screen: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Stack trace: " + java.util.Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -176,9 +176,8 @@ public class CoinCraftApplication extends Application {
                 Scene dashboardScene = new Scene(router.routeToDashboard(user), WINDOW_WIDTH, WINDOW_HEIGHT);
                 loadStyles(dashboardScene);
                 PixelSkin.apply(dashboardScene);
-                if (dashboardScene.getRoot() instanceof javafx.scene.Parent) {
-                    UiSoundBindings.install((javafx.scene.Parent) dashboardScene.getRoot());
-                }
+                // Install UI sound bindings for the dashboard scene root
+                UiSoundBindings.install(dashboardScene.getRoot());
                 
                 primaryStage.setScene(dashboardScene);
                 primaryStage.setTitle(APP_TITLE + " - " + user.getName() + " (" + user.getRole() + ")");
@@ -190,7 +189,7 @@ public class CoinCraftApplication extends Application {
                 LOGGER.severe(() -> "Dashboard routing error: " + e.getMessage());
                 
                 // Stop any existing music before creating fallback dashboard
-                // TODO: Use CentralizedMusicManager.getInstance().stop(); if needed
+                CentralizedMusicManager.getInstance().stop();
                 
                 // Fallback to original dashboard
                 try {
@@ -263,9 +262,9 @@ public class CoinCraftApplication extends Application {
             java.lang.reflect.Method testMethod = testUtilityClass.getMethod("testConnection");
             testMethod.invoke(null);
             
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | NoSuchMethodException | java.lang.reflect.InvocationTargetException | IllegalAccessException e) {
             System.err.println("Failed to run Firebase tests: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Stack trace: " + java.util.Arrays.toString(e.getStackTrace()));
         }
     }
 }

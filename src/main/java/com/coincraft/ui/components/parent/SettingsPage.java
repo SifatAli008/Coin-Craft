@@ -14,7 +14,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
@@ -29,16 +28,13 @@ import javafx.scene.layout.VBox;
  */
 public class SettingsPage {
     private VBox root;
-    private User currentUser;
-    private FirebaseService firebaseService;
+    private final User currentUser;
+    private final FirebaseService firebaseService;
     private List<User> children;
     
     // UI Components
     private TextField nameField;
     private TextField emailField;
-    private PasswordField currentPasswordField;
-    private PasswordField newPasswordField;
-    private PasswordField confirmPasswordField;
     private ComboBox<String> themeCombo;
     private ComboBox<String> languageCombo;
     private CheckBox notificationsCheck;
@@ -253,7 +249,7 @@ public class SettingsPage {
         });
         
         purchaseButton.setOnAction(e -> {
-            // TODO: Implement coin purchase functionality
+            // Feature coming soon - coin purchase functionality
             System.out.println("💰 Coin purchase requested!");
         });
         

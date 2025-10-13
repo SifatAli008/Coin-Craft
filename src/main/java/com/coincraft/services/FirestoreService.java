@@ -1,5 +1,6 @@
 package com.coincraft.services;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * Firestore database service using REST API
@@ -63,16 +65,16 @@ public class FirestoreService {
             
             try (Response response = httpClient.newCall(request).execute()) {
                 if (response.isSuccessful()) {
-                    LOGGER.info("User saved successfully: " + user.getUserId());
+                    LOGGER.info(() -> "User saved successfully: " + user.getUserId());
                     return true;
                 } else {
-                    LOGGER.warning("Failed to save user: " + response.code() + " - " + response.message());
+                    LOGGER.warning(() -> "Failed to save user: " + response.code() + " - " + response.message());
                     return false;
                 }
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Error saving user: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Error saving user: " + e.getMessage());
             return false;
         }
     }
@@ -91,26 +93,29 @@ public class FirestoreService {
                     .build();
             
             try (Response response = httpClient.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String responseBody = response.body().string();
-                    Map<String, Object> document = objectMapper.readValue(responseBody, Map.class);
+                ResponseBody body = response.body();
+                if (response.isSuccessful() && body != null) {
+                    String responseBody = body.string();
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> document = (Map<String, Object>) objectMapper.readValue(responseBody, Map.class);
                     
                     if (document.containsKey("fields")) {
+                        @SuppressWarnings("unchecked")
                         Map<String, Object> fields = (Map<String, Object>) document.get("fields");
                         User user = convertFirestoreToUser(fields);
-                        LOGGER.info("User loaded successfully: " + userId);
+                        LOGGER.info(() -> "User loaded successfully: " + userId);
                         return user;
                     }
                 } else if (response.code() == 404) {
-                    LOGGER.info("User not found: " + userId);
+                    LOGGER.info(() -> "User not found: " + userId);
                     return null;
                 } else {
-                    LOGGER.warning("Failed to load user: " + response.code());
+                    LOGGER.warning(() -> "Failed to load user: " + response.code());
                 }
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Error loading user: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Error loading user: " + e.getMessage());
         }
         
         return null;
@@ -138,16 +143,16 @@ public class FirestoreService {
             
             try (Response response = httpClient.newCall(request).execute()) {
                 if (response.isSuccessful()) {
-                    LOGGER.info("Task saved successfully: " + task.getTaskId());
+                    LOGGER.info(() -> "Task saved successfully: " + task.getTaskId());
                     return true;
                 } else {
-                    LOGGER.warning("Failed to save task: " + response.code());
+                    LOGGER.warning(() -> "Failed to save task: " + response.code());
                     return false;
                 }
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Error saving task: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Error saving task: " + e.getMessage());
             return false;
         }
     }
@@ -167,16 +172,20 @@ public class FirestoreService {
                     .build();
             
             try (Response response = httpClient.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String responseBody = response.body().string();
-                    Map<String, Object> result = objectMapper.readValue(responseBody, Map.class);
+                ResponseBody body = response.body();
+                if (response.isSuccessful() && body != null) {
+                    String responseBody = body.string();
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> result = (Map<String, Object>) objectMapper.readValue(responseBody, Map.class);
                     
                     List<Task> tasks = new ArrayList<>();
                     if (result.containsKey("documents")) {
+                        @SuppressWarnings("unchecked")
                         List<Map<String, Object>> documents = (List<Map<String, Object>>) result.get("documents");
                         
                         for (Map<String, Object> doc : documents) {
                             if (doc.containsKey("fields")) {
+                                @SuppressWarnings("unchecked")
                                 Map<String, Object> fields = (Map<String, Object>) doc.get("fields");
                                 Task task = convertFirestoreToTask(fields);
                                 if (task != null) {
@@ -186,13 +195,13 @@ public class FirestoreService {
                         }
                     }
                     
-                    LOGGER.info("Loaded " + tasks.size() + " tasks for user: " + userId);
+                    LOGGER.info(() -> "Loaded " + tasks.size() + " tasks for user: " + userId);
                     return tasks;
                 }
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Error loading tasks: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Error loading tasks: " + e.getMessage());
         }
         
         return new ArrayList<>();
@@ -212,16 +221,20 @@ public class FirestoreService {
                     .build();
             
             try (Response response = httpClient.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String responseBody = response.body().string();
-                    Map<String, Object> result = objectMapper.readValue(responseBody, Map.class);
+                ResponseBody body = response.body();
+                if (response.isSuccessful() && body != null) {
+                    String responseBody = body.string();
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> result = (Map<String, Object>) objectMapper.readValue(responseBody, Map.class);
                     
                     List<User> users = new ArrayList<>();
                     if (result.containsKey("documents")) {
+                        @SuppressWarnings("unchecked")
                         List<Map<String, Object>> documents = (List<Map<String, Object>>) result.get("documents");
                         
                         for (Map<String, Object> doc : documents) {
                             if (doc.containsKey("fields")) {
+                                @SuppressWarnings("unchecked")
                                 Map<String, Object> fields = (Map<String, Object>) doc.get("fields");
                                 User user = convertFirestoreToUser(fields);
                                 if (user != null) {
@@ -240,13 +253,13 @@ public class FirestoreService {
                         leaderboard.get(i).setLeaderboardRank(i + 1);
                     }
                     
-                    LOGGER.info("Loaded leaderboard with " + leaderboard.size() + " users");
+                    LOGGER.info(() -> "Loaded leaderboard with " + leaderboard.size() + " users");
                     return leaderboard;
                 }
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Error loading leaderboard: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Error loading leaderboard: " + e.getMessage());
         }
         
         return new ArrayList<>();
@@ -307,7 +320,7 @@ public class FirestoreService {
             return user;
             
         } catch (Exception e) {
-            LOGGER.severe("Error converting Firestore data to User: " + e.getMessage());
+            LOGGER.severe(() -> "Error converting Firestore data to User: " + e.getMessage());
             return null;
         }
     }
@@ -381,7 +394,7 @@ public class FirestoreService {
             return task;
             
         } catch (Exception e) {
-            LOGGER.severe("Error converting Firestore data to Task: " + e.getMessage());
+            LOGGER.severe(() -> "Error converting Firestore data to Task: " + e.getMessage());
             return null;
         }
     }
@@ -413,6 +426,7 @@ public class FirestoreService {
     
     private String getStringValue(Map<String, Object> fields, String key) {
         if (fields.containsKey(key)) {
+            @SuppressWarnings("unchecked")
             Map<String, Object> field = (Map<String, Object>) fields.get(key);
             return (String) field.get("stringValue");
         }
@@ -421,15 +435,17 @@ public class FirestoreService {
     
     private Integer getIntegerValue(Map<String, Object> fields, String key) {
         if (fields.containsKey(key)) {
+            @SuppressWarnings("unchecked")
             Map<String, Object> field = (Map<String, Object>) fields.get(key);
-            String value = (String) field.get("integerValue");
-            return value != null ? Integer.parseInt(value) : 0;
+            Object obj = field.get("integerValue");
+            return obj != null ? Integer.valueOf(obj.toString()) : 0;
         }
         return 0;
     }
     
     private Boolean getBooleanValue(Map<String, Object> fields, String key) {
         if (fields.containsKey(key)) {
+            @SuppressWarnings("unchecked")
             Map<String, Object> field = (Map<String, Object>) fields.get(key);
             return (Boolean) field.get("booleanValue");
         }
@@ -451,8 +467,9 @@ public class FirestoreService {
                     .build();
             
             try (Response response = httpClient.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String responseBody = response.body().string();
+                ResponseBody body = response.body();
+                if (response.isSuccessful() && body != null) {
+                    String responseBody = body.string();
                     @SuppressWarnings("unchecked")
                     Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
                     
@@ -470,14 +487,14 @@ public class FirestoreService {
                         }
                     }
                     
-                    LOGGER.info("Successfully loaded " + users.size() + " users from Firestore");
+                    LOGGER.info(() -> "Successfully loaded " + users.size() + " users from Firestore");
                 } else {
-                    LOGGER.warning("Failed to load users from Firestore: " + response.code());
+                    LOGGER.warning(() -> "Failed to load users from Firestore: " + response.code());
                 }
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Error loading users from Firestore: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Error loading users from Firestore: " + e.getMessage());
         }
         
         return users;
@@ -511,8 +528,8 @@ public class FirestoreService {
             try (Response response = httpClient.newCall(request).execute()) {
                 return response.isSuccessful();
             }
-        } catch (Exception e) {
-            LOGGER.severe("Error saving message: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Error saving message: " + e.getMessage());
             return false;
         }
     }
@@ -527,12 +544,16 @@ public class FirestoreService {
                 .addHeader("Authorization", "Bearer " + idToken)
                 .build();
             try (Response response = httpClient.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String responseBody = response.body().string();
-                    Map<String, Object> result = objectMapper.readValue(responseBody, Map.class);
+                ResponseBody body = response.body();
+                if (response.isSuccessful() && body != null) {
+                    String responseBody = body.string();
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> result = (Map<String, Object>) objectMapper.readValue(responseBody, Map.class);
                     if (result.containsKey("documents")) {
+                        @SuppressWarnings("unchecked")
                         List<Map<String, Object>> docs = (List<Map<String, Object>>) result.get("documents");
                         for (Map<String, Object> doc : docs) {
+                            @SuppressWarnings("unchecked")
                             Map<String, Object> fields = (Map<String, Object>) doc.get("fields");
                             if (fields == null) continue;
                             String cid = getStringValue(fields, "conversationId");
@@ -555,8 +576,8 @@ public class FirestoreService {
                     }
                 }
             }
-        } catch (Exception e) {
-            LOGGER.severe("Error loading conversation: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Error loading conversation: " + e.getMessage());
         }
         // Sort by timestamp ascending
         messages.sort((a,b) -> a.getTimestamp() != null && b.getTimestamp() != null ? a.getTimestamp().compareTo(b.getTimestamp()) : 0);
@@ -582,8 +603,9 @@ public class FirestoreService {
                     .build();
             
             try (Response response = httpClient.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String responseBody = response.body().string();
+                ResponseBody body = response.body();
+                if (response.isSuccessful() && body != null) {
+                    String responseBody = body.string();
                     @SuppressWarnings("unchecked")
                     Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
                     
@@ -601,14 +623,14 @@ public class FirestoreService {
                         }
                     }
                     
-                    LOGGER.info("Successfully loaded " + tasks.size() + " tasks from Firestore");
+                    LOGGER.info(() -> "Successfully loaded " + tasks.size() + " tasks from Firestore");
                 } else {
-                    LOGGER.warning("Failed to load tasks from Firestore: " + response.code());
+                    LOGGER.warning(() -> "Failed to load tasks from Firestore: " + response.code());
                 }
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Error loading tasks from Firestore: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            LOGGER.severe(() -> "Error loading tasks from Firestore: " + e.getMessage());
         }
         
         return tasks;

@@ -1,0 +1,91 @@
+{
+  "levelId": 1,
+  "title": "What is Money?",
+  "description": "Learn the basics of money with the Wise Wizard",
+  "npcName": "Wise Wizard",
+  "npcEmoji": "🧙‍♂️",
+  "npcImagePath": "/character/craftpix-net-529677-free-wizard-sprite-sheets-pixel-art/Wanderer Magican/Idle.png",
+  "npcGreeting": "Welcome, young adventurer! I am the Wise Wizard of the Financial Realm. Today, we'll discover the magic of money! Are you ready to learn?",
+  "npcFarewell": "Well done, brave adventurer! You've taken your first step toward financial wisdom. Visit me again anytime!",
+  "backgroundStyle": "linear-gradient(135deg, #667EEA 0%, #764BA2 100%)",
+  "completionReward": 100,
+  "nextLevel": 2,
+  "questions": [
+    {
+      "id": 1,
+      "text": "What is money used for?",
+      "explanation": "That's right! Money is a tool we use to buy things we need and want, like food, toys, and books.",
+      "choices": [
+        {
+          "text": "To buy things we need and want",
+          "isCorrect": true,
+          "reward": 20,
+          "penalty": 0
+        },
+        {
+          "text": "Just to look pretty",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -5
+        },
+        {
+          "text": "Only for playing games",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -5
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "If you have 3 coins and earn 2 more, how many coins do you have?",
+      "explanation": "Excellent! 3 + 2 = 5 coins. Counting money is an important skill!",
+      "choices": [
+        {
+          "text": "4 coins",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -10
+        },
+        {
+          "text": "5 coins",
+          "isCorrect": true,
+          "reward": 25,
+          "penalty": 0
+        },
+        {
+          "text": "6 coins",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -10
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "text": "Which is a smart thing to do with coins?",
+      "explanation": "Perfect! Saving coins for later is very smart. You can use them when you really need something!",
+      "choices": [
+        {
+          "text": "Throw them away",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -10
+        },
+        {
+          "text": "Save some for later",
+          "isCorrect": true,
+          "reward": 30,
+          "penalty": 0
+        },
+        {
+          "text": "Give them all to strangers",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -10
+        }
+      ]
+    }
+  ]
+}
+

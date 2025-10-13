@@ -1,0 +1,90 @@
+{
+  "levelId": 2,
+  "title": "Counting Coins",
+  "description": "Master the art of counting money with the friendly Shopkeeper",
+  "npcName": "Shopkeeper",
+  "npcEmoji": "🏪",
+  "npcGreeting": "Hello there, young adventurer! Welcome to my shop! To buy things here, you need to know how to count your coins. Let me teach you!",
+  "npcFarewell": "Fantastic work! You're becoming quite good at counting coins. Come back to my shop anytime!",
+  "backgroundStyle": "linear-gradient(135deg, #F093FB 0%, #F5576C 100%)",
+  "completionReward": 100,
+  "nextLevel": 3,
+  "questions": [
+    {
+      "id": 1,
+      "text": "Which pile has MORE coins? Pile A has 3 coins 🪙🪙🪙, Pile B has 5 coins 🪙🪙🪙🪙🪙",
+      "explanation": "Correct! Pile B has 5 coins which is more than Pile A's 3 coins. Great counting!",
+      "choices": [
+        {
+          "text": "Pile A (3 coins)",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -5
+        },
+        {
+          "text": "Pile B (5 coins)",
+          "isCorrect": true,
+          "reward": 20,
+          "penalty": 0
+        },
+        {
+          "text": "They're the same",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -5
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "You buy a candy for 2 coins. You pay with 5 coins. How much change do you get back?",
+      "explanation": "Perfect! 5 coins - 2 coins = 3 coins in change. You're great at math!",
+      "choices": [
+        {
+          "text": "2 coins",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -10
+        },
+        {
+          "text": "3 coins",
+          "isCorrect": true,
+          "reward": 30,
+          "penalty": 0
+        },
+        {
+          "text": "5 coins",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -10
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "text": "In my shop: An apple costs 3 coins, a cookie costs 2 coins. If you buy both, how many coins do you spend?",
+      "explanation": "Excellent! 3 coins + 2 coins = 5 coins total. You're a smart shopper!",
+      "choices": [
+        {
+          "text": "3 coins",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -8
+        },
+        {
+          "text": "5 coins",
+          "isCorrect": true,
+          "reward": 25,
+          "penalty": 0
+        },
+        {
+          "text": "6 coins",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -8
+        }
+      ]
+    }
+  ]
+}
+

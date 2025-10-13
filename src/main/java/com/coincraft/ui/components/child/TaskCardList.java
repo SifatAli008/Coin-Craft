@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.Task;
 import com.coincraft.models.TaskType;
 import com.coincraft.models.User;
@@ -34,8 +34,8 @@ public class TaskCardList {
     private HBox cardContainer;
     private Button leftButton;
     private Button rightButton;
-    private User currentUser;
-    private List<Task> activeTasks;
+    private final User currentUser;
+    private final List<Task> activeTasks;
     
     public TaskCardList(User user) {
         this.currentUser = user;
@@ -126,7 +126,7 @@ public class TaskCardList {
      */
     private void addButtonHoverEffects(Button button) {
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             button.setStyle(button.getStyle() + 
                 "-fx-scale-x: 1.1; -fx-scale-y: 1.1;" +
                 "-fx-background-color: rgba(33, 150, 243, 0.9);" +
@@ -152,7 +152,7 @@ public class TaskCardList {
      * Scroll left in the quest slider
      */
     private void scrollLeft() {
-        SoundManager.getInstance().playButtonClick();
+        CentralizedMusicManager.getInstance().playButtonClick();
         double currentValue = scrollPane.getHvalue();
         scrollPane.setHvalue(Math.max(0, currentValue - 0.3));
     }
@@ -161,7 +161,7 @@ public class TaskCardList {
      * Scroll right in the quest slider
      */
     private void scrollRight() {
-        SoundManager.getInstance().playButtonClick();
+        CentralizedMusicManager.getInstance().playButtonClick();
         double currentValue = scrollPane.getHvalue();
         scrollPane.setHvalue(Math.min(1, currentValue + 0.3));
     }
@@ -284,7 +284,7 @@ public class TaskCardList {
                 "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.3), 15, 0, 0, 5);"
             );
             button.setOnAction(e -> {
-                SoundManager.getInstance().playButtonClick();
+                CentralizedMusicManager.getInstance().playButtonClick();
                 completeTask(task);
             });
         } else {
@@ -301,14 +301,14 @@ public class TaskCardList {
                 "-fx-effect: dropshadow(gaussian, rgba(33,150,243,0.3), 15, 0, 0, 5);"
             );
             button.setOnAction(e -> {
-                SoundManager.getInstance().playButtonClick();
+                CentralizedMusicManager.getInstance().playButtonClick();
                 viewTaskDetails(task);
             });
         }
         
         // Hover effects
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             button.setStyle(button.getStyle() + "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
         });
         
@@ -323,6 +323,7 @@ public class TaskCardList {
     /**
      * Create a wide task card for horizontal grid layout with full content visibility (legacy)
      */
+    @SuppressWarnings("unused")
     private VBox createCompactTaskCard(Task task) {
         VBox card = new VBox(10);
         card.setPadding(new Insets(12));
@@ -382,6 +383,7 @@ public class TaskCardList {
     /**
      * Create an individual task card (old method - keeping for compatibility)
      */
+    @SuppressWarnings("unused")
     private VBox createTaskCard(Task task) {
         VBox card = new VBox(12);
         card.setPadding(new Insets(16));
@@ -527,7 +529,7 @@ public class TaskCardList {
         
         // Hover effects
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             button.setStyle(button.getStyle() + "-fx-scale-x: 1.1; -fx-scale-y: 1.1;");
         });
         
@@ -581,7 +583,7 @@ public class TaskCardList {
         
         // Hover effects
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             button.setStyle(button.getStyle() + "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
         });
         
@@ -596,7 +598,7 @@ public class TaskCardList {
      * Complete a task
      */
     private void completeTask(Task task) {
-        SoundManager.getInstance().playButtonClick();
+        CentralizedMusicManager.getInstance().playButtonClick();
         
         Alert dialog = new Alert(Alert.AlertType.INFORMATION);
         dialog.setTitle("Quest Completed!");
@@ -624,7 +626,7 @@ public class TaskCardList {
         activeTasks.remove(task);
         
         // Play success sound
-        SoundManager.getInstance().playSuccess();
+        CentralizedMusicManager.getInstance().playSuccess();
         
         dialog.showAndWait();
         refresh(); // Refresh the display
@@ -634,7 +636,7 @@ public class TaskCardList {
      * View task details
      */
     private void viewTaskDetails(Task task) {
-        SoundManager.getInstance().playButtonClick();
+        CentralizedMusicManager.getInstance().playButtonClick();
         
         Alert dialog = new Alert(Alert.AlertType.INFORMATION);
         dialog.setTitle("Quest Details");
@@ -666,42 +668,42 @@ public class TaskCardList {
      * Get color for task type
      */
     private String getTaskTypeColor(TaskType type) {
-        switch (type) {
-            case LEARNING: return "#2196F3";
-            case CHORE: return "#FA8A00";
-            case CREATIVE: return "#9C27B0";
-            case PHYSICAL: return "#4CAF50";
-            case SOCIAL: return "#E91E63";
-            default: return "#607D8B";
-        }
+        return switch (type) {
+            case LEARNING -> "#2196F3";
+            case CHORE -> "#FA8A00";
+            case CREATIVE -> "#9C27B0";
+            case PHYSICAL -> "#4CAF50";
+            case SOCIAL -> "#E91E63";
+            default -> "#607D8B";
+        };
     }
     
     /**
      * Get icon for task type
      */
     private String getTaskTypeIcon(TaskType type) {
-        switch (type) {
-            case LEARNING: return "🎓";
-            case CHORE: return "🏡";
-            case CREATIVE: return "🎭";
-            case PHYSICAL: return "🏃‍♂️";
-            case SOCIAL: return "👫";
-            default: return "⭐";
-        }
+        return switch (type) {
+            case LEARNING -> "🎓";
+            case CHORE -> "🏡";
+            case CREATIVE -> "🎭";
+            case PHYSICAL -> "🏃‍♂️";
+            case SOCIAL -> "👫";
+            default -> "⭐";
+        };
     }
     
     /**
      * Get helpful tip for task type
      */
     private String getTaskTip(TaskType type) {
-        switch (type) {
-            case LEARNING: return "Take your time and ask questions if you need help!";
-            case CHORE: return "A clean space makes for a happy place!";
-            case CREATIVE: return "Let your imagination run wild!";
-            case PHYSICAL: return "Stay active and have fun!";
-            case SOCIAL: return "Be kind and make new friends!";
-            default: return "You've got this, adventurer!";
-        }
+        return switch (type) {
+            case LEARNING -> "Take your time and ask questions if you need help!";
+            case CHORE -> "A clean space makes for a happy place!";
+            case CREATIVE -> "Let your imagination run wild!";
+            case PHYSICAL -> "Stay active and have fun!";
+            case SOCIAL -> "Be kind and make new friends!";
+            default -> "You've got this, adventurer!";
+        };
     }
     
     /**

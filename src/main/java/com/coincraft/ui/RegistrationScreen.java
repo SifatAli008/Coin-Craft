@@ -3,6 +3,7 @@ package com.coincraft.ui;
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
 
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.User;
 import com.coincraft.models.UserRole;
 import com.coincraft.services.FirebaseService;
@@ -39,7 +40,6 @@ public class RegistrationScreen {
     private PasswordField passwordField;
     private PasswordField confirmPasswordField;
     private Button signUpButton;
-    private Button backToLoginButton;
     private Label statusLabel;
     
     private final RegistrationCallback callback;
@@ -231,7 +231,7 @@ public class RegistrationScreen {
         );
         nameField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
-                // TODO: Implement sound effects via CentralizedMusicManager if needed
+                CentralizedMusicManager.getInstance().playButtonHover();
                 nameField.setStyle(nameField.getStyle() + "-fx-border-color: #FA8A00; -fx-border-width: 2;");
             } else {
                 nameField.setStyle(nameField.getStyle().replace("-fx-border-color: #FA8A00; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
@@ -268,7 +268,7 @@ public class RegistrationScreen {
         );
         emailField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
-                // TODO: Implement sound effects via CentralizedMusicManager if needed
+                CentralizedMusicManager.getInstance().playButtonHover();
                 emailField.setStyle(emailField.getStyle() + "-fx-border-color: #FA8A00; -fx-border-width: 2;");
             } else {
                 emailField.setStyle(emailField.getStyle().replace("-fx-border-color: #FA8A00; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
@@ -309,7 +309,7 @@ public class RegistrationScreen {
         );
         passwordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
-                // TODO: Implement sound effects via CentralizedMusicManager if needed
+                CentralizedMusicManager.getInstance().playButtonHover();
                 passwordField.setStyle(passwordField.getStyle() + "-fx-border-color: #FA8A00; -fx-border-width: 2;");
             } else {
                 passwordField.setStyle(passwordField.getStyle().replace("-fx-border-color: #FA8A00; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
@@ -346,7 +346,7 @@ public class RegistrationScreen {
         );
         confirmPasswordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
-                // TODO: Implement sound effects via CentralizedMusicManager if needed
+                CentralizedMusicManager.getInstance().playButtonHover();
                 confirmPasswordField.setStyle(confirmPasswordField.getStyle() + "-fx-border-color: #FA8A00; -fx-border-width: 2;");
             } else {
                 confirmPasswordField.setStyle(confirmPasswordField.getStyle().replace("-fx-border-color: #FA8A00; -fx-border-width: 2;", "-fx-border-color: #000000; -fx-border-width: 1;"));
@@ -376,7 +376,7 @@ public class RegistrationScreen {
             "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.4), 8, 0, 0, 2);"
         );
         signUpButton.setOnMouseEntered(e -> {
-            // TODO: Implement button hover sound via CentralizedMusicManager if needed
+            CentralizedMusicManager.getInstance().playButtonHover();
             signUpButton.setStyle(
                 "-fx-background-color: #E67E00;" +
                 "-fx-text-fill: white;" +
@@ -404,7 +404,7 @@ public class RegistrationScreen {
             );
         });
         signUpButton.setOnAction(e -> {
-            // TODO: Implement button click sound via CentralizedMusicManager if needed
+            CentralizedMusicManager.getInstance().playButtonClick();
             handleRegistration();
         });
         
@@ -434,7 +434,7 @@ public class RegistrationScreen {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         backToLoginLabel.setOnMouseClicked(e -> {
-            // TODO: Implement button click sound via CentralizedMusicManager if needed
+            CentralizedMusicManager.getInstance().playButtonClick();
             if (callback != null) {
                 callback.onBackToLogin();
             }
@@ -453,25 +453,25 @@ public class RegistrationScreen {
         
         // Validation
         if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-            // TODO: Implement sound effects via CentralizedMusicManager if needed
+            CentralizedMusicManager.getInstance().playError();
             showStatus("❌ Please fill in all fields", false);
             return;
         }
         
         if (!email.contains("@") || !email.contains(".")) {
-            // TODO: Implement sound effects via CentralizedMusicManager if needed
+            CentralizedMusicManager.getInstance().playError();
             showStatus("❌ Please enter a valid email address", false);
             return;
         }
         
         if (password.length() < 6) {
-            // TODO: Implement sound effects via CentralizedMusicManager if needed
+            CentralizedMusicManager.getInstance().playError();
             showStatus("❌ Password must be at least 6 characters long", false);
             return;
         }
         
         if (!password.equals(confirmPassword)) {
-            // TODO: Implement sound effects via CentralizedMusicManager if needed
+            CentralizedMusicManager.getInstance().playError();
             showStatus("❌ Passwords do not match", false);
             return;
         }
@@ -507,7 +507,7 @@ public class RegistrationScreen {
                             throw new Exception("Failed to register user in system");
                         }
                         
-                        // TODO: Implement sound effects via CentralizedMusicManager if needed
+                        CentralizedMusicManager.getInstance().playSuccess();
                         showStatus("🎉 Welcome to CoinCraft, " + name + "! Your adventure begins now!", true);
                         
                         // Small delay before transitioning
@@ -521,7 +521,7 @@ public class RegistrationScreen {
                     } catch (Exception e) {
                         signUpButton.setDisable(false);
                         signUpButton.setText("⚔️ Create your merchant ID");
-                        // TODO: Implement sound effects via CentralizedMusicManager if needed
+                        CentralizedMusicManager.getInstance().playError();
                         showStatus("❌ Failed to create account: " + e.getMessage(), false);
                         LOGGER.severe(() -> "Registration error: " + e.getMessage());
                     }

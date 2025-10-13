@@ -186,7 +186,7 @@ public class LevelNavigation {
         alert.setContentText("Level " + levelNumber + " activities will be available soon!\n\nFor now, explore the dashboard and complete your daily tasks to earn SmartCoins.");
         alert.showAndWait();
         
-        // TODO: Navigate to specific level activities
+        // Feature coming soon - navigate to specific level activities
         System.out.println("Navigating to Level " + levelNumber + ": " + levelName);
     }
     

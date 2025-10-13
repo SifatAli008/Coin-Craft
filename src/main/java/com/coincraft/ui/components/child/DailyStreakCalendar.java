@@ -14,7 +14,7 @@ import javafx.scene.layout.VBox;
  */
 public class DailyStreakCalendar {
     private VBox root;
-    private User currentUser;
+    private final User currentUser;
     
     public DailyStreakCalendar(User user) {
         this.currentUser = user;
@@ -56,7 +56,6 @@ public class DailyStreakCalendar {
         calendar.setAlignment(Pos.CENTER);
         
         String[] days = {"M", "T", "W", "T", "F", "S", "S"};
-        String[] fullDays = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
         
         for (int i = 0; i < 7; i++) {
             VBox dayBox = new VBox(2);
@@ -90,7 +89,6 @@ public class DailyStreakCalendar {
             dayBox.getChildren().addAll(dayLabel, iconLabel);
             
             // Add hover effect for better UX
-            final String finalDay = fullDays[i];
             dayBox.setOnMouseEntered(e -> {
                 if (!isActive) {
                     dayBox.setStyle(dayBox.getStyle() + "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");

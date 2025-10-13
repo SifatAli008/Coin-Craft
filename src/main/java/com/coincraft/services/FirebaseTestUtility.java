@@ -71,13 +71,13 @@ public class FirebaseTestUtility {
             }
             
             String status = firebaseService.getConnectionStatus();
-            LOGGER.info("Firebase Status: " + status);
+            LOGGER.info("Firebase Status: %s".formatted(status));
             
             LOGGER.info("✅ Firebase initialization test passed");
             return true;
             
         } catch (Exception e) {
-            LOGGER.severe("FAILED: Firebase initialization test failed: " + e.getMessage());
+            LOGGER.severe("FAILED: Firebase initialization test failed: %s".formatted(e.getMessage()));
             return false;
         }
     }
@@ -115,7 +115,7 @@ public class FirebaseTestUtility {
             return true;
             
         } catch (Exception e) {
-            LOGGER.severe("FAILED: User creation and storage test failed: " + e.getMessage());
+            LOGGER.severe("FAILED: User creation and storage test failed: %s".formatted(e.getMessage()));
             return false;
         }
     }
@@ -141,7 +141,7 @@ public class FirebaseTestUtility {
             return true;
             
         } catch (Exception e) {
-            LOGGER.severe("FAILED: User authentication test failed: " + e.getMessage());
+            LOGGER.severe("FAILED: User authentication test failed: %s".formatted(e.getMessage()));
             return false;
         }
     }
@@ -172,7 +172,7 @@ public class FirebaseTestUtility {
             return true;
             
         } catch (Exception e) {
-            LOGGER.severe("FAILED: Task management test failed: " + e.getMessage());
+            LOGGER.severe("FAILED: Task management test failed: %s".formatted(e.getMessage()));
             return false;
         }
     }
@@ -191,13 +191,13 @@ public class FirebaseTestUtility {
             
             // Test getting all users
             List<User> users = FirebaseAdminService.getAllUsersFromFirestore();
-            LOGGER.info("Admin SDK loaded " + users.size() + " users");
+            LOGGER.info("Admin SDK loaded %d users".formatted(users.size()));
             
             LOGGER.info("✅ Admin SDK operations test passed");
             return true;
             
         } catch (Exception e) {
-            LOGGER.severe("FAILED: Admin SDK operations test failed: " + e.getMessage());
+            LOGGER.severe("FAILED: Admin SDK operations test failed: %s".formatted(e.getMessage()));
             return false;
         }
     }
@@ -216,13 +216,13 @@ public class FirebaseTestUtility {
             
             // Test listing files
             List<String> files = FirebaseStorageService.listFiles("avatars/");
-            LOGGER.info("Storage service found " + files.size() + " avatar files");
+            LOGGER.info("Storage service found %d avatar files".formatted(files.size()));
             
             LOGGER.info("✅ Storage operations test passed");
             return true;
             
         } catch (Exception e) {
-            LOGGER.severe("FAILED: Storage operations test failed: " + e.getMessage());
+            LOGGER.severe("FAILED: Storage operations test failed: %s".formatted(e.getMessage()));
             return false;
         }
     }
@@ -240,13 +240,13 @@ public class FirebaseTestUtility {
             FirebaseService firebaseService = FirebaseService.getInstance();
             String status = firebaseService.getConnectionStatus();
             
-            LOGGER.info("Security test - Firebase status: " + status);
+            LOGGER.info("Security test - Firebase status: %s".formatted(status));
             
             LOGGER.info("✅ Firestore security test passed");
             return true;
             
         } catch (Exception e) {
-            LOGGER.severe("FAILED: Firestore security test failed: " + e.getMessage());
+            LOGGER.severe("FAILED: Firestore security test failed: %s".formatted(e.getMessage()));
             return false;
         }
     }
@@ -300,10 +300,10 @@ public class FirebaseTestUtility {
         FirebaseService firebaseService = FirebaseService.getInstance();
         firebaseService.initialize();
         
-        LOGGER.info("Firebase Service Status: " + firebaseService.getConnectionStatus());
-        LOGGER.info("Firebase Configuration: " + firebaseService.getConfigInfo());
-        LOGGER.info("Admin SDK Status: " + FirebaseAdminService.getConnectionStatus());
-        LOGGER.info("Storage Status: " + FirebaseStorageService.getConnectionStatus());
+        LOGGER.info("Firebase Service Status: %s".formatted(firebaseService.getConnectionStatus()));
+        LOGGER.info("Firebase Configuration: %s".formatted(firebaseService.getConfigInfo()));
+        LOGGER.info("Admin SDK Status: %s".formatted(FirebaseAdminService.getConnectionStatus()));
+        LOGGER.info("Storage Status: %s".formatted(FirebaseStorageService.getConnectionStatus()));
         
         // Run comprehensive tests
         boolean testsPassed = runAllTests();
@@ -328,7 +328,7 @@ public class FirebaseTestUtility {
             LOGGER.info("Test data cleanup completed");
             
         } catch (Exception e) {
-            LOGGER.warning("Failed to cleanup test data: " + e.getMessage());
+            LOGGER.warning("Failed to cleanup test data: %s".formatted(e.getMessage()));
         }
     }
 }

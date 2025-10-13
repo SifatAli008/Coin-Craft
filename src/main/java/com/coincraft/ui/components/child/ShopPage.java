@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.User;
 
 import javafx.geometry.Insets;
@@ -246,7 +246,7 @@ public class ShopPage {
         
         // Hover effects
         card.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             card.setStyle(card.getStyle() + "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
         });
         
@@ -259,7 +259,7 @@ public class ShopPage {
     }
     
     private void purchaseItem(ShopItem item) {
-        SoundManager.getInstance().playButtonClick();
+        CentralizedMusicManager.getInstance().playButtonClick();
         
         if (currentUser.getSmartCoins() >= item.getPrice()) {
             // Deduct coins (in real app, this would be handled by a service)
@@ -316,7 +316,7 @@ public class ShopPage {
                 "-fx-background-radius: 16;"
             );
             
-            SoundManager.getInstance().playError();
+            CentralizedMusicManager.getInstance().playError();
             errorAlert.showAndWait();
         }
     }

@@ -3,7 +3,7 @@ package com.coincraft.ui.components.parent;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.User;
 import com.coincraft.services.FirebaseService;
 
@@ -34,7 +34,7 @@ import javafx.stage.StageStyle;
  */
 public class ViewAdventurerDetailsDialog {
     private Stage dialog;
-    private User adventurer;
+    private final User adventurer;
     private TextField nameField;
     private TextField adventureUsernameField;
     private Button copyUsernameBtn;
@@ -48,7 +48,6 @@ public class ViewAdventurerDetailsDialog {
     private Label createdAtLabel;
     private Button changePasswordBtn;
     private Button saveBtn;
-    private boolean dirty = false;
     
     public ViewAdventurerDetailsDialog(Stage parentStage, User adventurer) {
         this.adventurer = adventurer;
@@ -417,7 +416,6 @@ public class ViewAdventurerDetailsDialog {
 
     /** Mark form dirty and enable save button. */
     private void markDirty() {
-        dirty = true;
         if (saveBtn != null) {
             saveBtn.setDisable(false);
         }
@@ -444,7 +442,6 @@ public class ViewAdventurerDetailsDialog {
             FirebaseService firebaseService = FirebaseService.getInstance();
             firebaseService.saveUser(adventurer);
             
-            dirty = false;
             if (saveBtn != null) saveBtn.setDisable(true);
 
             // Show success message
@@ -467,7 +464,7 @@ public class ViewAdventurerDetailsDialog {
     }
     
     private void openChangePasswordDialog() {
-        SoundManager.getInstance().playButtonClick();
+        CentralizedMusicManager.getInstance().playButtonClick();
         
         // Create custom change password dialog
         Dialog<ButtonType> passwordDialog = new Dialog<>();
@@ -629,7 +626,7 @@ public class ViewAdventurerDetailsDialog {
             String verifiedUserId = firebaseService.verifyAdventurerCredentials(username, currentPassword);
             
             if (verifiedUserId == null || !verifiedUserId.equals(adventurer.getUserId())) {
-                SoundManager.getInstance().playError();
+                CentralizedMusicManager.getInstance().playError();
                 showErrorAlert("Incorrect Current Password", "The current password you entered is incorrect. Please try again.");
                 return;
             }
@@ -638,7 +635,7 @@ public class ViewAdventurerDetailsDialog {
             boolean passwordUpdated = firebaseService.updateAdventurerPassword(username, currentPassword, newPassword);
             
             if (passwordUpdated) {
-                SoundManager.getInstance().playSuccess();
+                CentralizedMusicManager.getInstance().playSuccess();
                 
                 // Show success message
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -654,12 +651,12 @@ public class ViewAdventurerDetailsDialog {
                 alert.showAndWait();
                 
             } else {
-                SoundManager.getInstance().playError();
+                CentralizedMusicManager.getInstance().playError();
                 showErrorAlert("Password Change Failed", "Could not update the password. Please try again.");
             }
             
         } catch (Exception e) {
-            SoundManager.getInstance().playError();
+            CentralizedMusicManager.getInstance().playError();
             showErrorAlert("Error", "An error occurred while changing the password: " + e.getMessage());
         }
     }

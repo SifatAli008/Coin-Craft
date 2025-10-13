@@ -3,7 +3,7 @@ package com.coincraft.ui.components.parent;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.Task;
 import com.coincraft.models.TaskType;
 import com.coincraft.models.User;
@@ -366,7 +366,7 @@ public class TaskManagementPage {
     }
     
     private void handleCreateTask() {
-        SoundManager.getInstance().playButtonClick();
+        CentralizedMusicManager.getInstance().playButtonClick();
         
         Stage parentStage = (Stage) root.getScene().getWindow();
         CreateTaskDialog dialog = new CreateTaskDialog(parentStage, currentParent, adventurers, task -> {
@@ -377,7 +377,7 @@ public class TaskManagementPage {
     }
     
     private void handleVerifyTask(Task task) {
-        SoundManager.getInstance().playButtonClick();
+        CentralizedMusicManager.getInstance().playButtonClick();
         
         Stage parentStage = (Stage) root.getScene().getWindow();
         TaskVerificationDialog dialog = new TaskVerificationDialog(parentStage, task, verifiedTask -> {
@@ -483,7 +483,7 @@ public class TaskManagementPage {
     
     private void addButtonHoverEffects(Button button, String hoverColor, String normalColor) {
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             String currentStyle = button.getStyle();
             button.setStyle(currentStyle.replace("-fx-background-color: " + normalColor, 
                                                  "-fx-background-color: " + hoverColor) + 

@@ -3,7 +3,7 @@ package com.coincraft.ui.components.child;
 import java.time.LocalDateTime;
 import java.util.function.Consumer;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.Task;
 import com.coincraft.models.ValidationStatus;
 import com.coincraft.services.FirebaseService;
@@ -26,8 +26,8 @@ import javafx.stage.Stage;
 public class TaskCompletionDialog {
     private Stage dialogStage;
     private VBox root;
-    private Task task;
-    private Consumer<Task> onTaskCompleted;
+    private final Task task;
+    private final Consumer<Task> onTaskCompleted;
     
     // UI Components
     private TextArea completionNotesArea;
@@ -196,7 +196,7 @@ public class TaskCompletionDialog {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         cancelButton.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
+            CentralizedMusicManager.getInstance().playButtonClick();
             dialogStage.close();
         });
         
@@ -225,7 +225,7 @@ public class TaskCompletionDialog {
     
     private void addButtonHoverEffects(Button button, String hoverColor, String normalColor) {
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             String currentStyle = button.getStyle();
             button.setStyle(currentStyle.replace("-fx-background-color: " + normalColor, 
                                                  "-fx-background-color: " + hoverColor) + 
@@ -279,7 +279,7 @@ public class TaskCompletionDialog {
     }
     
     private void showError(String message) {
-        SoundManager.getInstance().playError();
+        CentralizedMusicManager.getInstance().playError();
         
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("❌ Task Completion Error");
@@ -289,16 +289,18 @@ public class TaskCompletionDialog {
     }
     
     private void showSuccess() {
-        SoundManager.getInstance().playSuccess();
+        CentralizedMusicManager.getInstance().playSuccess();
         
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("✅ Task Submitted for Review!");
         alert.setHeaderText("Task Completion Submitted");
-        alert.setContentText(
-            "Your task has been marked as complete and submitted for review!\n\n" +
-            "A parent or guardian will review your completion evidence and approve or reject it.\n\n" +
-            "You'll receive your " + task.getRewardCoins() + " SmartCoins once approved!"
-        );
+        alert.setContentText("""
+            Your task has been marked as complete and submitted for review!
+            
+            A parent or guardian will review your completion evidence and approve or reject it.
+            
+            You'll receive your %d SmartCoins once approved!
+            """.formatted(task.getRewardCoins()));
         alert.showAndWait();
     }
     

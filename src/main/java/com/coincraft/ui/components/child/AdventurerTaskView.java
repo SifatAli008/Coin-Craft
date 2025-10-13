@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.Task;
 import com.coincraft.models.User;
 import com.coincraft.models.ValidationStatus;
@@ -27,9 +27,9 @@ import javafx.stage.Stage;
  */
 public class AdventurerTaskView {
     private VBox root;
-    private User currentAdventurer;
+    private final User currentAdventurer;
     private List<Task> assignedTasks;
-    private Consumer<Task> onTaskCompleted;
+    private final Consumer<Task> onTaskCompleted;
     
     // UI Components
     private VBox taskListContainer;
@@ -375,7 +375,7 @@ public class AdventurerTaskView {
     }
     
     private void handleTaskCompletion(Task task) {
-        SoundManager.getInstance().playButtonClick();
+        CentralizedMusicManager.getInstance().playButtonClick();
         
         Stage parentStage = (Stage) root.getScene().getWindow();
         TaskCompletionDialog dialog = new TaskCompletionDialog(parentStage, task, completedTask -> {
@@ -395,7 +395,7 @@ public class AdventurerTaskView {
     }
     
     private void handleTaskRetry(Task task) {
-        SoundManager.getInstance().playButtonClick();
+        CentralizedMusicManager.getInstance().playButtonClick();
         
         // Reset task status for retry
         task.setCompleted(false);
@@ -476,17 +476,17 @@ public class AdventurerTaskView {
     }
     
     private String getTaskTypeIcon(com.coincraft.models.TaskType type) {
-        switch (type) {
-            case LEARNING: return "📚";
-            case CHALLENGE: return "🎯";
-            case CHORE: return "🏠";
-            case QUEST: return "🎯";
-            case DONATION: return "💝";
-            case CREATIVE: return "🎨";
-            case PHYSICAL: return "💪";
-            case SOCIAL: return "👥";
-            default: return "📋";
-        }
+        return switch (type) {
+            case LEARNING -> "📚";
+            case CHALLENGE -> "🎯";
+            case CHORE -> "🏠";
+            case QUEST -> "🎯";
+            case DONATION -> "💝";
+            case CREATIVE -> "🎨";
+            case PHYSICAL -> "💪";
+            case SOCIAL -> "👥";
+            default -> "📋";
+        };
     }
     
     private void styleActionButton(Button button, String color) {
@@ -503,7 +503,7 @@ public class AdventurerTaskView {
         
         // Hover effects
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             String currentStyle = button.getStyle();
             button.setStyle(currentStyle + "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
         });

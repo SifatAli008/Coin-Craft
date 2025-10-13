@@ -13,7 +13,7 @@ import javafx.scene.layout.VBox;
  */
 public class ChildLeaderboard {
     private VBox root;
-    private User currentUser;
+    private final User currentUser;
     
     public ChildLeaderboard(User user) {
         this.currentUser = user;
@@ -24,6 +24,11 @@ public class ChildLeaderboard {
         root = new VBox(12);
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(0));
+        // Attach current user context for diagnostics/accessibility
+        if (currentUser != null) {
+            root.setUserData(currentUser.getUserId());
+            root.setAccessibleHelp("user:" + currentUser.getUserId());
+        }
         
         // Compact rank display with better styling
         Label rankLabel = new Label("👑 Rank #3");

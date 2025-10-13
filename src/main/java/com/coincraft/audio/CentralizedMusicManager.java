@@ -23,6 +23,9 @@ public class CentralizedMusicManager {
     // Sound effects
     private AudioClip sfxButtonClick;
     private AudioClip sfxInputSelect;
+    private AudioClip sfxButtonHover;
+    private AudioClip sfxError;
+    private AudioClip sfxSuccess;
     
     // Music state listeners
     private MusicStateListener stateListener;
@@ -59,7 +62,7 @@ public class CentralizedMusicManager {
                 
                 // Set up event handlers
                 musicPlayer.setOnReady(() -> {
-                    LOGGER.info("🎵 Music player ready - " + currentTrack);
+                    LOGGER.info(() -> "🎵 Music player ready - " + currentTrack);
                 });
                 
                 musicPlayer.setOnPlaying(() -> {
@@ -81,15 +84,15 @@ public class CentralizedMusicManager {
                 });
                 
                 musicPlayer.setOnError(() -> {
-                    LOGGER.severe("🎵 Music player error: " + musicPlayer.getError().getMessage());
+                    LOGGER.severe(() -> "🎵 Music player error: " + musicPlayer.getError().getMessage());
                 });
                 
-                LOGGER.info("🎵 Default track loaded: " + currentTrack);
+                LOGGER.info(() -> "🎵 Default track loaded: " + currentTrack);
             } else {
                 LOGGER.warning("🎵 Default music file not found: /sounds/adventure-319767.mp3");
             }
         } catch (Exception e) {
-            LOGGER.severe("🎵 Failed to load default music track: " + e.getMessage());
+            LOGGER.severe(() -> "🎵 Failed to load default music track: " + e.getMessage());
         }
     }
 
@@ -105,7 +108,7 @@ public class CentralizedMusicManager {
             ensureButtonClickClipLoaded();
             playClipIfAllowed(sfxButtonClick);
         } catch (Exception e) {
-            LOGGER.warning("🔊 Failed to play button click: " + e.getMessage());
+            LOGGER.warning(() -> "🔊 Failed to play button click: " + e.getMessage());
         }
     }
 
@@ -118,7 +121,43 @@ public class CentralizedMusicManager {
             ensureInputSelectClipLoaded();
             playClipIfAllowed(sfxInputSelect);
         } catch (Exception e) {
-            LOGGER.warning("🔊 Failed to play input select: " + e.getMessage());
+            LOGGER.warning(() -> "🔊 Failed to play input select: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Play button hover sound effect
+     */
+    public void playButtonHover() {
+        try {
+            ensureButtonHoverClipLoaded();
+            playClipIfAllowed(sfxButtonHover);
+        } catch (Exception e) {
+            LOGGER.warning(() -> "🔊 Failed to play button hover: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Play error sound effect
+     */
+    public void playError() {
+        try {
+            ensureErrorClipLoaded();
+            playClipIfAllowed(sfxError);
+        } catch (Exception e) {
+            LOGGER.warning(() -> "🔊 Failed to play error sound: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Play success sound effect
+     */
+    public void playSuccess() {
+        try {
+            ensureSuccessClipLoaded();
+            playClipIfAllowed(sfxSuccess);
+        } catch (Exception e) {
+            LOGGER.warning(() -> "🔊 Failed to play success sound: " + e.getMessage());
         }
     }
 
@@ -146,6 +185,45 @@ public class CentralizedMusicManager {
         }
     }
 
+    private void ensureButtonHoverClipLoaded() {
+        if (sfxButtonHover == null) {
+            var resource = getClass().getResource("/sounds/button_hover.wav");
+            if (resource != null) {
+                sfxButtonHover = new AudioClip(resource.toExternalForm());
+                sfxButtonHover.setVolume(0.5); // Lower volume for hover effects
+                LOGGER.info("🔊 Button hover SFX loaded successfully");
+            } else {
+                LOGGER.warning("🔊 Button hover SFX not found: /sounds/button_hover.wav");
+            }
+        }
+    }
+
+    private void ensureErrorClipLoaded() {
+        if (sfxError == null) {
+            var resource = getClass().getResource("/sounds/error.wav");
+            if (resource != null) {
+                sfxError = new AudioClip(resource.toExternalForm());
+                sfxError.setVolume(0.6); // Slightly higher volume for error notifications
+                LOGGER.info("🔊 Error SFX loaded successfully");
+            } else {
+                LOGGER.warning("🔊 Error SFX not found: /sounds/error.wav");
+            }
+        }
+    }
+
+    private void ensureSuccessClipLoaded() {
+        if (sfxSuccess == null) {
+            var resource = getClass().getResource("/sounds/success.wav");
+            if (resource != null) {
+                sfxSuccess = new AudioClip(resource.toExternalForm());
+                sfxSuccess.setVolume(0.6); // Slightly higher volume for success notifications
+                LOGGER.info("🔊 Success SFX loaded successfully");
+            } else {
+                LOGGER.warning("🔊 Success SFX not found: /sounds/success.wav");
+            }
+        }
+    }
+
     private void playClipIfAllowed(AudioClip clip) {
         if (clip == null) {
             LOGGER.warning("🔊 Cannot play SFX: clip is null");
@@ -159,7 +237,7 @@ public class CentralizedMusicManager {
             clip.play();
             LOGGER.fine("🔊 SFX played successfully");
         } catch (Exception e) {
-            LOGGER.warning("🔊 Error playing SFX: " + e.getMessage());
+            LOGGER.warning(() -> "🔊 Error playing SFX: " + e.getMessage());
         }
     }
     
@@ -175,7 +253,7 @@ public class CentralizedMusicManager {
                 musicPlayer.play();
                 LOGGER.info("🎵 Music playback started");
             } catch (Exception e) {
-                LOGGER.warning("🎵 Error starting music: " + e.getMessage());
+                LOGGER.warning(() -> "🎵 Error starting music: " + e.getMessage());
             }
         }
     }
@@ -189,7 +267,7 @@ public class CentralizedMusicManager {
                 musicPlayer.pause();
                 LOGGER.info("🎵 Music paused");
             } catch (Exception e) {
-                LOGGER.warning("🎵 Error pausing music: " + e.getMessage());
+                LOGGER.warning(() -> "🎵 Error pausing music: " + e.getMessage());
             }
         }
     }
@@ -203,7 +281,7 @@ public class CentralizedMusicManager {
                 musicPlayer.stop();
                 LOGGER.info("🎵 Music stopped");
             } catch (Exception e) {
-                LOGGER.warning("🎵 Error stopping music: " + e.getMessage());
+                LOGGER.warning(() -> "🎵 Error stopping music: " + e.getMessage());
             }
         }
     }
@@ -236,9 +314,18 @@ public class CentralizedMusicManager {
         if (sfxInputSelect != null) {
             sfxInputSelect.setVolume(Math.max(0.0, Math.min(1.0, this.volume * 0.7)));
         }
+        if (sfxButtonHover != null) {
+            sfxButtonHover.setVolume(Math.max(0.0, Math.min(1.0, this.volume * 0.5)));
+        }
+        if (sfxError != null) {
+            sfxError.setVolume(Math.max(0.0, Math.min(1.0, this.volume * 0.6)));
+        }
+        if (sfxSuccess != null) {
+            sfxSuccess.setVolume(Math.max(0.0, Math.min(1.0, this.volume * 0.6)));
+        }
         
         notifyStateChanged();
-        LOGGER.info("🎵 Volume set to: " + (this.volume * 100) + "%");
+        LOGGER.info(() -> "🎵 Volume set to: " + (this.volume * 100) + "%");
     }
     
     /**
@@ -319,7 +406,7 @@ public class CentralizedMusicManager {
             try {
                 stateListener.onMusicStateChanged(isPlaying, isMuted, volume);
             } catch (Exception e) {
-                LOGGER.warning("🎵 Error notifying state listener: " + e.getMessage());
+                LOGGER.warning(() -> "🎵 Error notifying state listener: " + e.getMessage());
             }
         }
     }
@@ -335,11 +422,14 @@ public class CentralizedMusicManager {
                 musicPlayer = null;
                 LOGGER.info("🎵 Music manager shutdown complete");
             } catch (Exception e) {
-                LOGGER.warning("🎵 Error during music manager shutdown: " + e.getMessage());
+                LOGGER.warning(() -> "🎵 Error during music manager shutdown: " + e.getMessage());
             }
         }
         // Release SFX references
         sfxButtonClick = null;
         sfxInputSelect = null;
+        sfxButtonHover = null;
+        sfxError = null;
+        sfxSuccess = null;
     }
 }

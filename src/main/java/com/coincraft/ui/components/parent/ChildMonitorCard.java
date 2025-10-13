@@ -3,7 +3,7 @@ package com.coincraft.ui.components.parent;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.coincraft.audio.SoundManager;
+import com.coincraft.audio.CentralizedMusicManager;
 import com.coincraft.models.Task;
 import com.coincraft.models.TaskType;
 import com.coincraft.models.User;
@@ -282,12 +282,12 @@ public class ChildMonitorCard {
         Button sendMessageBtn = createActionButton("Send Message", "#FA8A00", "#E67E00");
         
         viewDetailsBtn.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
+            CentralizedMusicManager.getInstance().playButtonClick();
             openViewDetailsDialog();
         });
         
         sendMessageBtn.setOnAction(e -> {
-            SoundManager.getInstance().playButtonClick();
+            CentralizedMusicManager.getInstance().playButtonClick();
             openMessagingPortal();
         });
         
@@ -311,7 +311,7 @@ public class ChildMonitorCard {
         );
         
         button.setOnMouseEntered(e -> {
-            SoundManager.getInstance().playButtonHover();
+            CentralizedMusicManager.getInstance().playButtonHover();
             button.setStyle(
                 "-fx-background-color: " + hoverColor + ";" +
                 "-fx-text-fill: white;" +

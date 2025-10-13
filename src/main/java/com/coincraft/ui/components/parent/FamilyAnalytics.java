@@ -29,8 +29,7 @@ import javafx.scene.layout.VBox;
  */
 public class FamilyAnalytics {
     private VBox root;
-    private User currentUser;
-    private FirebaseService firebaseService;
+    private final FirebaseService firebaseService;
     
     // Real analytics data
     private List<User> children;
@@ -39,7 +38,6 @@ public class FamilyAnalytics {
     private Map<String, Double> spendingData;
     
     public FamilyAnalytics(User user) {
-        this.currentUser = user;
         this.firebaseService = FirebaseService.getInstance();
         loadRealData();
         initializeUI();
@@ -101,31 +99,21 @@ public class FamilyAnalytics {
         int learningRewards = 0;
         int challengeBonuses = 0;
         int realWorldTasks = 0;
-        int shopPurchases = 0;
         
         // Calculate spending by category based on task types
         for (Task task : allTasks) {
             if (task.isCompleted() && task.getRewardCoins() > 0) {
                 switch (task.getType()) {
-                    case LEARNING:
-                        learningRewards += task.getRewardCoins();
-                        break;
-                    case CHALLENGE:
-                        challengeBonuses += task.getRewardCoins();
-                        break;
-                    case CHORE:
-                    case QUEST:
-                        realWorldTasks += task.getRewardCoins();
-                        break;
-                    default:
-                        learningRewards += task.getRewardCoins();
-                        break;
+                    case LEARNING -> learningRewards += task.getRewardCoins();
+                    case CHALLENGE -> challengeBonuses += task.getRewardCoins();
+                    case CHORE, QUEST -> realWorldTasks += task.getRewardCoins();
+                    default -> learningRewards += task.getRewardCoins();
                 }
             }
         }
         
         // Add shop purchases (placeholder - would need shop transaction data)
-        shopPurchases = Math.max(0, getTotalFamilyCoins() - learningRewards - challengeBonuses - realWorldTasks);
+        int shopPurchases = Math.max(0, getTotalFamilyCoins() - learningRewards - challengeBonuses - realWorldTasks);
         
         spendingData.put("Learning Rewards", (double) learningRewards);
         spendingData.put("Challenge Bonuses", (double) challengeBonuses);

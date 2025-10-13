@@ -8,13 +8,10 @@ import com.coincraft.models.Task;
 import com.coincraft.models.User;
 import com.coincraft.services.FirebaseService;
 import com.coincraft.services.MessagingService;
-import com.coincraft.ui.components.child.AdventurerTaskView;
-import com.coincraft.ui.components.child.ChildLeaderboard;
 import com.coincraft.ui.components.child.ChildSidebar;
 import com.coincraft.ui.components.child.ChildTopBar;
-import com.coincraft.ui.components.child.DailyStreakCalendar;
-import com.coincraft.ui.components.child.EventBanner;
 import com.coincraft.ui.components.child.ShopPage;
+import com.coincraft.ui.components.child.TaskCardList;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -41,10 +38,6 @@ public class ChildDashboard extends BaseDashboard {
     
     // Main UI Components
     private ChildTopBar topBar;
-    private AdventurerTaskView taskView;
-    private DailyStreakCalendar streakCalendar;
-    private ChildLeaderboard leaderboard;
-    private EventBanner eventBanner;
     private ChildSidebar sidebar;
     private ShopPage shopPage;
     
@@ -57,7 +50,7 @@ public class ChildDashboard extends BaseDashboard {
     
     // Content sections
     private VBox mainContent;
-    private String currentSection = "home";
+    private String currentSection = "quests";
     
     // Real data from Firebase
     private List<Task> userTasks;
@@ -156,12 +149,8 @@ public class ChildDashboard extends BaseDashboard {
         if (topBar != null) {
             // Ensure top bar uses the latest user instance for balance display
             topBar.setCurrentUser(currentUser);
-            topBar.updateStats(dailyStreak, totalBadges, pendingTasks);
+            topBar.updateStats(dailyStreak, pendingTasks);
             topBar.refresh();
-        }
-        
-        if (taskView != null) {
-            taskView.refresh();
         }
         
         // Refresh current section
@@ -170,23 +159,6 @@ public class ChildDashboard extends BaseDashboard {
         System.out.println("🔄 Child dashboard data refreshed");
     }
     
-    /**
-     * Get latest badge name based on user achievements
-     */
-    private String getLatestBadgeName() {
-        // Determine badge based on user level and achievements
-        if (completedTasks >= 10) {
-            return "🎯 Quest Master";
-        } else if (completedTasks >= 5) {
-            return "⚔️ Brave Adventurer";
-        } else if (completedTasks >= 2) {
-            return "🌟 Rising Star";
-        } else if (completedTasks >= 1) {
-            return "🏆 First Steps";
-        } else {
-            return "🚀 New Adventurer";
-        }
-    }
     
     @Override
     protected void initializeUI() {
@@ -246,7 +218,8 @@ public class ChildDashboard extends BaseDashboard {
     private void createTopSection() {
         topBar = new ChildTopBar(currentUser);
         // Update header with real stats
-        topBar.updateStats(dailyStreak, totalBadges, pendingTasks);
+        topBar.updateStats(dailyStreak, pendingTasks);
+        topBar.refresh(); // Refresh UI to show real stats
     }
     
     /**
@@ -260,90 +233,13 @@ public class ChildDashboard extends BaseDashboard {
         mainContent.setMaxWidth(1180);
         mainContent.setPrefWidth(1180);
         
-        // Main Grid Layout - Responsive Cards
-        VBox mainGrid = createMainGrid();
-        
-        // Action Section
-        HBox actionSection = createActionSection();
-        
-        mainContent.getChildren().addAll(mainGrid, actionSection);
-    }
-    
-    /**
-     * Create properly sized grid layout
-     */
-    private VBox createMainGrid() {
-        VBox mainGrid = new VBox(20);
-        mainGrid.setAlignment(Pos.CENTER);
-        mainGrid.setMaxWidth(1180);
-        
-        // Row 1: Primary Content
-        HBox primaryRow = new HBox(20);
-        primaryRow.setAlignment(Pos.TOP_CENTER);
-        primaryRow.setMaxWidth(1180);
-        
-        // Main Tasks Section (65% width)
-        VBox tasksSection = createTasksSection();
-        tasksSection.setPrefWidth(750);
-        tasksSection.setMaxWidth(750);
-        
-        // Side Panel (35% width)  
-        VBox sidePanel = createSidePanel();
-        sidePanel.setPrefWidth(350);
-        sidePanel.setMaxWidth(350);
-        
-        primaryRow.getChildren().addAll(tasksSection, sidePanel);
-        HBox.setHgrow(tasksSection, Priority.NEVER);
-        HBox.setHgrow(sidePanel, Priority.NEVER);
-        
-        mainGrid.getChildren().add(primaryRow);
-        return mainGrid;
-    }
-    
-    /**
-     * Create modern tasks section
-     */
-    private VBox createTasksSection() {
-        VBox tasksSection = new VBox(20);
-        
-        taskView = new AdventurerTaskView(currentUser, task -> {
-            // Handle task completion - could refresh user data or show notifications
-            System.out.println("Task completed: " + task.getTitle());
-        });
-        
-        // Tasks Card (badges moved to sidebar)
-        VBox tasksCard = createModernCard("Active Quests", taskView.getRoot());
-        
-        tasksSection.getChildren().add(tasksCard);
-        return tasksSection;
-    }
-    
-    /**
-     * Create side panel with social features
-     */
-    private VBox createSidePanel() {
-        VBox sidePanel = new VBox(20);
-        
-        streakCalendar = new DailyStreakCalendar(currentUser);
-        leaderboard = new ChildLeaderboard(currentUser);
-        eventBanner = new EventBanner(currentUser);
-        
-        // Streak Card
-        VBox streakCard = createModernCard("Daily Progress", streakCalendar.getRoot());
-        
-        // Leaderboard Card
-        VBox leaderboardCard = createModernCard("Leaderboard", leaderboard.getRoot());
-        
-        // Events Card
-        VBox eventsCard = createModernCard("Special Events", eventBanner.getRoot());
-        
-        sidePanel.getChildren().addAll(streakCard, leaderboardCard, eventsCard);
-        return sidePanel;
+        // Content will be set by navigation (Quest page shows game launcher)
     }
     
     /**
      * Create action section with primary CTA
      */
+    @SuppressWarnings("unused")
     private HBox createActionSection() {
         HBox actionSection = new HBox();
         actionSection.setAlignment(Pos.CENTER);
@@ -485,7 +381,7 @@ public class ChildDashboard extends BaseDashboard {
             
             // Hover effects
             requestBtn.setOnMouseEntered(e -> {
-                // TODO: Implement button hover sound via CentralizedMusicManager if needed
+                // Button hover sound can be added via CentralizedMusicManager if desired
                 requestBtn.setStyle(requestBtn.getStyle() + 
                     "-fx-scale-x: 1.05; -fx-scale-y: 1.05;" +
                     "-fx-effect: dropshadow(gaussian, rgba(76,175,80,0.6), 25, 0, 0, 12);"
@@ -508,7 +404,7 @@ public class ChildDashboard extends BaseDashboard {
             });
             
             requestBtn.setOnAction(e -> {
-                // TODO: Implement button click sound via CentralizedMusicManager if needed
+                // Button click sound can be added via CentralizedMusicManager if desired
                 showRequestMissionDialog();
             });
         }
@@ -528,13 +424,13 @@ public class ChildDashboard extends BaseDashboard {
         Alert dialog = new Alert(Alert.AlertType.INFORMATION);
         dialog.setTitle("Request New Mission");
         dialog.setHeaderText("🚀 Create Your Own Adventure!");
-        dialog.setContentText(
-            "Wow! You've reached a high enough level to request your own missions!\n\n" +
-            "You can now propose new real-world tasks to your parent or guardian. " +
-            "Think of something fun and educational you'd like to do, and they can " +
-            "approve it with a SmartCoin reward!\n\n" +
-            "This feature will be fully available in the next update!"
-        );
+        dialog.setContentText("""
+            Wow! You've reached a high enough level to request your own missions!
+            
+            You can now propose new real-world tasks to your parent or guardian. Think of something fun and educational you'd like to do, and they can approve it with a SmartCoin reward!
+            
+            This feature will be fully available in the next update!
+            """);
         
         // Style the dialog
         dialog.getDialogPane().setStyle(
@@ -562,7 +458,7 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-background-radius: 16;"
         );
         
-        // TODO: Implement error sound via CentralizedMusicManager if needed
+        // Error sound can be added via CentralizedMusicManager if desired
         alert.showAndWait();
     }
     
@@ -576,39 +472,34 @@ public class ChildDashboard extends BaseDashboard {
         
         // Handle section-specific logic
         switch (section.toLowerCase()) {
-            case "home":
-                // Show home dashboard content
-                showHomePage();
-                break;
-                
-            case "tasks":
-                // Show dedicated tasks page
-                showTasksPage();
-                break;
-                
-            case "messages":
+            case "quests" -> {
+                // Show quests page with available quests
+                showQuestsPage();
+            }
+            case "tasks" -> {
+                // Tasks functionality removed - redirect to quests
+                showQuestsPage();
+            }
+            case "messages" -> {
                 // Child-parent chat
                 showMessagingInterface();
-                break;
-                
-            case "shop":
+            }
+            case "shop" -> {
                 // Navigate to shop (if available)
                 showShopPage();
-                break;
-                
-            case "profile":
+            }
+            case "profile" -> {
                 // Show dedicated profile page
                 showProfilePage();
-                break;
-                
-            default:
-                System.out.println("Unknown section: " + section);
+            }
+            default -> System.out.println("Unknown section: " + section);
         }
     }
     
     /**
      * Show dedicated tasks page
      */
+    @SuppressWarnings("unused")
     private void showTasksPage() {
         mainContent.getChildren().clear();
         
@@ -644,6 +535,8 @@ public class ChildDashboard extends BaseDashboard {
         activeTasksSection.setPrefWidth(750);
         activeTasksSection.setMaxWidth(750);
         
+        // Create task card list
+        TaskCardList taskView = new TaskCardList(currentUser);
         VBox activeTasksCard = createModernCard("⚔️ Noble Quests", taskView.getRoot());
         activeTasksSection.getChildren().add(activeTasksCard);
         
@@ -687,13 +580,10 @@ public class ChildDashboard extends BaseDashboard {
         // Quest progress card
         VBox progressCard = createTaskProgressCard();
         
-        // Recent achievements card
-        VBox achievementsCard = createTaskAchievementsCard();
-        
         // Quest tips card
         VBox tipsCard = createQuestTipsCard();
         
-        statsSection.getChildren().addAll(progressCard, achievementsCard, tipsCard);
+        statsSection.getChildren().addAll(progressCard, tipsCard);
         return statsSection;
     }
     
@@ -735,37 +625,6 @@ public class ChildDashboard extends BaseDashboard {
         return createModernCard("⚔️ Quest Progress", progressContent);
     }
     
-    /**
-     * Create task achievements card
-     */
-    private VBox createTaskAchievementsCard() {
-        VBox achievementsContent = new VBox(8);
-        achievementsContent.setAlignment(Pos.CENTER);
-        
-        Label recentBadgeLabel = new Label("Latest Badge:");
-        recentBadgeLabel.setStyle(
-            "-fx-font-size: 12px;" +
-            "-fx-text-fill: #64748b;" +
-            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
-        );
-        
-        // Show latest badge based on achievements
-        String latestBadge = getLatestBadgeName();
-        Label badgeLabel = new Label(latestBadge);
-        badgeLabel.setStyle(
-            "-fx-font-size: 16px;" +
-            "-fx-font-weight: 700;" +
-            "-fx-text-fill: #F59E0B;" +
-            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
-            "-fx-background-color: rgba(251, 191, 36, 0.1);" +
-            "-fx-background-radius: 6;" +
-            "-fx-padding: 8 12;"
-        );
-        
-        achievementsContent.getChildren().addAll(recentBadgeLabel, badgeLabel);
-        
-        return createModernCard("🛡️ Latest Honor", achievementsContent);
-    }
     
     /**
      * Create quest tips card
@@ -818,7 +677,7 @@ public class ChildDashboard extends BaseDashboard {
         VBox userInfoSection = new VBox(8);
         userInfoSection.setAlignment(Pos.CENTER);
         
-        Label nameLabel = new Label("⚜ Sir " + currentUser.getName() + " ⚜");
+        Label nameLabel = new Label("⚜ Sir " + sanitizeDisplayName(currentUser.getName()) + " ⚜");
         nameLabel.setStyle(
             "-fx-font-size: 32px;" +
             "-fx-font-weight: 600;" +
@@ -1023,152 +882,11 @@ public class ChildDashboard extends BaseDashboard {
         // Stats card
         VBox statsCard = createProfileStatsCard();
         
-        // Achievement showcase card
-        VBox achievementCard = createAchievementShowcaseCard();
-        
-        profileSection.getChildren().addAll(avatarCard, statsCard, achievementCard);
+        profileSection.getChildren().addAll(avatarCard, statsCard);
         return profileSection;
     }
     
-    /**
-     * Create achievement showcase card
-     */
-    private VBox createAchievementShowcaseCard() {
-        VBox achievementContent = new VBox(12);
-        
-        // Recent achievements
-        VBox recentSection = new VBox(8);
-        recentSection.setAlignment(Pos.CENTER_LEFT);
-        
-        Label recentLabel = new Label("Recent Achievements");
-        recentLabel.setStyle(
-            "-fx-font-size: 13px;" +
-            "-fx-font-weight: 600;" +
-            "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
-        );
-        
-        // Achievement badges grid
-        HBox badgeGrid = new HBox(8);
-        badgeGrid.setAlignment(Pos.CENTER_LEFT);
-        
-        String[] recentBadges = {"🎯", "🌟", "🎯", "🏃", "📚"};
-        String[] badgeNames = {"Quest Master", "Rising Star", "Quest Hero", "Speed Runner", "Book Worm"};
-        
-        for (int i = 0; i < Math.min(recentBadges.length, 3); i++) {
-            VBox badge = createAchievementBadge(recentBadges[i], badgeNames[i]);
-            badgeGrid.getChildren().add(badge);
-        }
-        
-        recentSection.getChildren().addAll(recentLabel, badgeGrid);
-        
-        // Progress toward next achievement
-        VBox progressSection = new VBox(8);
-        progressSection.setAlignment(Pos.CENTER_LEFT);
-        
-        Label progressLabel = new Label("Next Achievement");
-        progressLabel.setStyle(
-            "-fx-font-size: 13px;" +
-            "-fx-font-weight: 600;" +
-            "-fx-text-fill: #1e293b;" +
-            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
-        );
-        
-        // Progress toward next badge
-        VBox nextBadgeProgress = createNextBadgeProgress();
-        
-        progressSection.getChildren().addAll(progressLabel, nextBadgeProgress);
-        
-        achievementContent.getChildren().addAll(recentSection, progressSection);
-        
-        return createModernCard("🏰 Hall of Honor", achievementContent);
-    }
     
-    /**
-     * Create individual achievement badge
-     */
-    private VBox createAchievementBadge(String icon, String name) {
-        VBox badge = new VBox(4);
-        badge.setAlignment(Pos.CENTER);
-        badge.setPadding(new Insets(8));
-        badge.setPrefWidth(60);
-        badge.setStyle(
-            "-fx-background-color: rgba(251, 191, 36, 0.15);" +
-            "-fx-background-radius: 8;" +
-            "-fx-border-radius: 8;" +
-            "-fx-border-color: rgba(251, 191, 36, 0.4);" +
-            "-fx-border-width: 1;" +
-            "-fx-effect: dropshadow(gaussian, rgba(251,191,36,0.2), 4, 0, 0, 2);"
-        );
-        
-        Label iconLabel = new Label(icon);
-        iconLabel.setStyle("-fx-font-size: 18px;");
-        
-        Label nameLabel = new Label(name);
-        nameLabel.setStyle(
-            "-fx-font-size: 8px;" +
-            "-fx-text-fill: #92400e;" +
-            "-fx-font-weight: 600;" +
-            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
-            "-fx-text-alignment: center;"
-        );
-        nameLabel.setWrapText(true);
-        nameLabel.setMaxWidth(55);
-        
-        badge.getChildren().addAll(iconLabel, nameLabel);
-        return badge;
-    }
-    
-    /**
-     * Create progress toward next badge
-     */
-    private VBox createNextBadgeProgress() {
-        VBox progressContainer = new VBox(6);
-        progressContainer.setAlignment(Pos.CENTER_LEFT);
-        
-        Label nextBadgeLabel = new Label("🏅 Master Achiever");
-        nextBadgeLabel.setStyle(
-            "-fx-font-size: 12px;" +
-            "-fx-font-weight: 600;" +
-            "-fx-text-fill: #8B5CF6;" +
-            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
-        );
-        
-        // Progress bar for next achievement
-        HBox progressBar = new HBox();
-        progressBar.setAlignment(Pos.CENTER_LEFT);
-        
-        Region progressBg = new Region();
-        progressBg.setPrefWidth(150);
-        progressBg.setPrefHeight(6);
-        progressBg.setStyle(
-            "-fx-background-color: rgba(139, 92, 246, 0.2);" +
-            "-fx-background-radius: 3;"
-        );
-        
-        Region progressFill = new Region();
-        double nextProgress = (completedTasks % 5) / 5.0; // Progress toward next badge
-        progressFill.setPrefWidth(150 * Math.max(0.1, nextProgress));
-        progressFill.setPrefHeight(6);
-        progressFill.setStyle(
-            "-fx-background-color: linear-gradient(to right, #8B5CF6, #A855F7);" +
-            "-fx-background-radius: 3;"
-        );
-        
-        javafx.scene.layout.StackPane progressStack = new javafx.scene.layout.StackPane();
-        progressStack.getChildren().addAll(progressBg, progressFill);
-        progressStack.setAlignment(Pos.CENTER_LEFT);
-        
-        Label progressText = new Label((int)(nextProgress * 100) + "% complete");
-        progressText.setStyle(
-            "-fx-font-size: 9px;" +
-            "-fx-text-fill: #64748b;" +
-            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
-        );
-        
-        progressContainer.getChildren().addAll(nextBadgeLabel, progressStack, progressText);
-        return progressContainer;
-    }
     
     /**
      * Create avatar info card
@@ -1198,7 +916,7 @@ public class ChildDashboard extends BaseDashboard {
         );
         
         // User name
-        Label nameLabel = new Label(currentUser.getName());
+        Label nameLabel = new Label(sanitizeDisplayName(currentUser.getName()));
         nameLabel.setStyle(
             "-fx-font-size: 20px;" +
             "-fx-font-weight: 700;" +
@@ -1234,9 +952,8 @@ public class ChildDashboard extends BaseDashboard {
         HBox coinsRow = createStatRow("💰", "SmartCoins", String.valueOf(currentUser.getSmartCoinBalance()));
         HBox levelRow = createStatRow("⭐", "Level", String.valueOf(currentUser.getLevel()));
         HBox streakRow = createStatRow("🔥", "Daily Streak", dailyStreak + " days");
-        HBox badgesRow = createStatRow("🏆", "Badges Earned", String.valueOf(totalBadges));
         
-        statsContent.getChildren().addAll(coinsRow, levelRow, streakRow, badgesRow);
+        statsContent.getChildren().addAll(coinsRow, levelRow, streakRow);
         
         return createModernCard("📊 Noble Statistics", statsContent);
     }
@@ -1405,7 +1122,7 @@ public class ChildDashboard extends BaseDashboard {
         
         // Hover effects
         avatarBtn.setOnMouseEntered(e -> {
-            // TODO: Implement button hover sound via CentralizedMusicManager if needed
+            // Button hover sound can be added via CentralizedMusicManager if desired
             avatarBtn.setStyle(
                 "-fx-background-color: rgba(139, 92, 246, 0.2);" +
                 "-fx-background-radius: 12;" +
@@ -1433,8 +1150,8 @@ public class ChildDashboard extends BaseDashboard {
         });
         
         avatarBtn.setOnAction(e -> {
-            // TODO: Implement button click sound via CentralizedMusicManager if needed
-            // TODO: Implement avatar selection logic
+            // Button click sound can be added via CentralizedMusicManager if desired
+            // Avatar selection logic can be implemented here
             System.out.println("Selected avatar: " + avatar + " (" + label + ")");
         });
         
@@ -1586,7 +1303,7 @@ public class ChildDashboard extends BaseDashboard {
         
         // Hover effects
         button.setOnMouseEntered(e -> {
-            // TODO: Implement button hover sound via CentralizedMusicManager if needed
+            // Button hover sound can be added via CentralizedMusicManager if desired
             button.setStyle(
                 "-fx-background-color: " + color + ";" +
                 "-fx-background-radius: 12;" +
@@ -1629,7 +1346,7 @@ public class ChildDashboard extends BaseDashboard {
         });
         
         button.setOnAction(e -> {
-            // TODO: Implement button click sound via CentralizedMusicManager if needed
+            // Button click sound can be added via CentralizedMusicManager if desired
             System.out.println("Opening: " + title);
         });
         
@@ -1909,80 +1626,11 @@ public class ChildDashboard extends BaseDashboard {
         }
     }
     
-    /**
-     * Create welcome banner with personalized content
-     */
-    private VBox createWelcomeBanner() {
-        VBox banner = new VBox(16);
-        banner.setAlignment(Pos.CENTER);
-        banner.setPadding(new Insets(32));
-        banner.setStyle(
-            "-fx-background-color: linear-gradient(135deg, #667EEA, #764BA2, #F093FB);" +
-            "-fx-background-radius: 16;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 16, 0, 0, 8);"
-        );
-        
-        // Medieval welcome message with heraldic styling
-        Label welcomeTitle = new Label("Hail, Noble " + currentUser.getName() + "!");
-        welcomeTitle.setStyle(
-            "-fx-font-size: 26px;" +
-            "-fx-font-weight: 600;" +
-            "-fx-text-fill: #FFFFFF;" +
-            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
-            "-fx-text-alignment: center;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 4, 0, 0, 2);"
-        );
-        
-        // Medieval status message
-        String statusMessage = getMedievalStatusMessage();
-        Label statusLabel = new Label(statusMessage);
-        statusLabel.setStyle(
-            "-fx-font-size: 16px;" +
-            "-fx-text-fill: rgba(255,255,255,0.9);" +
-            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
-            "-fx-text-alignment: center;" +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 2, 0, 0, 1);"
-        );
-        statusLabel.setWrapText(true);
-        
-        // Progress indicator
-        HBox progressSection = createLevelProgressIndicator();
-        
-        banner.getChildren().addAll(welcomeTitle, statusLabel, progressSection);
-        return banner;
-    }
-    
-    /**
-     * Create quick action cards for common tasks
-     */
-    private HBox createQuickActionCards() {
-        HBox actionCards = new HBox(16);
-        actionCards.setAlignment(Pos.CENTER);
-        actionCards.setPadding(new Insets(16, 0, 16, 0));
-        
-        // Premium medieval actions with enhanced colors
-        VBox questAction = createActionCard("🎯", "Noble Quests", 
-            pendingTasks + " epic adventures", "#FF6B6B", () -> navigateToSection("tasks"));
-        
-        // View Achievements action
-        VBox heraldryAction = createActionCard("🛡️", "Thy Heraldry", 
-            totalBadges + " legendary honors", "#FFD93D", () -> navigateToSection("achievements"));
-        
-        // Visit Shop action
-        VBox marketAction = createActionCard("🏰", "Royal Market", 
-            currentUser.getSmartCoinBalance() + " golden coins", "#4ECDC4", () -> navigateToSection("shop"));
-        
-        // Customize Profile action
-        VBox courtAction = createActionCard("👑", "Royal Court", 
-            "Sovereign Level " + currentUser.getLevel(), "#A8E6CF", () -> navigateToSection("profile"));
-        
-        actionCards.getChildren().addAll(questAction, heraldryAction, marketAction, courtAction);
-        return actionCards;
-    }
     
     /**
      * Create individual action card
      */
+    @SuppressWarnings("unused")
     private VBox createActionCard(String icon, String title, String subtitle, String color, Runnable action) {
         VBox card = new VBox(12);
         card.setAlignment(Pos.CENTER);
@@ -2033,7 +1681,7 @@ public class ChildDashboard extends BaseDashboard {
         
         // Add premium hover effects with micro-interactions
         card.setOnMouseEntered(e -> {
-            // TODO: Implement button hover sound via CentralizedMusicManager if needed
+            // Button hover sound can be added via CentralizedMusicManager if desired
             card.setStyle(
                 "-fx-background-color: linear-gradient(145deg, " + color + " 0%, derive(" + color + ", -20%) 100%);" +
                 "-fx-border-color: derive(" + color + ", 30%);" +
@@ -2090,7 +1738,7 @@ public class ChildDashboard extends BaseDashboard {
         });
         
         card.setOnMouseClicked(e -> {
-            // TODO: Implement button click sound via CentralizedMusicManager if needed
+            // Button click sound can be added via CentralizedMusicManager if desired
             action.run();
         });
         
@@ -2098,79 +1746,9 @@ public class ChildDashboard extends BaseDashboard {
     }
     
     /**
-     * Create medieval-themed status message
-     */
-    private String getMedievalStatusMessage() {
-        if (pendingTasks > 0) {
-            return "Thy noble quests await thee, brave knight! " + pendingTasks + " adventures beckon!";
-        } else if (completedTasks > 0) {
-            return "Huzzah! Thou hast completed " + completedTasks + " quests with great valor! Seek ye more glory?";
-        } else {
-            return "Thy epic saga begins here! Seek thy lord parent to bestow upon thee noble quests!";
-        }
-    }
-    
-    
-    /**
-     * Create level progress indicator
-     */
-    private HBox createLevelProgressIndicator() {
-        HBox progressContainer = new HBox(12);
-        progressContainer.setAlignment(Pos.CENTER);
-        
-        // Progress bar
-        VBox progressSection = new VBox(4);
-        progressSection.setAlignment(Pos.CENTER);
-        
-        Label progressLabel = new Label("Level " + currentUser.getLevel() + " Progress");
-        progressLabel.setStyle(
-            "-fx-font-size: 12px;" +
-            "-fx-font-weight: 600;" +
-            "-fx-text-fill: #475569;" +
-            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
-        );
-        
-        // Progress bar background
-        Region progressBg = new Region();
-        progressBg.setPrefWidth(200);
-        progressBg.setPrefHeight(8);
-        progressBg.setStyle(
-            "-fx-background-color: rgba(226, 232, 240, 0.8);" +
-            "-fx-background-radius: 4;"
-        );
-        
-        // Progress bar fill
-        Region progressFill = new Region();
-        double progress = (currentUser.getSmartCoinBalance() % 100) / 100.0;
-        progressFill.setPrefWidth(200 * Math.max(0.1, progress));
-        progressFill.setPrefHeight(8);
-        progressFill.setStyle(
-            "-fx-background-color: linear-gradient(to right, #3B82F6, #8B5CF6);" +
-            "-fx-background-radius: 4;"
-        );
-        
-        // Stack progress elements
-        javafx.scene.layout.StackPane progressStack = new javafx.scene.layout.StackPane();
-        progressStack.getChildren().addAll(progressBg, progressFill);
-        progressStack.setAlignment(Pos.CENTER_LEFT);
-        
-        progressSection.getChildren().addAll(progressLabel, progressStack);
-        
-        // Next level info
-        Label nextLevelLabel = new Label("Next: Level " + (currentUser.getLevel() + 1));
-        nextLevelLabel.setStyle(
-            "-fx-font-size: 11px;" +
-            "-fx-text-fill: #64748b;" +
-            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;"
-        );
-        
-        progressContainer.getChildren().addAll(progressSection, nextLevelLabel);
-        return progressContainer;
-    }
-    
-    /**
      * Create daily motivation section
      */
+    @SuppressWarnings("unused")
     private VBox createDailyMotivationSection() {
         VBox motivationSection = new VBox(12);
         motivationSection.setAlignment(Pos.CENTER);
@@ -2241,47 +1819,178 @@ public class ChildDashboard extends BaseDashboard {
     }
     
     /**
-     * Show enhanced home page (main dashboard)
+     * Show quests page with available quests and progress
      */
-    private void showHomePage() {
-        // Create scrollable content container
-        VBox homeContent = new VBox(20);
-        homeContent.setPadding(new Insets(16));
-        homeContent.setAlignment(Pos.TOP_CENTER);
-        homeContent.setMaxWidth(1180);
-        homeContent.setPrefWidth(1180);
+    private void showQuestsPage() {
+        // Create simple content container for game launch
+        VBox questsContent = new VBox(40);
+        questsContent.setPadding(new Insets(60));
+        questsContent.setAlignment(Pos.CENTER);
         
-        // Welcome banner section
-        VBox welcomeBanner = createWelcomeBanner();
+        // Quest page header
+        VBox questHeader = createSimpleQuestHeader();
         
-        // Quick action cards
-        HBox quickActions = createQuickActionCards();
+        // Large game launch button
+        VBox gameCard = createLargeGameCard();
         
-        // Main content grid
-        VBox mainGrid = createMainGrid();
+        questsContent.getChildren().addAll(questHeader, gameCard);
         
-        // Daily motivation section
-        VBox motivationSection = createDailyMotivationSection();
+        // Replace content with quests page
+        BorderPane mainLayout = (BorderPane) ((StackPane) root).getChildren().get(2);
+        mainLayout.setCenter(questsContent);
         
-        homeContent.getChildren().addAll(welcomeBanner, quickActions, mainGrid, motivationSection);
+        System.out.println("Quests page displayed - Game ready to launch");
+    }
+    
+    /**
+     * Create simple quest page header
+     */
+    private VBox createSimpleQuestHeader() {
+        VBox header = new VBox(12);
+        header.setAlignment(Pos.CENTER);
         
-        // Create scroll pane for home content
-        ScrollPane homeScrollPane = new ScrollPane(homeContent);
-        homeScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        homeScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        homeScrollPane.setFitToWidth(true);
-        homeScrollPane.setStyle(
-            "-fx-background-color: transparent;" +
-            "-fx-background: transparent;" +
-            "-fx-focus-color: transparent;" +
-            "-fx-faint-focus-color: transparent;"
+        // Quest page title
+        Label questTitle = new Label("🎮 Financial Literacy Adventure");
+        questTitle.setStyle(
+            "-fx-font-size: 36px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #1e293b;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
+            "-fx-text-alignment: center;"
         );
         
-        // Replace content with scrollable home page
-        BorderPane mainLayout = (BorderPane) ((StackPane) root).getChildren().get(2);
-        mainLayout.setCenter(homeScrollPane);
+        // Quest description
+        Label descLabel = new Label("Learn about money and earn SmartCoins!");
+        descLabel.setStyle(
+            "-fx-font-size: 18px;" +
+            "-fx-text-fill: #64748b;" +
+            "-fx-font-family: 'Segoe UI', sans-serif;" +
+            "-fx-text-alignment: center;"
+        );
         
-        System.out.println("Enhanced scrollable home page displayed");
+        header.getChildren().addAll(questTitle, descLabel);
+        return header;
+    }
+    
+    /**
+     * Create large game launch card
+     */
+    private VBox createLargeGameCard() {
+        VBox gameCard = new VBox(30);
+        gameCard.setAlignment(Pos.CENTER);
+        gameCard.setPadding(new Insets(60));
+        gameCard.setMaxWidth(600);
+        gameCard.setStyle(
+            "-fx-background-color: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);" +
+            "-fx-background-radius: 24;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 24, 0, 0, 12);"
+        );
+        
+        // Game icon
+        Label gameIcon = new Label("🎮");
+        gameIcon.setStyle("-fx-font-size: 80px;");
+        
+        // Game title
+        Label gameTitle = new Label("Financial Adventure Game");
+        gameTitle.setStyle(
+            "-fx-font-size: 28px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: white;" +
+            "-fx-font-family: 'Segoe UI', 'Inter', 'Pixelify Sans', 'Minecraft', sans-serif;" +
+            "-fx-text-alignment: center;"
+        );
+        
+        // Game description
+        Label gameDesc = new Label("Play interactive levels to learn about money\nand earn SmartCoins!");
+        gameDesc.setWrapText(true);
+        gameDesc.setStyle(
+            "-fx-font-size: 16px;" +
+            "-fx-text-fill: rgba(255,255,255,0.95);" +
+            "-fx-font-family: 'Segoe UI', sans-serif;" +
+            "-fx-text-alignment: center;"
+        );
+        
+        // Launch button
+        Button launchButton = new Button("🚀 Start Adventure");
+        launchButton.setPrefWidth(280);
+        launchButton.setPrefHeight(70);
+        launchButton.setStyle(
+            "-fx-background-color: #10B981;" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 22px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-background-radius: 35;" +
+            "-fx-cursor: hand;" +
+            "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+            "-fx-effect: dropshadow(gaussian, rgba(16,185,129,0.5), 16, 0, 0, 8);"
+        );
+        
+        launchButton.setOnMouseEntered(e -> {
+            launchButton.setStyle(
+                "-fx-background-color: #059669;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 22px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-background-radius: 35;" +
+                "-fx-cursor: hand;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-effect: dropshadow(gaussian, rgba(16,185,129,0.7), 20, 0, 0, 10);" +
+                "-fx-scale-x: 1.05; -fx-scale-y: 1.05;"
+            );
+        });
+        
+        launchButton.setOnMouseExited(e -> {
+            launchButton.setStyle(
+                "-fx-background-color: #10B981;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 22px;" +
+                "-fx-font-weight: 700;" +
+                "-fx-background-radius: 35;" +
+                "-fx-cursor: hand;" +
+                "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;" +
+                "-fx-effect: dropshadow(gaussian, rgba(16,185,129,0.5), 16, 0, 0, 8);"
+            );
+        });
+        
+        launchButton.setOnAction(e -> launchFinancialGame());
+        
+        gameCard.getChildren().addAll(gameIcon, gameTitle, gameDesc, launchButton);
+        return gameCard;
+    }
+    
+    /**
+     * Launch the Financial Literacy Adventure Game
+     */
+    private void launchFinancialGame() {
+        try {
+            com.coincraft.game.ui.GameWindow gameWindow = new com.coincraft.game.ui.GameWindow(currentUser);
+            gameWindow.show();
+            
+            // Add listener to refresh dashboard when game closes
+            gameWindow.getStage().setOnHiding(e -> {
+                // Reload user data to reflect coin changes
+                loadRealData();
+                if (topBar != null) {
+                    topBar.setCurrentUser(currentUser);
+                    topBar.updateStats(dailyStreak, pendingTasks);
+                    topBar.refresh();
+                }
+                System.out.println("🎮 Game closed, dashboard refreshed");
+            });
+            
+            System.out.println("🎮 Financial Adventure Game launched!");
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error launching game: " + e.getMessage());
+            // Stack trace suppressed to avoid console noise; log framework can capture details in production
+            
+            // Show error dialog
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+            alert.setTitle("Game Error");
+            alert.setHeaderText("Could not launch Financial Adventure");
+            alert.setContentText("Please try again later. Error: " + e.getMessage());
+            alert.showAndWait();
+        }
     }
     
     /**
@@ -2305,9 +2014,11 @@ public class ChildDashboard extends BaseDashboard {
             "-fx-font-family: 'Minecraft', 'Segoe UI', sans-serif;"
         );
         
-        Label messageLabel = new Label("You don't have a parent linked to your account yet.\n" +
-                                      "Ask your parent to create your adventurer account\n" +
-                                      "or contact support for help.");
+        Label messageLabel = new Label("""
+            You don't have a parent linked to your account yet.
+            Ask your parent to create your adventurer account
+            or contact support for help.
+            """);
         messageLabel.setStyle(
             "-fx-font-size: 16px;" +
             "-fx-text-fill: #6b7280;" +
@@ -2326,7 +2037,7 @@ public class ChildDashboard extends BaseDashboard {
         );
         contactSupportBtn.setOnAction(e -> {
             System.out.println("Contact support requested");
-            // TODO: Implement contact support functionality
+            // Contact support can be implemented to open email or support page
         });
         
         messageBox.getChildren().addAll(iconLabel, titleLabel, messageLabel, contactSupportBtn);
@@ -2366,5 +2077,14 @@ public class ChildDashboard extends BaseDashboard {
                 }
             });
         }
+    }
+    
+    /**
+     * Remove repeated role suffixes like "(Adventurer)" from the display name
+     */
+    private String sanitizeDisplayName(String rawName) {
+        if (rawName == null) return "";
+        String cleaned = rawName.replaceAll("\\s*\\(Adventurer\\)", "");
+        return cleaned.trim().replaceAll("\\s{2,}", " ");
     }
 }

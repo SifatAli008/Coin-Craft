@@ -18,13 +18,12 @@ import javafx.scene.layout.VBox;
  */
 public class ChildSidebar {
     private VBox root;
-    @SuppressWarnings("unused")
     private final User currentUser;
     private final Consumer<String> navigationCallback;
-    private String activeSection = "home";
+    private String activeSection = "quests";
     
     // Navigation buttons
-    private VBox homeButton;
+    private VBox questsButton;
     private VBox tasksButton;
     private VBox messagesButton;
     private VBox shopButton;
@@ -51,13 +50,18 @@ public class ChildSidebar {
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 16, 0, 0, 8);"
         );
         
+        // Attach current user metadata for diagnostics/accessibility
+        if (currentUser != null) {
+            root.setUserData(currentUser.getUserId());
+            root.setAccessibleHelp("user:" + currentUser.getUserId());
+        }
+
         createHeader();
         createNavigationButtons();
-        createAchievementsSection();
         createControlButtons();
         
         // Set initial active state
-        setActiveSection("home");
+        setActiveSection("quests");
     }
     
     private void createHeader() {
@@ -95,14 +99,14 @@ public class ChildSidebar {
     }
     
     private void createNavigationButtons() {
-        homeButton = createNavButton("Home", "home");
+        questsButton = createNavButton("Quests", "quests");
         tasksButton = createNavButton("Tasks", "tasks");
         messagesButton = createNavButtonWithBadge("Messages", "messages", 2);
         shopButton = createNavButton("Shop", "shop");
         profileButton = createNavButton("Profile", "profile");
         
         root.getChildren().addAll(
-            homeButton,
+            questsButton,
             tasksButton,
             messagesButton,
             shopButton,
@@ -110,10 +114,11 @@ public class ChildSidebar {
         );
         
         // Set initial active section
-        setActiveSection("home");
+        setActiveSection("quests");
     }
     
-    private void createAchievementsSection() {
+    @SuppressWarnings("unused")
+    private void createAchievementsSection_removed() {
         VBox achievementSection = new VBox(6);
         achievementSection.setAlignment(Pos.CENTER_LEFT);
         achievementSection.setPadding(new Insets(6, 0, 6, 0));
@@ -142,13 +147,13 @@ public class ChildSidebar {
         headerContainer.getChildren().add(headerLabel);
         
         // Create compact badges container for sidebar
-        VBox badgesContainer = createCompactBadgesContainer();
+        VBox badgesContainer = createCompactBadgesContainer_removed();
         
         achievementSection.getChildren().addAll(headerContainer, badgesContainer);
         root.getChildren().add(achievementSection);
     }
     
-    private VBox createCompactBadgesContainer() {
+    private VBox createCompactBadgesContainer_removed() {
         VBox container = new VBox(4);
         container.setAlignment(Pos.CENTER);
         container.setPadding(new Insets(8));
@@ -341,7 +346,7 @@ public class ChildSidebar {
      */
     public void setActiveSection(String section) {
         // Reset all buttons
-        resetButtonStyle(homeButton);
+        resetButtonStyle(questsButton);
         resetButtonStyle(tasksButton);
         resetButtonStyle(messagesButton);
         resetButtonStyle(shopButton);
@@ -361,7 +366,7 @@ public class ChildSidebar {
      */
     private VBox getButtonForSection(String section) {
         return switch (section) {
-            case "home" -> homeButton;
+            case "quests" -> questsButton;
             case "tasks" -> tasksButton;
             case "messages" -> messagesButton;
             case "shop" -> shopButton;

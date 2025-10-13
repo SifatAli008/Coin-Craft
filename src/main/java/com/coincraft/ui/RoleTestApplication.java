@@ -7,7 +7,6 @@ import com.coincraft.services.FirebaseService;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceDialog;
 import javafx.stage.Stage;
 

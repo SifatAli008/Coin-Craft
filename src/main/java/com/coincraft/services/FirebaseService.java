@@ -65,32 +65,37 @@ public class FirebaseService {
             
             // Log configuration details
             LOGGER.info("🔥 Firebase Configuration Loaded:");
-            LOGGER.info("  Project ID: " + config.getProjectId());
-            LOGGER.info("  Auth Domain: " + config.getAuthDomain());
-            LOGGER.info("  Database URL: " + config.getDatabaseURL());
-            LOGGER.info("  Storage Bucket: " + config.getStorageBucket());
-            LOGGER.info("  App ID: " + config.getAppId());
+            LOGGER.info("  Project ID: %s".formatted(config.getProjectId()));
+            LOGGER.info("  Auth Domain: %s".formatted(config.getAuthDomain()));
+            LOGGER.info("  Database URL: %s".formatted(config.getDatabaseURL()));
+            LOGGER.info("  Storage Bucket: %s".formatted(config.getStorageBucket()));
+            LOGGER.info("  App ID: %s".formatted(config.getAppId()));
             
             // Initialize Firebase Admin SDK first
             FirebaseAdminService.initialize();
             
-            // Initialize Firebase Storage
-            FirebaseStorageService.initialize();
+            // Initialize Firebase Storage (with error handling)
+            try {
+                // Use simplified storage service to avoid dependency conflicts
+                FirebaseStorageService.initialize();
+            } catch (Exception e) {
+                LOGGER.warning(() -> "Firebase Storage initialization failed, continuing with local storage: " + e.getMessage());
+            }
             
             // Initialize REST API services
             authService = new FirebaseAuthService(config);
             firestoreService = new FirestoreService(config);
             
-            LOGGER.info("✅ Firebase service initialized successfully for project: " + config.getProjectId());
-            LOGGER.info("  Admin SDK Status: " + FirebaseAdminService.getConnectionStatus());
-            LOGGER.info("  Storage Status: " + FirebaseStorageService.getConnectionStatus());
+            LOGGER.info("✅ Firebase service initialized successfully for project: %s".formatted(config.getProjectId()));
+            LOGGER.info("  Admin SDK Status: %s".formatted(FirebaseAdminService.getConnectionStatus()));
+            LOGGER.info("  Storage Status: %s".formatted(FirebaseStorageService.getConnectionStatus()));
             initialized = true;
             
         } catch (NoClassDefFoundError e) {
-            LOGGER.info("Firebase libraries not found, initializing in mock mode: " + e.getMessage());
+            LOGGER.info("Firebase libraries not found, initializing in mock mode: %s".formatted(e.getMessage()));
             initializeMockMode();
         } catch (Exception e) {
-            LOGGER.warning("Failed to initialize Firebase, falling back to mock mode: " + e.getMessage());
+            LOGGER.warning("Failed to initialize Firebase, falling back to mock mode: %s".formatted(e.getMessage()));
             initializeMockMode();
         }
     }
@@ -121,8 +126,8 @@ public class FirebaseService {
                 w.println(line);
             }
             return true;
-        } catch (Exception e) {
-            LOGGER.warning("Failed to save message locally: " + e.getMessage());
+        } catch (IOException e) {
+            LOGGER.warning("Failed to save message locally: %s".formatted(e.getMessage()));
             return false;
         }
     }
@@ -162,8 +167,8 @@ public class FirebaseService {
                 return new java.util.ArrayList<>(list.subList(Math.max(0, list.size()-limit), list.size()));
             }
             return list;
-        } catch (Exception e) {
-            LOGGER.warning("Failed to load conversation locally: " + e.getMessage());
+        } catch (IOException e) {
+            LOGGER.warning("Failed to load conversation locally: %s".formatted(e.getMessage()));
             return new java.util.ArrayList<>();
         }
     }
@@ -208,7 +213,7 @@ public class FirebaseService {
                     // First check mock registry (for demo accounts)
                     String mockUserId = "user_" + email.hashCode();
                     if (mockUserRegistry.containsKey(mockUserId)) {
-                        LOGGER.info("Mock authentication successful for registered user: " + email);
+                        LOGGER.info("Mock authentication successful for registered user: %s".formatted(email));
                         return mockUserId;
                     }
                     
@@ -218,19 +223,19 @@ public class FirebaseService {
                         if (user.getEmail() != null && user.getEmail().equalsIgnoreCase(email)) {
                             // For simplicity, we're not storing passwords in local storage
                             // In production, passwords would be hashed and verified properly
-                            LOGGER.info("Local storage authentication successful for: " + email);
+                            LOGGER.info("Local storage authentication successful for: %s".formatted(email));
                             return user.getUserId();
                         }
                     }
                     
-                    LOGGER.warning("Authentication failed - user not found: " + email);
+                    LOGGER.warning("Authentication failed - user not found: %s".formatted(email));
                     return null;
                 }
                 return null;
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Authentication failed: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOGGER.severe("Authentication failed: %s".formatted(e.getMessage()));
             return null;
         }
     }
@@ -254,10 +259,10 @@ public class FirebaseService {
                     user.setUserId(result.getUserId());
                     saveUser(user);
                     
-                    LOGGER.info("User created successfully: " + email);
+                    LOGGER.info("User created successfully: %s".formatted(email));
                     return result.getUserId();
                 } else {
-                    LOGGER.warning("User creation failed: " + result.getErrorMessage());
+                    LOGGER.warning("User creation failed: %s".formatted(result.getErrorMessage()));
                     return null;
                 }
             } else {
@@ -265,12 +270,12 @@ public class FirebaseService {
                 String userId = "user_" + System.currentTimeMillis();
                 user.setUserId(userId);
                 saveUser(user);
-                LOGGER.info("Mock user created successfully: " + userId);
+                LOGGER.info("Mock user created successfully: %s".formatted(userId));
                 return userId;
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("User creation failed: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOGGER.severe("User creation failed: %s".formatted(e.getMessage()));
             return null;
         }
     }
@@ -288,10 +293,10 @@ public class FirebaseService {
             if (FirebaseAdminService.isInitialized()) {
                 boolean success = FirebaseAdminService.saveUserToFirestore(user);
                 if (success) {
-                    LOGGER.info("User data saved successfully via Admin SDK for " + user.getUserId());
+                    LOGGER.info("User data saved successfully via Admin SDK for %s".formatted(user.getUserId()));
                     return;
                 } else {
-                    LOGGER.warning("Failed to save user data via Admin SDK for " + user.getUserId());
+                    LOGGER.warning("Failed to save user data via Admin SDK for %s".formatted(user.getUserId()));
                 }
             }
             
@@ -299,18 +304,18 @@ public class FirebaseService {
             if (firestoreService != null && currentIdToken != null) {
                 boolean success = firestoreService.saveUser(user);
                 if (success) {
-                    LOGGER.info("User data saved successfully via REST API for " + user.getUserId());
+                    LOGGER.info("User data saved successfully via REST API for %s".formatted(user.getUserId()));
                 } else {
-                    LOGGER.warning("Failed to save user data via REST API for " + user.getUserId());
+                    LOGGER.warning("Failed to save user data via REST API for %s".formatted(user.getUserId()));
                 }
             } else {
                 // Save to local storage as final fallback
                 saveUserLocally(user);
-                LOGGER.info("User data saved locally for " + user.getUserId());
+                LOGGER.info("User data saved locally for %s".formatted(user.getUserId()));
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Failed to save user: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to save user: %s".formatted(e.getMessage()));
         }
     }
     
@@ -331,8 +336,8 @@ public class FirebaseService {
                 return getUserByIdLocally(userId);
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Failed to get user by ID: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to get user by ID: %s".formatted(e.getMessage()));
             return null;
         }
     }
@@ -349,8 +354,8 @@ public class FirebaseService {
                 }
             }
             return null;
-        } catch (Exception e) {
-            LOGGER.warning("Failed to get user by ID locally: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOGGER.warning("Failed to get user by ID locally: %s".formatted(e.getMessage()));
             return null;
         }
     }
@@ -372,8 +377,8 @@ public class FirebaseService {
                 return loadUsersLocally();
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Failed to load users: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to load users: %s".formatted(e.getMessage()));
             return new ArrayList<>();
         }
     }
@@ -400,10 +405,10 @@ public class FirebaseService {
                 writer.println(credentialEntry);
             }
             
-            LOGGER.info("Adventurer credentials stored for Adventure Username: " + adventureUsername);
+            LOGGER.info("Adventurer credentials stored for Adventure Username: %s".formatted(adventureUsername));
             
-        } catch (Exception e) {
-            LOGGER.warning("Failed to store adventurer credentials: " + e.getMessage());
+        } catch (IOException e) {
+            LOGGER.warning("Failed to store adventurer credentials: %s".formatted(e.getMessage()));
         }
     }
     
@@ -430,15 +435,15 @@ public class FirebaseService {
                         
                         if (storedAdventureUsername.equalsIgnoreCase(adventureUsername.toLowerCase()) && 
                             storedPassword.equals(password)) {
-                            LOGGER.info("Adventurer credentials verified for: " + adventureUsername);
+                            LOGGER.info("Adventurer credentials verified for: %s".formatted(adventureUsername));
                             return userId;
                         }
                     }
                 }
             }
             
-        } catch (Exception e) {
-            LOGGER.warning("Failed to verify adventurer credentials: " + e.getMessage());
+        } catch (IOException e) {
+            LOGGER.warning("Failed to verify adventurer credentials: %s".formatted(e.getMessage()));
         }
         
         return null;
@@ -452,7 +457,7 @@ public class FirebaseService {
             // First verify current credentials
             String userId = verifyAdventurerCredentials(adventureUsername, currentPassword);
             if (userId == null) {
-                LOGGER.warning("Cannot update password - current password verification failed for: " + adventureUsername);
+                LOGGER.warning("Cannot update password - current password verification failed for: %s".formatted(adventureUsername));
                 return false;
             }
             
@@ -484,7 +489,7 @@ public class FirebaseService {
                             String updatedLine = storedUsername + "|" + newPassword + "|" + storedUserId + "|" + LocalDateTime.now().toString();
                             allCredentials.add(updatedLine);
                             passwordUpdated = true;
-                            LOGGER.info("Password updated for adventurer: " + adventureUsername);
+                            LOGGER.info("Password updated for adventurer: %s".formatted(adventureUsername));
                         } else {
                             // Keep original line
                             allCredentials.add(line);
@@ -502,12 +507,12 @@ public class FirebaseService {
                 }
                 return true;
             } else {
-                LOGGER.warning("Could not find matching credentials to update for: " + adventureUsername);
+                LOGGER.warning("Could not find matching credentials to update for: %s".formatted(adventureUsername));
                 return false;
             }
             
-        } catch (Exception e) {
-            LOGGER.warning("Failed to update adventurer password: " + e.getMessage());
+        } catch (IOException e) {
+            LOGGER.warning("Failed to update adventurer password: %s".formatted(e.getMessage()));
             return false;
         }
     }
@@ -530,7 +535,7 @@ public class FirebaseService {
                 if (user.getRole() == UserRole.CHILD && user.getUsername() != null) {
                     String userUsername = user.getUsername().toLowerCase();
                     if (userUsername.equals(normalizedUsername)) {
-                        LOGGER.info("Adventure Username '" + adventureUsername + "' is already taken");
+                        LOGGER.info("Adventure Username '%s' is already taken".formatted(adventureUsername));
                         return true;
                     }
                 }
@@ -548,7 +553,7 @@ public class FirebaseService {
                         if (parts.length >= 1) {
                             String storedUsername = parts[0];
                             if (storedUsername.equalsIgnoreCase(normalizedUsername)) {
-                                LOGGER.info("Adventure Username '" + adventureUsername + "' is already taken (in credentials)");
+                                LOGGER.info("Adventure Username '%s' is already taken (in credentials)".formatted(adventureUsername));
                                 return true;
                             }
                         }
@@ -556,11 +561,11 @@ public class FirebaseService {
                 }
             }
             
-            LOGGER.info("Adventure Username '" + adventureUsername + "' is available");
+            LOGGER.info("Adventure Username '%s' is available".formatted(adventureUsername));
             return false;
             
-        } catch (Exception e) {
-            LOGGER.severe("Error checking Adventure Username availability: " + e.getMessage());
+        } catch (IOException e) {
+            LOGGER.severe("Error checking Adventure Username availability: %s".formatted(e.getMessage()));
             // In case of error, assume it's taken to be safe
             return true;
         }
@@ -590,10 +595,10 @@ public class FirebaseService {
             // Save all users back to file
             saveUsersToFile(existingUsers, userFile);
             
-            LOGGER.info("User saved locally: " + user.getName());
+            LOGGER.info("User saved locally: %s".formatted(user.getName()));
             
-        } catch (Exception e) {
-            LOGGER.warning("Failed to save user locally: " + e.getMessage());
+        } catch (IOException e) {
+            LOGGER.warning("Failed to save user locally: %s".formatted(e.getMessage()));
         }
     }
     
@@ -608,15 +613,15 @@ public class FirebaseService {
             
             if (Files.exists(userFile)) {
                 List<User> users = loadUsersFromFile(userFile);
-                LOGGER.info("Loaded " + users.size() + " users from local storage");
+                LOGGER.info("Loaded %d users from local storage".formatted(users.size()));
                 return users;
             } else {
                 LOGGER.info("No local user data file found");
                 return new ArrayList<>();
             }
             
-        } catch (Exception e) {
-            LOGGER.warning("Failed to load users locally: " + e.getMessage());
+        } catch (IOException e) {
+            LOGGER.warning("Failed to load users locally: %s".formatted(e.getMessage()));
             return new ArrayList<>();
         }
     }
@@ -700,37 +705,12 @@ public class FirebaseService {
                 
                 return user;
             }
-        } catch (Exception e) {
-            LOGGER.warning("Failed to parse user data: " + userData);
+        } catch (RuntimeException e) {
+            LOGGER.warning("Failed to parse user data: %s".formatted(userData));
         }
         return null;
     }
     
-    /**
-     * Parse user data from stored string (legacy format for system properties)
-     */
-    private User parseUserData(String userData) {
-        try {
-            String[] parts = userData.split("\\|");
-            if (parts.length >= 6) {
-                User user = new User();
-                user.setUserId(parts[0]);
-                user.setName(parts[1]);
-                user.setRole(UserRole.valueOf(parts[2]));
-                user.setAge(Integer.parseInt(parts[3]));
-                user.setSmartCoinBalance(Integer.parseInt(parts[4]));
-                user.setLevel(Integer.parseInt(parts[5]));
-                if (parts.length > 6 && !parts[6].isEmpty()) {
-                    user.setEmail(parts[6]);
-                }
-                user.setLastLogin(LocalDateTime.now());
-                return user;
-            }
-        } catch (Exception e) {
-            LOGGER.warning("Failed to parse user data: " + userData);
-        }
-        return null;
-    }
     
     /**
      * Load user data from Firestore
@@ -745,10 +725,10 @@ public class FirebaseService {
             if (FirebaseAdminService.isInitialized()) {
                 User user = FirebaseAdminService.loadUserFromFirestore(userId);
                 if (user != null) {
-                    LOGGER.info("User data loaded successfully via Admin SDK for " + userId);
+                    LOGGER.info("User data loaded successfully via Admin SDK for %s".formatted(userId));
                     return user;
                 } else {
-                    LOGGER.info("User not found via Admin SDK: " + userId);
+                    LOGGER.info("User not found via Admin SDK: %s".formatted(userId));
                 }
             }
             
@@ -756,10 +736,10 @@ public class FirebaseService {
             if (firestoreService != null && currentIdToken != null) {
                 User user = firestoreService.loadUser(userId);
                 if (user != null) {
-                    LOGGER.info("User data loaded successfully via REST API for " + userId);
+                    LOGGER.info("User data loaded successfully via REST API for %s".formatted(userId));
                     return user;
                 } else {
-                    LOGGER.info("User not found via REST API: " + userId);
+                    LOGGER.info("User not found via REST API: %s".formatted(userId));
                 }
             }
             
@@ -767,22 +747,22 @@ public class FirebaseService {
             // First check mock registry (for demo accounts)
             User mockUser = getMockUser(userId);
             if (mockUser != null) {
-                LOGGER.info("Mock: Loading user data for " + userId);
+                LOGGER.info("Mock: Loading user data for %s".formatted(userId));
                 return mockUser;
             }
             
             // Then check local storage (for created adventurers)
             User localUser = getUserByIdLocally(userId);
             if (localUser != null) {
-                LOGGER.info("Local: Loading user data for " + userId);
+                LOGGER.info("Local: Loading user data for %s".formatted(userId));
                 return localUser;
             }
             
-            LOGGER.info("User not found in any storage: " + userId);
+            LOGGER.info("User not found in any storage: %s".formatted(userId));
             return null;
             
-        } catch (Exception e) {
-            LOGGER.severe("Failed to load user: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to load user: %s".formatted(e.getMessage()));
             return null;
         }
     }
@@ -800,18 +780,18 @@ public class FirebaseService {
                 // Use real Firestore
                 boolean success = firestoreService.saveTask(task);
                 if (success) {
-                    LOGGER.info("Task saved successfully: " + task.getTaskId());
+                    LOGGER.info("Task saved successfully: %s".formatted(task.getTaskId()));
                 } else {
-                    LOGGER.warning("Failed to save task: " + task.getTaskId());
+                    LOGGER.warning("Failed to save task: %s".formatted(task.getTaskId()));
                 }
             } else {
                 // Save to local storage as fallback
                 saveTaskLocally(task);
-                LOGGER.info("Task saved locally: " + task.getTaskId());
+                LOGGER.info("Task saved locally: %s".formatted(task.getTaskId()));
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Failed to save task: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to save task: %s".formatted(e.getMessage()));
         }
     }
     
@@ -839,10 +819,10 @@ public class FirebaseService {
             // Save all tasks back to file
             saveTasksToFile(existingTasks, tasksFile);
             
-            LOGGER.info("Task saved locally: " + task.getTitle());
+            LOGGER.info("Task saved locally: %s".formatted(task.getTitle()));
             
-        } catch (Exception e) {
-            LOGGER.warning("Failed to save task locally: " + e.getMessage());
+        } catch (IOException e) {
+            LOGGER.warning("Failed to save task locally: %s".formatted(e.getMessage()));
         }
     }
     
@@ -958,8 +938,8 @@ public class FirebaseService {
                 
                 return task;
             }
-        } catch (Exception e) {
-            LOGGER.warning("Failed to parse task data: " + taskData + " - " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOGGER.warning("Failed to parse task data: %s - %s".formatted(taskData, e.getMessage()));
         }
         return null;
     }
@@ -981,8 +961,8 @@ public class FirebaseService {
                 return loadUserTasksLocally(userId);
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Failed to load tasks: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to load tasks: %s".formatted(e.getMessage()));
             return new ArrayList<>();
         }
     }
@@ -1004,8 +984,8 @@ public class FirebaseService {
                 return loadAllTasksLocally();
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Failed to load all tasks: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to load all tasks: %s".formatted(e.getMessage()));
             return new ArrayList<>();
         }
     }
@@ -1024,11 +1004,11 @@ public class FirebaseService {
                 userTasks.add(task);
             }
             
-            LOGGER.info("Loaded " + userTasks.size() + " tasks for user: " + userId);
+            LOGGER.info("Loaded %d tasks for user: %s".formatted(userTasks.size(), userId));
             return userTasks;
             
-        } catch (Exception e) {
-            LOGGER.warning("Failed to load user tasks locally: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOGGER.warning("Failed to load user tasks locally: %s".formatted(e.getMessage()));
             return new ArrayList<>();
         }
     }
@@ -1043,15 +1023,15 @@ public class FirebaseService {
             
             if (Files.exists(tasksFile)) {
                 List<Task> tasks = loadTasksFromFile(tasksFile);
-                LOGGER.info("Loaded " + tasks.size() + " tasks from local storage");
+                LOGGER.info("Loaded %d tasks from local storage".formatted(tasks.size()));
                 return tasks;
             } else {
                 LOGGER.info("No local tasks file found");
                 return new ArrayList<>();
             }
             
-        } catch (Exception e) {
-            LOGGER.warning("Failed to load tasks locally: " + e.getMessage());
+        } catch (IOException e) {
+            LOGGER.warning("Failed to load tasks locally: %s".formatted(e.getMessage()));
             return new ArrayList<>();
         }
     }
@@ -1068,7 +1048,7 @@ public class FirebaseService {
             if (firestoreService != null && currentIdToken != null) {
                 // Use real Firestore
                 List<User> leaderboard = firestoreService.getLeaderboard(limit);
-                LOGGER.info("Leaderboard loaded with " + leaderboard.size() + " entries");
+                LOGGER.info("Leaderboard loaded with %d entries".formatted(leaderboard.size()));
                 return leaderboard;
             } else {
                 // Mock leaderboard for fallback
@@ -1084,12 +1064,12 @@ public class FirebaseService {
                     mockLeaderboard.add(user);
                 }
                 
-                LOGGER.info("Mock: Loading leaderboard with " + limit + " entries");
+                LOGGER.info("Mock: Loading leaderboard with %d entries".formatted(limit));
                 return mockLeaderboard;
             }
             
-        } catch (Exception e) {
-            LOGGER.severe("Failed to load leaderboard: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOGGER.severe("Failed to load leaderboard: %s".formatted(e.getMessage()));
             return new ArrayList<>();
         }
     }
@@ -1107,7 +1087,7 @@ public class FirebaseService {
             }
             LOGGER.info("Firebase authentication state cleared");
         } catch (Exception e) {
-            LOGGER.severe("Error clearing authentication state: " + e.getMessage());
+            LOGGER.severe("Error clearing authentication state: %s".formatted(e.getMessage()));
         }
     }
     
@@ -1126,7 +1106,7 @@ public class FirebaseService {
             initialized = false;
             LOGGER.info("Firebase service shutdown successfully");
         } catch (Exception e) {
-            LOGGER.severe("Error during Firebase shutdown: " + e.getMessage());
+            LOGGER.severe("Error during Firebase shutdown: %s".formatted(e.getMessage()));
         }
     }
     
@@ -1206,10 +1186,10 @@ public class FirebaseService {
             user.setCreatedAt(LocalDateTime.now());
             
             mockUserRegistry.put(userId, user);
-            LOGGER.info("Mock user registered: " + email + " with role: " + user.getRole());
+            LOGGER.info("Mock user registered: %s with role: %s".formatted(email, user.getRole()));
             return true;
         } catch (Exception e) {
-            LOGGER.severe("Failed to register mock user: " + e.getMessage());
+            LOGGER.severe("Failed to register mock user: %s".formatted(e.getMessage()));
             return false;
         }
     }
@@ -1232,12 +1212,6 @@ public class FirebaseService {
         try { purgeDemoAccounts(); } catch (Exception ignored) {}
     }
     
-    /**
-     * Create a test adventurer for testing child login
-     */
-    private void createTestAdventurer() {
-        // Disabled: no auto-created test adventurer
-    }
 
     /**
      * Remove legacy demo accounts and credentials from local storage
@@ -1293,8 +1267,8 @@ public class FirebaseService {
             }
 
             LOGGER.info("Purged legacy demo accounts and credentials");
-        } catch (Exception e) {
-            LOGGER.warning("Failed to purge demo data: " + e.getMessage());
+        } catch (IOException e) {
+            LOGGER.warning("Failed to purge demo data: %s".formatted(e.getMessage()));
         }
     }
     
@@ -1303,7 +1277,7 @@ public class FirebaseService {
      */
     public boolean testAdventurerFlow(String username, String password, String name, int age) {
         try {
-            LOGGER.info("Testing adventurer flow for username: " + username);
+            LOGGER.info("Testing adventurer flow for username: %s".formatted(username));
             
             // Step 1: Create adventurer
             User testAdventurer = new User();
@@ -1334,7 +1308,7 @@ public class FirebaseService {
                 LOGGER.severe("FAILED: Could not load saved user");
                 return false;
             }
-            LOGGER.info("SUCCESS: User loaded - " + loadedUser.getName());
+            LOGGER.info("SUCCESS: User loaded - %s".formatted(loadedUser.getName()));
             
             // Step 5: Verify credentials work
             LOGGER.info("Step 4: Testing credential verification...");
@@ -1354,16 +1328,16 @@ public class FirebaseService {
             }
             
             LOGGER.info("✅ COMPLETE SUCCESS: Adventurer flow test passed!");
-            LOGGER.info("  Username: " + username);
-            LOGGER.info("  User ID: " + testAdventurer.getUserId());
-            LOGGER.info("  Name: " + loginUser.getName());
-            LOGGER.info("  Role: " + loginUser.getRole());
+            LOGGER.info("  Username: %s".formatted(username));
+            LOGGER.info("  User ID: %s".formatted(testAdventurer.getUserId()));
+            LOGGER.info("  Name: %s".formatted(loginUser.getName()));
+            LOGGER.info("  Role: %s".formatted(loginUser.getRole()));
             
             return true;
             
         } catch (Exception e) {
-            LOGGER.severe("FAILED: Exception during adventurer flow test: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.severe("FAILED: Exception during adventurer flow test: %s".formatted(e.getMessage()));
+            System.err.println("Stack trace: " + java.util.Arrays.toString(e.getStackTrace()));
             return false;
         }
     }
@@ -1432,9 +1406,97 @@ public class FirebaseService {
             return true;
             
         } catch (Exception e) {
-            LOGGER.severe("FAILED: Exception during Firebase connection test: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.severe("FAILED: Exception during Firebase connection test: %s".formatted(e.getMessage()));
+            System.err.println("Stack trace: " + java.util.Arrays.toString(e.getStackTrace()));
             return false;
+        }
+    }
+    
+    /**
+     * Get game progress data for a user
+     */
+    public Map<String, Object> getGameProgress(String userId) {
+        try {
+            if (!initialized) {
+                throw new IllegalStateException("Firebase not initialized");
+            }
+            
+            // For now, use local storage as the primary method
+            // In the future, this could be extended to use Firebase Admin SDK or REST API
+            return getGameProgressLocally(userId);
+            
+        } catch (RuntimeException e) {
+            LOGGER.warning("Failed to get game progress: %s".formatted(e.getMessage()));
+            return new HashMap<>();
+        }
+    }
+    
+    /**
+     * Save game progress data for a user
+     */
+    public void saveGameProgress(String userId, Map<String, Object> data) {
+        try {
+            if (!initialized) {
+                throw new IllegalStateException("Firebase not initialized");
+            }
+            
+            // For now, use local storage as the primary method
+            // In the future, this could be extended to use Firebase Admin SDK or REST API
+            saveGameProgressLocally(userId, data);
+            LOGGER.info("Game progress saved locally for %s".formatted(userId));
+            
+        } catch (RuntimeException e) {
+            LOGGER.warning("Failed to save game progress: %s".formatted(e.getMessage()));
+        }
+    }
+    
+    /**
+     * Get game progress from local storage
+     */
+    private Map<String, Object> getGameProgressLocally(String userId) {
+        try {
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Path progressFile = dataDir.resolve("game_progress_" + userId + ".json");
+            
+            if (Files.exists(progressFile)) {
+                // Simple JSON parsing - in production, use a proper JSON library
+                Map<String, Object> data = new HashMap<>();
+                // For now, return empty map - proper JSON parsing would be implemented here
+                return data;
+            }
+        } catch (RuntimeException e) {
+            LOGGER.warning("Failed to load game progress locally: %s".formatted(e.getMessage()));
+        }
+        return new HashMap<>();
+    }
+    
+    /**
+     * Save game progress to local storage
+     */
+    private void saveGameProgressLocally(String userId, Map<String, Object> data) {
+        try {
+            Path dataDir = Paths.get(System.getProperty("user.home"), ".coincraft", "data");
+            Files.createDirectories(dataDir);
+            Path progressFile = dataDir.resolve("game_progress_" + userId + ".json");
+            
+            // Simple JSON serialization - in production, use a proper JSON library
+            StringBuilder json = new StringBuilder();
+            json.append("{\n");
+            json.append("  \"userId\": \"").append(userId).append("\",\n");
+            for (Map.Entry<String, Object> entry : data.entrySet()) {
+                json.append("  \"").append(entry.getKey()).append("\": ");
+                if (entry.getValue() instanceof String) {
+                    json.append("\"").append(entry.getValue()).append("\"");
+                } else {
+                    json.append(entry.getValue());
+                }
+                json.append(",\n");
+            }
+            json.append("}\n");
+            
+            Files.writeString(progressFile, json.toString());
+        } catch (IOException e) {
+            LOGGER.warning("Failed to save game progress locally: %s".formatted(e.getMessage()));
         }
     }
 }

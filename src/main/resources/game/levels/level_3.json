@@ -1,0 +1,90 @@
+{
+  "levelId": 3,
+  "title": "Earning Your Coins",
+  "description": "Learn about earning money through work with Captain Coinbeard",
+  "npcName": "Captain Coinbeard",
+  "npcEmoji": "🏴‍☠️",
+  "npcImagePath": "/character/craftpix-net-803217-free-knight-character-sprites-pixel-art/Knight_1/Idle.png",
+  "npcGreeting": "Ahoy there, young adventurer! I'm Captain Coinbeard, and I'll teach you the pirate's way of earning treasure! Every coin must be earned through honest work!",
+  "npcFarewell": "Well done, matey! You've learned that hard work pays off. Keep earning those coins the right way!",
+  "backgroundStyle": "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)",
+  "completionReward": 150,
+  "nextLevel": 4,
+  "questions": [
+    {
+      "id": 1,
+      "text": "What's the best way to earn coins?",
+      "explanation": "Exactly! Doing chores and helping others is the best way to earn coins. It teaches responsibility and the value of hard work!",
+      "choices": [
+        {
+          "text": "Doing chores and helping others",
+          "isCorrect": true,
+          "reward": 25,
+          "penalty": 0
+        },
+        {
+          "text": "Asking for money without doing anything",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -10
+        },
+        {
+          "text": "Taking money from others",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -15
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "You help wash dishes for 5 coins and clean your room for 3 coins. How much did you earn total?",
+      "explanation": "Perfect! 5 + 3 = 8 coins total. You're becoming quite the hard worker!",
+      "choices": [
+        {
+          "text": "7 coins",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -8
+        },
+        {
+          "text": "8 coins",
+          "isCorrect": true,
+          "reward": 30,
+          "penalty": 0
+        },
+        {
+          "text": "9 coins",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -8
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "text": "If you earn 2 coins every day for a week, how many coins will you have?",
+      "explanation": "Excellent! 2 coins × 7 days = 14 coins. Consistency in earning is very important!",
+      "choices": [
+        {
+          "text": "12 coins",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -10
+        },
+        {
+          "text": "14 coins",
+          "isCorrect": true,
+          "reward": 35,
+          "penalty": 0
+        },
+        {
+          "text": "16 coins",
+          "isCorrect": false,
+          "reward": 0,
+          "penalty": -10
+        }
+      ]
+    }
+  ]
+}
