@@ -1,11 +1,20 @@
 package com.coincraft.game.ui;
 
+import com.coincraft.engine.GameLoop;
+import com.coincraft.engine.Updatable;
+import com.coincraft.engine.input.InputManager;
+import com.coincraft.game.play.PlayerSheetController;
+import com.coincraft.engine.rendering.Sprite;
+import com.coincraft.game.play.SpriteSheetUtil;
+import com.coincraft.game.play.TileCollisionMap;
+import com.coincraft.game.play.CameraFollow;
 import com.coincraft.game.models.GameLevel;
 import com.coincraft.game.models.GameState;
 import com.coincraft.game.models.Question;
 import com.coincraft.game.models.QuestionChoice;
 import com.coincraft.game.services.GameDataLoader;
 import com.coincraft.game.services.GameProgressService;
+import java.io.IOException;
 import com.coincraft.models.User;
 import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
@@ -14,6 +23,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -29,8 +39,8 @@ import javafx.util.Duration;
 public class GameWindow {
     private Stage stage;
     private VBox root;
-    private User currentUser;
-    private GameState gameState;
+    private final User currentUser;
+    private final GameState gameState;
     private GameLevel currentLevel;
     private int currentQuestionIndex = 0;
     private int sessionCoins = 0;
@@ -41,6 +51,8 @@ public class GameWindow {
     // UI Components
     private Label coinLabel;
     private VBox contentArea;
+    private GameLoop gameLoop;
+    private boolean paused = false;
     
     public GameWindow(User user) {
         this.currentUser = user;
@@ -72,8 +84,25 @@ public class GameWindow {
         // Show level select screen
         showLevelSelect();
         
-        Scene scene = new Scene(root, 1000, 700);
+        Scene scene = new Scene(root, 1280, 720);
+        // Setup pause toggle (ESC)
+        scene.setOnKeyPressed(e -> {
+            switch (e.getCode()) {
+                case ESCAPE -> togglePause();
+                default -> {}
+            }
+        });
         stage.setScene(scene);
+
+        // Initialize a simple game loop updating minimal updatables
+        gameLoop = new GameLoop();
+        gameLoop.addUpdatable((Updatable) deltaTime -> {
+            // Reserved for future per-frame UI/game updates in this window
+        });
+
+        // Start/stop lifecycle
+        stage.setOnShown(e -> startLoop());
+        stage.setOnHiding(e -> stopLoop());
     }
     
     private HBox createTopBar() {
@@ -154,7 +183,14 @@ public class GameWindow {
             levelsContainer.getChildren().add(levelCard);
         }
         
-        contentArea.getChildren().addAll(selectLabel, levelsContainer);
+        // Free Play button to try movement prototype
+        Button freePlay = new Button("Free Play (Prototype)");
+        freePlay.setStyle(
+            "-fx-background-color: #3B82F6; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 8; -fx-padding: 8 16;"
+        );
+        freePlay.setOnAction(e -> startFreePlay());
+
+        contentArea.getChildren().addAll(selectLabel, levelsContainer, freePlay);
     }
     
     private HBox createLevelCard(int levelId, boolean isCompleted, boolean isLocked) {
@@ -300,6 +336,345 @@ public class GameWindow {
         currentQuestionIndex = 0;
         sessionCoins = 0;
         showNPCIntro();
+    }
+
+    private void startFreePlay() {
+        contentArea.getChildren().clear();
+
+        // Simple playfield (viewport container)
+        double viewportW = 1280;
+        double viewportH = 720;
+        StackPane playfield = new StackPane();
+        playfield.setStyle("-fx-background-color: linear-gradient(to bottom, #dbeafe, #bfdbfe);");
+        playfield.setPrefSize(viewportW, viewportH);
+        playfield.setMinSize(viewportW, viewportH);
+        playfield.setMaxSize(viewportW, viewportH);
+
+        // Prototype player using sprite sheet assets (idle/walk)
+        javafx.scene.image.ImageView player = new javafx.scene.image.ImageView();
+        javafx.scene.image.Image idleImg;
+        javafx.scene.image.Image walkImg;
+        try {
+            idleImg = new javafx.scene.image.Image(
+                getClass().getResourceAsStream(
+                    "/Assets/Sprites/Player/Side animations/spr_player_right_idle.png"
+                )
+            );
+        } catch (Exception ex) {
+            idleImg = null;
+        }
+        try {
+            walkImg = new javafx.scene.image.Image(
+                getClass().getResourceAsStream(
+                    "/Assets/Sprites/Player/Side animations/spr_player_right_walk.png"
+                )
+            );
+        } catch (Exception ex) {
+            walkImg = null;
+        }
+        if (idleImg != null) {
+            player.setImage(idleImg);
+        }
+        player.setFitWidth(64);
+        player.setFitHeight(64);
+        player.setPreserveRatio(true);
+        player.setSmooth(true);
+
+        // World pane is larger than viewport for scrolling
+        double worldW = Math.max(1800, viewportW * 2); // scale with viewport
+        double worldH = Math.max(1160, viewportH * 2);
+        javafx.scene.layout.Pane pane = new javafx.scene.layout.Pane();
+        pane.setPrefSize(worldW, worldH);
+        // Separate layers for clean re-rendering of paths and decor
+        javafx.scene.layout.Pane baseLayer = new javafx.scene.layout.Pane();
+        javafx.scene.layout.Pane decorLayer = new javafx.scene.layout.Pane();
+        javafx.scene.layout.Pane pathLayer = new javafx.scene.layout.Pane();
+        baseLayer.setPrefSize(worldW, worldH);
+        decorLayer.setPrefSize(worldW, worldH);
+        pathLayer.setPrefSize(worldW, worldH);
+        pane.getChildren().addAll(baseLayer, decorLayer, pathLayer);
+        // Clip the viewport (not the world) so camera translations don't move the clip
+        javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle(viewportW, viewportH);
+        clip.widthProperty().bind(playfield.widthProperty());
+        clip.heightProperty().bind(playfield.heightProperty());
+        playfield.setClip(clip);
+
+        // No HUD - clean game screen
+        
+        // No editor toolbar - clean game screen
+
+        // Render tilemap background (plains)
+        TileCollisionMap collisionMap = null;
+        try {
+            // Scale tiles up to match 96x96 player (use 48x48 tiles)
+            final int tileSize = 48;
+            final int srcTileSize = 16;
+            int colsForTiles = (int) (worldW / tileSize);
+            int rowsForTiles = (int) (worldH / tileSize);
+            // Ground: repeat grass.png everywhere
+            Image grassImg = new Image(getClass().getResourceAsStream("/Assets/Tilemap/grass.png"));
+            for (int r = 0; r < rowsForTiles; r++) {
+                for (int c = 0; c < colsForTiles; c++) {
+                    ImageView iv = new ImageView(grassImg);
+                    iv.setFitWidth(tileSize);
+                    iv.setFitHeight(tileSize);
+                    iv.setPreserveRatio(false);
+                    iv.setSmooth(true);
+                    iv.setLayoutX(c * tileSize);
+                    iv.setLayoutY(r * tileSize);
+                    baseLayer.getChildren().add(iv);
+                }
+            }
+            // Decor: prefer external CSV (manual placement); else scatter random
+            Image decorImg = new Image(getClass().getResourceAsStream("/Assets/Tilemap/decor_16x16.png"));
+            boolean renderedDecorFromCsv = false;
+            try {
+                java.nio.file.Path dcsv = java.nio.file.Paths.get("edited/decor.csv");
+                if (java.nio.file.Files.exists(dcsv)) {
+                    int[][] gids = com.coincraft.game.tile.TiledCsvMapLoader.loadCsv(dcsv);
+                    com.coincraft.game.tile.TiledCsvMapLoader.renderLayer(decorLayer, decorImg, gids, srcTileSize, tileSize);
+                    renderedDecorFromCsv = true;
+                }
+            } catch (IOException ignored) {}
+            if (!renderedDecorFromCsv) {
+                java.util.Random rng = new java.util.Random(1234);
+                int decorCols = Math.max(1, (int)Math.floor(decorImg.getWidth() / srcTileSize));
+                int decorRows = Math.max(1, (int)Math.floor(decorImg.getHeight() / srcTileSize));
+                for (int r = 1; r < rowsForTiles - 1; r++) {
+                    for (int c = 1; c < colsForTiles - 1; c++) {
+                        if (rng.nextDouble() < 0.08) { // 8% chance
+                            int idx = rng.nextInt(decorCols * decorRows);
+                            int sx = (idx % decorCols) * srcTileSize;
+                            int sy = (idx / decorCols) * srcTileSize;
+                            ImageView iv = new ImageView(decorImg);
+                            iv.setViewport(new javafx.geometry.Rectangle2D(sx, sy, srcTileSize, srcTileSize));
+                            iv.setFitWidth(tileSize);
+                            iv.setFitHeight(tileSize);
+                            iv.setPreserveRatio(false);
+                            iv.setSmooth(true);
+                            iv.setLayoutX(c * tileSize);
+                            iv.setLayoutY(r * tileSize);
+                            decorLayer.getChildren().add(iv);
+                        }
+                    }
+                }
+            }
+
+            // External CSV import disabled for color-only mode
+
+            // Autotiled path layer (simple horizontal + vertical cross)
+            int cols = (int) (worldW / tileSize);
+            int rows = (int) (worldH / tileSize);
+            // Prefer edited path file if present, else fallback to bundled resource
+            boolean[][] path = null;
+            try {
+                java.nio.file.Path editedPath = java.nio.file.Paths.get("edited/free_play_path.json");
+                if (java.nio.file.Files.exists(editedPath)) {
+                    String json = java.nio.file.Files.readString(editedPath);
+                    // Load from string via temporary buffer
+                    java.nio.file.Path tmp = java.nio.file.Files.createTempFile("path", ".json");
+                    java.nio.file.Files.writeString(tmp, json);
+                    path = com.coincraft.game.tile.SimpleGridLoader.loadGrid(tmp.toUri().toURL().toString());
+                    java.nio.file.Files.deleteIfExists(tmp);
+                }
+            } catch (java.io.IOException ignored) {}
+            if (path == null) {
+                path = com.coincraft.game.tile.SimpleGridLoader.loadGrid("/game/levels/free_play_path.json");
+            }
+            if (path == null || path.length != rows || path[0].length != cols) {
+                path = new boolean[rows][cols];
+                int midR = rows / 2;
+                int midC = cols / 2;
+                for (int c = 2; c < cols - 2; c++) path[midR][c] = true;
+                for (int r = 2; r < rows - 2; r++) path[r][midC] = true;
+            }
+
+            // Load rules config so art tweaks don't require code edits
+            // Prefer edited rules file if present, else fallback to bundled resource
+            com.coincraft.game.tile.TilesetRulesConfig rulesCfg = null;
+            try {
+                java.nio.file.Path editedRules = java.nio.file.Paths.get("edited/free_play_rules.json");
+                if (java.nio.file.Files.exists(editedRules)) {
+                    String json = java.nio.file.Files.readString(editedRules);
+                    java.nio.file.Path tmp = java.nio.file.Files.createTempFile("rules", ".json");
+                    java.nio.file.Files.writeString(tmp, json);
+                    rulesCfg = com.coincraft.game.tile.TilesetRulesConfig.load(tmp.toUri().toURL().toString());
+                    java.nio.file.Files.deleteIfExists(tmp);
+                }
+            } catch (java.io.IOException ignored) {}
+            if (rulesCfg == null) rulesCfg = com.coincraft.game.tile.TilesetRulesConfig.load("/game/levels/free_play_rules.json");
+            final com.coincraft.game.tile.TilesetRulesConfig rulesCfgFinal = (rulesCfg != null)
+                ? rulesCfg
+                : new com.coincraft.game.tile.TilesetRulesConfig(16, tileSize, 4, 0, "/Assets/Tilemap/plains.png");
+            // Color mode: skip creating unused rules
+            // Render path as solid colored tiles (kept for clarity)
+            com.coincraft.game.tile.ColorTileRenderer colorPath = new com.coincraft.game.tile.ColorTileRenderer(pathLayer, rulesCfgFinal.dstTileSize);
+            colorPath.renderBooleanGrid(path, javafx.scene.paint.Color.web("#f59e0b"));
+            // Simple in-scene path brush with UI controls; keyboard still works (Shift/Alt)
+            // No mouse handlers - clean game screen
+            // No keyboard save handlers - clean game screen
+
+            // No rule origin HUD - clean game screen
+
+            // No keyboard handlers - clean game screen
+            // Build simple border collision (solid outer ring)
+            collisionMap = new TileCollisionMap(cols, rows, tileSize);
+            for (int c = 0; c < cols; c++) {
+                collisionMap.setBlocked(c, 0, true);
+                collisionMap.setBlocked(c, rows - 1, true);
+            }
+            for (int r = 0; r < rows; r++) {
+                collisionMap.setBlocked(0, r, true);
+                collisionMap.setBlocked(cols - 1, r, true);
+            }
+
+            // Reserve spawn area around center so player doesn't spawn blocked
+            int spawnCol = cols / 2;
+            int spawnRow = rows / 2;
+            int reserveRadius = 2; // keep 5x5 clear
+            java.util.function.BiPredicate<Integer,Integer> isReserved = (gc, gr) ->
+                Math.abs(gc - spawnCol) <= reserveRadius && Math.abs(gr - spawnRow) <= reserveRadius;
+
+            // Place rock sprites as collidable obstacles (cannot walk through)
+            try {
+                Image[] rocks = new Image[] {
+                    new Image(getClass().getResourceAsStream("/Assets/Sprites/Rocks/spr_boulder1.png")),
+                    new Image(getClass().getResourceAsStream("/Assets/Sprites/Rocks/spr_boulder2.png")),
+                    new Image(getClass().getResourceAsStream("/Assets/Sprites/Rocks/spr_boulder3.png")),
+                    new Image(getClass().getResourceAsStream("/Assets/Sprites/Rocks/spr_smallrock2.png")),
+                    new Image(getClass().getResourceAsStream("/Assets/Sprites/Rocks/spr_boulder4.png")),
+                    new Image(getClass().getResourceAsStream("/Assets/Sprites/Rocks/spr_smallrock1.png"))
+                };
+                java.util.Random rockRng = new java.util.Random(4321);
+                for (int ry = 1; ry < rows - 1; ry++) {
+                    for (int cx = 1; cx < cols - 1; cx++) {
+                        if (path[ry][cx]) continue; // keep paths clear
+                        if (isReserved.test(cx, ry)) continue; // keep spawn clear
+                        if (rockRng.nextDouble() < 0.05) { // 5% chance per cell
+                            Image rock = rocks[rockRng.nextInt(rocks.length)];
+                            addObstacle(rock, decorLayer, cx, ry, 1, 1, tileSize, collisionMap);
+                        }
+                    }
+                }
+            } catch (Exception ignoredRocks) {}
+
+            // Vegetation (bushes/trees) as collidable obstacles
+            try {
+                Image[] veg = new Image[] {
+                    new Image(getClass().getResourceAsStream("/Assets/Sprites/Vegetation/Bush.png")),      // 1x1
+                    new Image(getClass().getResourceAsStream("/Assets/Sprites/Vegetation/Bush1.png")),     // 1x1
+                    new Image(getClass().getResourceAsStream("/Assets/Sprites/Vegetation/spr_tree1.png")), // 2x2
+                    new Image(getClass().getResourceAsStream("/Assets/Sprites/Vegetation/spr_tree2.png")), // 2x2
+                    new Image(getClass().getResourceAsStream("/Assets/Sprites/Vegetation/spr_tree3.png")), // 2x2
+                    new Image(getClass().getResourceAsStream("/Assets/Sprites/Vegetation/tree.png")),      // 2x2
+                    new Image(getClass().getResourceAsStream("/Assets/Sprites/Vegetation/tree1.png"))      // 2x2
+                };
+                java.util.Random vegRng = new java.util.Random(9876);
+                for (int ry = 1; ry < rows - 1; ry++) {
+                    for (int cx = 1; cx < cols - 1; cx++) {
+                        if (path[ry][cx]) continue; // keep paths clear
+                        if (isReserved.test(cx, ry)) continue; // keep spawn clear
+                        if (vegetationAllowedOnTile(vegRng)) {
+                            int idx = vegRng.nextInt(veg.length);
+                            Image im = veg[idx];
+                            int wTiles = (idx <= 1) ? 1 : 2; // bushes 1x1, trees 2x2
+                            int hTiles = (idx <= 1) ? 1 : 2;
+                            // ensure footprint is within bounds and not on path/blocked
+                            boolean ok = true;
+                            for (int rr = 0; rr < hTiles && ok; rr++) {
+                                for (int cc = 0; cc < wTiles; cc++) {
+                                    int gr = ry + rr, gc = cx + cc;
+                                    if (gr >= rows - 1 || gc >= cols - 1 || path[gr][gc] || isReserved.test(gc, gr) || collisionMap.isBlockedTile(gc, gr)) { ok = false; break; }
+                                }
+                            }
+                            if (ok) {
+                                addObstacle(im, decorLayer, cx, ry, wTiles, hTiles, tileSize, collisionMap);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception ignoredVegetation) {}
+
+            // Collision map only; decor drawn above already
+        } catch (Exception ignore) {}
+
+        pane.getChildren().add(player);
+        // Spawn the player centered on the reserved middle tile so they never start blocked
+        final int spawnTileSize = (collisionMap != null) ? collisionMap.getTileSize() : 48;
+        final int spawnColForPlace = (int)Math.floor((worldW / spawnTileSize) / 2.0);
+        final int spawnRowForPlace = (int)Math.floor((worldH / spawnTileSize) / 2.0);
+        final double playerW = Math.max(1.0, player.getBoundsInParent().getWidth());
+        final double playerH = Math.max(1.0, player.getBoundsInParent().getHeight());
+        final double spawnX = spawnColForPlace * spawnTileSize + (spawnTileSize * 0.5) - (playerW * 0.5);
+        final double spawnY = spawnRowForPlace * spawnTileSize + (spawnTileSize * 0.5) - (playerH * 0.5);
+        player.setLayoutX(spawnX);
+        player.setLayoutY(spawnY);
+        // Center the viewport initially on the player
+        pane.setTranslateX(-(player.getLayoutX() - viewportW / 2));
+        pane.setTranslateY(-(player.getLayoutY() - viewportH / 2));
+
+        // Compose scene
+        VBox container = new VBox(10);
+        container.setAlignment(Pos.TOP_CENTER);
+
+        // Add world inside the fixed-size playfield to avoid layout overflow
+        playfield.getChildren().add(pane);
+        container.getChildren().add(playfield);
+        contentArea.getChildren().add(container);
+
+        // Hook input manager from the window's scene
+        InputManager inputManager = new InputManager(stage.getScene());
+
+        // Build sprites from sheets (assumes square frames in a row)
+        final Sprite idleSprite;
+        final Sprite walkSprite;
+        Sprite tmpIdle = null;
+        Sprite tmpWalk = null;
+        if (idleImg != null) tmpIdle = SpriteSheetUtil.createSquareRowSprite(idleImg);
+        if (walkImg != null) tmpWalk = SpriteSheetUtil.createSquareRowSprite(walkImg);
+        if (tmpIdle == null) return; // require idle
+        if (tmpWalk == null) tmpWalk = tmpIdle; // fallback
+        idleSprite = tmpIdle;
+        walkSprite = tmpWalk;
+        // Increase player size
+        idleSprite.setSize(128, 128);
+        walkSprite.setSize(128, 128);
+
+        // Position center
+        idleSprite.setPosition(worldW / 2 - 32, worldH / 2 - 32);
+        walkSprite.setPosition(worldW / 2 - 32, worldH / 2 - 32);
+
+        // Render into pane
+        pane.getChildren().add(idleSprite.getNode());
+        pane.getChildren().add(walkSprite.getNode());
+        walkSprite.getNode().setVisible(false);
+
+        PlayerSheetController controller = new PlayerSheetController(
+            inputManager,
+            idleSprite,
+            walkSprite,
+            220,
+            0, 0, worldW, worldH,
+            collisionMap
+        );
+
+        // Register controller with the game loop
+        gameLoop.addUpdatable(controller);
+
+        // Camera follow on idle sprite (active sprite position is kept in sync)
+        CameraFollow camera = new CameraFollow(
+            pane,
+            idleSprite,
+            viewportW,
+            viewportH,
+            worldW,
+            worldH
+        );
+        gameLoop.addUpdatable(camera);
+
+        // No HUD updates needed
+
+        
     }
     
     private void showNPCIntro() {
@@ -752,6 +1127,82 @@ public class GameWindow {
     
     public Stage getStage() {
         return stage;
+    }
+
+    private void startLoop() {
+        if (!paused && gameLoop != null) {
+            gameLoop.start();
+        }
+    }
+
+    private void stopLoop() {
+        if (gameLoop != null) {
+            gameLoop.stop();
+        }
+    }
+
+    private void togglePause() {
+        paused = !paused;
+        if (paused) {
+            stopLoop();
+            showPauseOverlay();
+        } else {
+            hidePauseOverlay();
+            startLoop();
+        }
+    }
+
+    private void showPauseOverlay() {
+        // Simple overlay indicator at top of content area
+        Label overlay = new Label("⏸ Paused - Press ESC to Resume");
+        overlay.setStyle(
+            "-fx-background-color: rgba(0,0,0,0.6);" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 16px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-padding: 8 12;" +
+            "-fx-background-radius: 8;"
+        );
+        overlay.setUserData("__pause_overlay");
+        if (!contentArea.getChildren().isEmpty()) {
+            contentArea.getChildren().add(0, overlay);
+        } else {
+            contentArea.getChildren().add(overlay);
+        }
+    }
+
+    private void hidePauseOverlay() {
+        contentArea.getChildren().removeIf(n ->
+            n instanceof Label l && "__pause_overlay".equals(l.getUserData())
+        );
+    }
+
+    // legacy brush kept for reference (unused) — keep signature to avoid future breakage
+    @SuppressWarnings("unused")
+    private void handleBrush(double x, double y, boolean paint, boolean erase, int tileSize, boolean[][] grid) { }
+
+    // Removed unused brush handler
+
+    // Removed unused nineMax method
+
+    private boolean vegetationAllowedOnTile(java.util.Random rng) {
+        return rng.nextDouble() < 0.04; // 4% chance
+    }
+
+    private void addObstacle(Image img, javafx.scene.layout.Pane layer, int col, int row, int wTiles, int hTiles, int tileSize, TileCollisionMap collision) {
+        ImageView iv = new ImageView(img);
+        iv.setFitWidth(wTiles * tileSize);
+        iv.setFitHeight(hTiles * tileSize);
+        iv.setPreserveRatio(true);
+        iv.setSmooth(true);
+        iv.setLayoutX(col * tileSize);
+        iv.setLayoutY(row * tileSize);
+        layer.getChildren().add(iv);
+        for (int r = 0; r < hTiles; r++) {
+            for (int c = 0; c < wTiles; c++) {
+                collision.setBlocked(col + c, row + r, true);
+            }
+        }
     }
 }
 

@@ -115,3 +115,6 @@ firebase-service-account.json
 secrets.properties
 service-account-*.json
 src/main/resources/google-oauth-config.properties 
+ 
+# Gradle local cache
+.gradle/

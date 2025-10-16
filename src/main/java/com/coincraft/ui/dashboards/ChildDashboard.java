@@ -3,6 +3,7 @@ package com.coincraft.ui.dashboards;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.coincraft.game.adventure.AdventureMode;
 import com.coincraft.models.MessageData;
 import com.coincraft.models.Task;
 import com.coincraft.models.User;
@@ -49,6 +50,10 @@ public class ChildDashboard extends BaseDashboard {
     private ScrollPane messagesScroll;
     private TextArea messageInput;
     
+    // Adventure Mode
+    private AdventureMode adventureMode;
+    private final com.coincraft.game.models.GameState gameState;
+    
     // Content sections
     private VBox mainContent;
     private String currentSection = "quests";
@@ -64,6 +69,9 @@ public class ChildDashboard extends BaseDashboard {
         super(user);
         loadRealData();
         messagingService = MessagingService.getInstance();
+        
+        // Initialize game state for adventure mode
+        gameState = new com.coincraft.game.models.GameState(user.getUserId());
     }
     
     /**
@@ -464,9 +472,74 @@ public class ChildDashboard extends BaseDashboard {
         alert.showAndWait();
     }
     
+    private void startEchoQuestAdventure() {
+        try {
+            // Create a new Stage for the Echo Quest adventure
+            javafx.stage.Stage echoQuestStage = new javafx.stage.Stage();
+            com.coincraft.game.adventure.EchoQuestStyleAdventure echoQuestAdventure = 
+                new com.coincraft.game.adventure.EchoQuestStyleAdventure(echoQuestStage, currentUser, gameState);
+            
+            // Start the Echo Quest adventure
+            echoQuestAdventure.startEchoQuestAdventure();
+            
+        } catch (Exception e) {
+            System.err.println("Error starting Echo Quest adventure: " + e.getMessage());
+            // Log the full stack trace for debugging
+            System.err.println("Stack trace:");
+            for (StackTraceElement element : e.getStackTrace()) {
+                System.err.println("  at " + element);
+            }
+            
+            // Show error alert
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Echo Quest Adventure Error");
+            alert.setHeaderText("Could not start Echo Quest Adventure");
+            alert.setContentText("There was an error starting the therapeutic adventure. Please try again.");
+            alert.showAndWait();
+        }
+    }
+    
+    private void startAdventureMode() {
+        try {
+            // Initialize adventure mode if not already done
+            if (adventureMode == null) {
+                // Create a new Stage for the adventure mode
+                javafx.stage.Stage adventureStage = new javafx.stage.Stage();
+                adventureMode = new AdventureMode(adventureStage, currentUser, gameState);
+            }
+            
+            // Start the adventure
+            adventureMode.startAdventure();
+            
+        } catch (Exception e) {
+            System.err.println("Error starting adventure mode: " + e.getMessage());
+            // Log the full stack trace for debugging
+            System.err.println("Stack trace:");
+            for (StackTraceElement element : e.getStackTrace()) {
+                System.err.println("  at " + element);
+            }
+            
+            // Show error alert
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Adventure Mode Error");
+            alert.setHeaderText("Could not start Adventure Mode");
+            alert.setContentText("There was an error starting the adventure. Please try again.");
+            alert.showAndWait();
+        }
+    }
+    
     
     @Override
     public void navigateToSection(String section) {
+        if ("adventure".equals(section)) {
+            startAdventureMode();
+            return;
+        }
+        if ("echoquest".equals(section)) {
+            startEchoQuestAdventure();
+            return;
+        }
+        
         this.currentSection = section;
         
         // Update sidebar navigation

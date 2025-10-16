@@ -1,0 +1,8 @@
+{ "srcTileSize": 16,
+  "dstTileSize": 48,
+  "originCol": 0,
+  "originRow": 0,
+  "tileset": "/Assets/Tilemap/plains.png",
+  "single": false
+}
+

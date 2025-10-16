@@ -103,6 +103,7 @@ public class ChildSidebar {
         tasksButton = createNavButton("Tasks", "tasks");
         messagesButton = createNavButtonWithBadge("Messages", "messages", 2);
         shopButton = createNavButton("Shop", "shop");
+        // Adventure and Echo Quest removed from sidebar per request
         profileButton = createNavButton("Profile", "profile");
         
         root.getChildren().addAll(
