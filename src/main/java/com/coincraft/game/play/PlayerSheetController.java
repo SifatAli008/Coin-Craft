@@ -3,6 +3,7 @@ package com.coincraft.game.play;
 import com.coincraft.engine.Updatable;
 import com.coincraft.engine.input.InputManager;
 import com.coincraft.engine.rendering.Sprite;
+
 import javafx.scene.input.KeyCode;
 
 /**
@@ -13,6 +14,7 @@ public class PlayerSheetController implements Updatable {
     private final InputManager inputManager;
     private final Sprite idleSprite;
     private final Sprite walkSprite;
+    private Sprite attackSprite; // optional attack animation (one-shot)
     private Sprite activeSprite;
     private final double moveSpeedPixelsPerSecond;
     private final double minX;
@@ -20,6 +22,7 @@ public class PlayerSheetController implements Updatable {
     private final double maxX;
     private final double maxY;
     private final TileCollisionMap collisions;
+    private BreakableObjectManager breakableObjectManager;
     
     // Dash mechanics
     private static final double DASH_DURATION_SECONDS = 0.15; // seconds the dash is active
@@ -32,6 +35,14 @@ public class PlayerSheetController implements Updatable {
     private double lastMoveX = 1.0; // default face right
     private double lastMoveY = 0.0;
     private boolean prevSpaceDown = false; // local edge detector (decoupled from InputManager.update)
+    
+    // Attack mechanics (right-click)
+    private static final double ATTACK_COOLDOWN_SECONDS = 0.35;
+    private static final double ATTACK_DURATION_SECONDS = 0.5; // Maximum attack duration
+    private double attackCooldownRemaining = 0.0;
+    private double attackDurationRemaining = 0.0;
+    private boolean isAttacking = false;
+    private boolean prevSecondaryMouseDown = false; // Track previous secondary mouse state to prevent auto-loop
 
     public PlayerSheetController(InputManager inputManager,
                                  Sprite idleSprite,
@@ -95,6 +106,17 @@ public class PlayerSheetController implements Updatable {
         }
         double playerCenterX = activeSprite.getX() + Math.max(1.0, activeSprite.getWidth()) * 0.5;
         activeSprite.setScaleX(worldMouseX >= playerCenterX ? 1 : -1);
+        // Handle attack trigger (right-click) - use local edge detection to prevent auto-loop
+        if (attackCooldownRemaining > 0.0) {
+            attackCooldownRemaining -= deltaTime;
+        }
+        boolean secondaryMouseDown = inputManager.isSecondaryMousePressed();
+        // Only allow new attack if not currently attacking, cooldown is over, and this is a fresh click
+        if (!isAttacking && attackCooldownRemaining <= 0.0 && secondaryMouseDown && !prevSecondaryMouseDown) {
+            beginAttack();
+        }
+
+        // Choose which sprite should be visible when not in attack
         Sprite desired = moving ? walkSprite : idleSprite;
         if (desired != activeSprite) {
             // stop previous and start new animation
@@ -169,11 +191,95 @@ public class PlayerSheetController implements Updatable {
             }
         }
 
+        // Update attack state/animation if active
+        if (isAttacking && attackSprite != null) {
+            // Decrease attack duration timer
+            attackDurationRemaining -= deltaTime;
+            
+            // keep attack sprite anchored to player
+            attackSprite.setX(activeSprite.getX());
+            attackSprite.setY(activeSprite.getY());
+            attackSprite.setScaleX(activeSprite.getScaleX());
+            attackSprite.update(deltaTime);
+            
+            // Check for collisions with breakable objects during attack
+            if (breakableObjectManager != null) {
+                double attackX = attackSprite.getX();
+                double attackY = attackSprite.getY();
+                double attackWidth = attackSprite.getWidth();
+                double attackHeight = attackSprite.getHeight();
+                
+                // Adjust attack area based on player direction
+                if (activeSprite.getScaleX() < 0) {
+                    attackX -= attackWidth; // Attack to the left
+                }
+                
+                breakableObjectManager.checkAttackCollision(attackX, attackY, attackWidth, attackHeight);
+            }
+            
+            // End attack when one-shot animation finishes OR timeout reached
+            if (!attackSprite.isAnimating() || attackDurationRemaining <= 0.0) {
+                endAttack();
+            }
+        }
+
         // advance animation frame and apply transforms for active sprite only
         activeSprite.update(deltaTime);
 
-        // remember key state for next frame
+        // remember key and mouse state for next frame
         prevSpaceDown = spaceDown;
+        prevSecondaryMouseDown = secondaryMouseDown;
+    }
+
+    // Begin a one-shot attack using an attached attack sprite if available.
+    private void beginAttack() {
+        isAttacking = true;
+        attackCooldownRemaining = ATTACK_COOLDOWN_SECONDS;
+        attackDurationRemaining = ATTACK_DURATION_SECONDS; // Reset attack duration timer
+        if (attackSprite != null) {
+            // Clear any previous stuck frames first
+            attackSprite.stopAnimation();
+            attackSprite.setVisible(false);
+            attackSprite.setFrame(0);
+            attackSprite.update(0.0); // Force update to apply frame change
+            
+            // prepare sprite for new attack
+            attackSprite.setLoopAnimation(false);
+            attackSprite.setX(activeSprite.getX());
+            attackSprite.setY(activeSprite.getY());
+            attackSprite.setScaleX(activeSprite.getScaleX());
+            attackSprite.startAnimation();
+            // ensure visible
+            attackSprite.setVisible(true);
+        }
+    }
+
+    private void endAttack() {
+        isAttacking = false;
+        if (attackSprite != null) {
+            attackSprite.stopAnimation();
+            attackSprite.setVisible(false);
+            // Reset to first frame to ensure clean state for next attack
+            attackSprite.setFrame(0);
+            // Force update the sprite to apply the frame change immediately
+            attackSprite.update(0.0);
+        }
+    }
+
+    // Allow external wiring of an attack sprite (e.g., slash effect)
+    public void setAttackSprite(Sprite attackSprite) {
+        this.attackSprite = attackSprite;
+        if (this.attackSprite != null) {
+            this.attackSprite.setLoopAnimation(false);
+            this.attackSprite.stopAnimation(); // Ensure it's stopped initially
+            this.attackSprite.setVisible(false);
+            this.attackSprite.setFrame(0); // Reset to first frame
+        }
+    }
+    
+    // Set the breakable object manager for attack collision detection
+    public void setBreakableObjectManager(BreakableObjectManager manager) {
+        this.breakableObjectManager = manager;
     }
 }
 

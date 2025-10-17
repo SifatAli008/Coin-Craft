@@ -25,6 +25,13 @@ public class AdventurePlayer extends Pane {
     private long lastFrameTime = 0;
     private static final long FRAME_DURATION = 200_000_000; // 200ms in nanoseconds
     
+    public AdventurePlayer(String name, double x, double y) {
+        this.avatarPath = "/Assets/Sprites/Player/Side animations/spr_player_idle.png";
+        initializePlayer();
+        setLayoutX(x - getPrefWidth() / 2);
+        setLayoutY(y - getPrefHeight() / 2);
+    }
+    
     public AdventurePlayer(String avatarPath) {
         this.avatarPath = avatarPath;
         initializePlayer();
@@ -191,5 +198,28 @@ public class AdventurePlayer extends Pane {
         if (Math.random() < 0.1) { // 10% chance per update
             // SoundManager.getInstance().playSound("beep-313342.mp3");
         }
+    }
+    
+    public void setPosition(double x, double y) {
+        setLayoutX(x - getPrefWidth() / 2);
+        setLayoutY(y - getPrefHeight() / 2);
+    }
+    
+    public void setPosition(double x, double y, boolean center) {
+        if (center) {
+            setLayoutX(x - getPrefWidth() / 2);
+            setLayoutY(y - getPrefHeight() / 2);
+        } else {
+            setLayoutX(x);
+            setLayoutY(y);
+        }
+    }
+    
+    public void render(Pane gameWorld) {
+        gameWorld.getChildren().add(this);
+    }
+    
+    public String getName() {
+        return "Player";
     }
 }

@@ -500,16 +500,26 @@ public class ChildDashboard extends BaseDashboard {
     }
     
     private void startAdventureMode() {
+        System.out.println("=== CHILD DASHBOARD: STARTING ADVENTURE MODE ===");
+        System.out.println("Current user: " + currentUser.getUsername());
+        System.out.println("Game state: " + gameState);
+        
         try {
             // Initialize adventure mode if not already done
             if (adventureMode == null) {
+                System.out.println("Creating new AdventureMode...");
                 // Create a new Stage for the adventure mode
                 javafx.stage.Stage adventureStage = new javafx.stage.Stage();
                 adventureMode = new AdventureMode(adventureStage, currentUser, gameState);
+                System.out.println("AdventureMode created: " + adventureMode);
+            } else {
+                System.out.println("Using existing AdventureMode: " + adventureMode);
             }
             
             // Start the adventure
+            System.out.println("Calling adventureMode.startAdventure()...");
             adventureMode.startAdventure();
+            System.out.println("Adventure mode start completed");
             
         } catch (Exception e) {
             System.err.println("Error starting adventure mode: " + e.getMessage());
@@ -526,6 +536,8 @@ public class ChildDashboard extends BaseDashboard {
             alert.setContentText("There was an error starting the adventure. Please try again.");
             alert.showAndWait();
         }
+        
+        System.out.println("=== CHILD DASHBOARD: ADVENTURE MODE COMPLETE ===");
     }
     
     

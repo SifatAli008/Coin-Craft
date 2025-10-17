@@ -1,18 +1,13 @@
 package com.coincraft.game.adventure;
 
-import javafx.animation.AnimationTimer;
+import com.coincraft.game.adventure.models.AdventurePlayer;
+import com.coincraft.game.adventure.zones.NPCTestZone;
+import com.coincraft.game.models.GameState;
+import com.coincraft.models.User;
+
 import javafx.scene.Scene;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-
-import com.coincraft.models.User;
-import com.coincraft.game.models.GameState;
-import com.coincraft.game.adventure.models.AdventurePlayer;
-import com.coincraft.game.adventure.models.AdventureZone;
-import com.coincraft.game.adventure.ui.AdventureUI;
 
 /**
  * Main controller for the adventure/exploration mode
@@ -21,19 +16,12 @@ import com.coincraft.game.adventure.ui.AdventureUI;
 public class AdventureController {
     private Scene scene;
     private Pane gameWorld;
-    private AdventurePlayer player;
-    private AdventureZone currentZone;
-    private AdventureUI ui;
     private final User user;
     private final GameState gameState;
     
-    // Movement state
-    private final boolean[] keysPressed = new boolean[256];
-    private final double playerSpeed = 3.0;
-    
-    // Animation
-    private AnimationTimer gameLoop;
-    private long lastUpdateTime = 0;
+    // Adventure components
+    private AdventurePlayer player;
+    private NPCTestZone currentZone;
     
     public AdventureController(User user, GameState gameState) {
         this.user = user;
@@ -42,168 +30,89 @@ public class AdventureController {
     }
     
     private void initializeAdventure() {
+        System.out.println("=== STARTING ADVENTURE WITH NPCS ===");
+        
         // Create the game world
         gameWorld = new Pane();
         gameWorld.setPrefSize(1200, 800);
-        gameWorld.setStyle("-fx-background-color: #2c3e50;");
+        gameWorld.setStyle("-fx-background-color: linear-gradient(135deg, #87CEEB 0%, #4682B4 100%);");
         
-        // Initialize player
-        player = new AdventurePlayer("/images/coincraft-icon.png"); // Default avatar
-        player.setLayoutX(600);
-        player.setLayoutY(400);
-        gameWorld.getChildren().add(player);
+        System.out.println("Game world created with gradient background");
         
-        // Load starting zone
-        currentZone = new com.coincraft.game.adventure.zones.BudgetBayZone();
+        // Create player
+        player = new AdventurePlayer(user.getUsername(), 600, 400);
+        System.out.println("Created player: " + player.getName());
+        
+        // Use gameState for player progress tracking
+        System.out.println("Player progress: " + gameState.getCompletedLevels().size() + " levels completed");
+        
+        // NPCs are managed by the zone
+        System.out.println("NPCs will be managed by the zone");
+        
+        // Create test zone with NPCs
+        currentZone = new NPCTestZone();
+        System.out.println("Created NPC Test Zone");
+        
+        // Render the zone (this will add NPCs to the game world)
         currentZone.renderZone(gameWorld);
+        System.out.println("Rendered zone with NPCs");
         
-        // Initialize UI overlay
-        ui = new AdventureUI(user, gameState);
-        ui.setupUI(gameWorld);
+        // Add player to game world
+        player.render(gameWorld);
+        System.out.println("Added player to game world");
         
-        // Create scene first
+        // Create scene
         scene = new Scene(gameWorld, 1200, 800);
-        scene.setFill(Color.DARKBLUE);
+        scene.setFill(Color.LIGHTBLUE);
         
-        // Setup input handling after scene is created
-        setupInputHandling();
+        // Make sure the scene can receive focus for keyboard events
+        gameWorld.setFocusTraversable(true);
+        gameWorld.requestFocus();
         
-        // Start game loop
-        startGameLoop();
-    }
-    
-    private void setupInputHandling() {
-        // Keyboard input
-        scene.setOnKeyPressed(this::handleKeyPressed);
-        scene.setOnKeyReleased(this::handleKeyReleased);
+        System.out.println("=== SCENE CREATED WITH NPCS ===");
+        System.out.println("Scene size: " + scene.getWidth() + " x " + scene.getHeight());
+        System.out.println("Game world children: " + gameWorld.getChildren().size());
+        System.out.println("NPCs in zone: " + currentZone.getNPCManager().getNPCCount());
         
-        // Mouse input for click-to-move
-        scene.setOnMouseClicked(this::handleMouseClick);
-        
-        // Focus for keyboard input
-        scene.setOnMouseEntered(e -> gameWorld.requestFocus());
-    }
-    
-    private void handleKeyPressed(KeyEvent event) {
-        KeyCode keyCode = event.getCode();
-        int code = keyCode.getCode();
-        if (code >= 0 && code < keysPressed.length) {
-            keysPressed[code] = true;
-        }
-        
-        // Handle special keys
-        switch (keyCode) {
-            case SPACE -> handleInteraction();
-            case ESCAPE -> showPauseMenu();
-            case TAB -> showMap();
-            default -> {
-                // No special action for other keys
-            }
-        }
-    }
-    
-    private void handleKeyReleased(KeyEvent event) {
-        int code = event.getCode().getCode();
-        if (code >= 0 && code < keysPressed.length) {
-            keysPressed[code] = false;
-        }
-    }
-    
-    private void handleMouseClick(MouseEvent event) {
-        if (event.getButton().toString().equals("PRIMARY")) {
-            // Click to move
-            double targetX = event.getX();
-            double targetY = event.getY();
-            player.moveTo(targetX, targetY);
-        }
-    }
-    
-    private void handleInteraction() {
-        // Check for nearby NPCs or interactables
-        if (currentZone != null) {
+        // Handle mouse clicks for NPC interaction
+        scene.setOnMouseClicked(event -> {
+            System.out.println("*** MOUSE CLICKED ***");
+            System.out.println("Position: " + event.getX() + ", " + event.getY());
+            System.out.println("Children count: " + gameWorld.getChildren().size());
+            
+            // Move player to click position
+            player.setPosition(event.getX(), event.getY());
+            
+            // Check for NPC interactions
             currentZone.handlePlayerInteraction(player);
-        }
+        });
         
-        // Play interaction sound
-        // SoundManager.getInstance().playSound("button_hover.wav");
-    }
-    
-    private void showPauseMenu() {
-        ui.showPauseMenu();
-    }
-    
-    private void showMap() {
-        ui.showZoneMap(currentZone);
-    }
-    
-    private void startGameLoop() {
-        gameLoop = new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                if (lastUpdateTime == 0) {
-                    lastUpdateTime = now;
-                    return;
+        // Handle keyboard input for player movement
+        scene.setOnKeyPressed(event -> {
+            double moveSpeed = 50.0;
+            double newX = player.getCenterX();
+            double newY = player.getCenterY();
+            
+            switch (event.getCode()) {
+                case W, UP -> newY -= moveSpeed;
+                case S, DOWN -> newY += moveSpeed;
+                case A, LEFT -> newX -= moveSpeed;
+                case D, RIGHT -> newX += moveSpeed;
+                case SPACE -> {
+                    // Interact with nearby NPCs
+                    currentZone.handlePlayerInteraction(player);
                 }
-                
-                double deltaTime = (now - lastUpdateTime) / 1_000_000_000.0; // Convert to seconds
-                lastUpdateTime = now;
-                
-                updateGame(deltaTime);
+                default -> {}
             }
-        };
-        gameLoop.start();
-    }
-    
-    private void updateGame(double deltaTime) {
-        // Handle movement
-        handleMovement(deltaTime);
-        
-        // Update player animation
-        player.update(deltaTime);
-        
-        // Update zone (NPCs, effects, etc.)
-        if (currentZone != null) {
-            currentZone.update(deltaTime, player);
-        }
-        
-        // Update UI
-        ui.updateUI();
-    }
-    
-    private void handleMovement(double deltaTime) {
-        double moveX = 0;
-        double moveY = 0;
-        
-        // WASD movement
-        if (keysPressed[KeyCode.W.getCode()] || keysPressed[KeyCode.UP.getCode()]) {
-            moveY -= playerSpeed;
-        }
-        if (keysPressed[KeyCode.S.getCode()] || keysPressed[KeyCode.DOWN.getCode()]) {
-            moveY += playerSpeed;
-        }
-        if (keysPressed[KeyCode.A.getCode()] || keysPressed[KeyCode.LEFT.getCode()]) {
-            moveX -= playerSpeed;
-        }
-        if (keysPressed[KeyCode.D.getCode()] || keysPressed[KeyCode.RIGHT.getCode()]) {
-            moveX += playerSpeed;
-        }
-        
-        // Apply movement
-        if (moveX != 0 || moveY != 0) {
-            double newX = player.getLayoutX() + moveX * deltaTime * 60; // 60 FPS normalization
-            double newY = player.getLayoutY() + moveY * deltaTime * 60;
             
-            // Boundary checking
-            newX = Math.max(0, Math.min(gameWorld.getWidth() - player.getBoundsInLocal().getWidth(), newX));
-            newY = Math.max(0, Math.min(gameWorld.getHeight() - player.getBoundsInLocal().getHeight(), newY));
+            // Update player position
+            player.setPosition(newX, newY);
             
-            player.setLayoutX(newX);
-            player.setLayoutY(newY);
-            
-            player.setMoving(true);
-        } else {
-            player.setMoving(false);
-        }
+            // Check for NPC interactions after movement
+            currentZone.handlePlayerInteraction(player);
+        });
+        
+        System.out.println("=== ADVENTURE WITH NPCS COMPLETE ===");
     }
     
     public Scene getScene() {
@@ -211,23 +120,13 @@ public class AdventureController {
     }
     
     public void stopAdventure() {
-        if (gameLoop != null) {
-            gameLoop.stop();
+        System.out.println("Adventure stopped");
+        
+        // Save any progress made during adventure
+        if (currentZone != null && currentZone.isCompleted()) {
+            System.out.println("Zone completed! Saving progress...");
+            // Here you could save progress to gameState
+            // gameState.completeAdventureZone(currentZone.getZoneName());
         }
-    }
-    
-    public void changeZone(AdventureZone newZone) {
-        if (currentZone != null) {
-            currentZone.cleanup();
-        }
-        
-        currentZone = newZone;
-        currentZone.renderZone(gameWorld);
-        
-        // Update UI
-        ui.updateZoneInfo(currentZone);
-        
-        // Play zone transition sound
-        // SoundManager.getInstance().playSound("adventure_start.wav");
     }
 }

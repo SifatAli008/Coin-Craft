@@ -9,6 +9,9 @@ import com.coincraft.game.play.SpriteSheetUtil;
 import com.coincraft.game.play.TileCollisionMap;
 import com.coincraft.game.play.CameraFollow;
 import com.coincraft.game.models.GameLevel;
+import com.coincraft.game.adventure.models.ConversationalNPCManager;
+import com.coincraft.game.adventure.models.ConversationSystem;
+import com.coincraft.game.adventure.models.NPCConversationTrees;
 import com.coincraft.game.models.GameState;
 import com.coincraft.game.models.Question;
 import com.coincraft.game.models.QuestionChoice;
@@ -21,6 +24,7 @@ import javafx.animation.ScaleTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -672,9 +676,309 @@ public class GameWindow {
         );
         gameLoop.addUpdatable(camera);
 
-        // No HUD updates needed
-
+        // Add NPCs to the game world
+        addNPCsToGameWorld(pane, worldW, worldH);
         
+        // Initialize CoinManager with current user
+        com.coincraft.game.adventure.models.CoinManager.initialize(currentUser);
+        
+        // Add NPC interaction system
+        addNPCInteractionSystem(controller, pane, idleSprite, inputManager);
+        
+        // Add NPC collision detection
+        addNPCCollisionDetection(controller, pane, idleSprite, inputManager);
+        
+    }
+    
+    /**
+     * Add NPCs to the Free Play game world
+     */
+    private void addNPCsToGameWorld(javafx.scene.layout.Pane gameWorld, double worldW, double worldH) {
+        System.out.println("🎭 Adding Conversational NPCs to Free Play game world");
+        
+        // Create Conversational NPC Manager
+        ConversationalNPCManager npcManager = new ConversationalNPCManager();
+        
+        // Position NPCs in walkable areas
+        double adventurerX = worldW * 0.2;  // Left side
+        double adventurerY = worldH * 0.3;  // Top area
+        
+        double wiseLadyX = worldW * 0.5;   // Center horizontally
+        double wiseLadyY = worldH * 0.3;   // Top area
+        
+        double businessmanX = worldW * 0.8;  // Right side
+        double businessmanY = worldH * 0.3;   // Top area
+        
+        // Create Strong Adventurer with full conversation system
+        npcManager.createAdventurer(
+            "Strong Adventurer",
+            adventurerX, adventurerY
+        );
+        
+        // Create Wise Lady with comprehensive financial education
+        npcManager.createSage(
+            "Wise Lady",
+            wiseLadyX, wiseLadyY
+        );
+        
+        // Create Smart Businessman with quiz system
+        npcManager.createMerchant(
+            "Smart Businessman",
+            businessmanX, businessmanY
+        );
+        
+        // Render all NPCs in the game world
+        npcManager.renderAll(gameWorld);
+        
+        System.out.println("✅ Added " + npcManager.getNPCCount() + " Conversational NPCs to Free Play world");
+        System.out.println("🎮 NPCs now have full conversation systems!");
+        System.out.println("💡 Walk near NPCs and press SPACE to start conversations");
+        System.out.println("🗣️ Each NPC has multiple conversation topics and interactive dialogue trees");
+    }
+    
+    /**
+     * Add NPC interaction system to handle conversations
+     */
+    private void addNPCInteractionSystem(PlayerSheetController controller, javafx.scene.layout.Pane gameWorld, Sprite idleSprite, InputManager inputManager) {
+        // Note: controller parameter kept for future use
+        System.out.println("💬 Adding NPC interaction system to Free Play");
+        
+        // Track space key state for edge detection
+        final boolean[] prevSpacePressed = {false};
+        
+        // Create a custom updatable for NPC interactions
+        gameLoop.addUpdatable(deltaTime -> {
+            // Check for SPACE key press with edge detection
+            boolean spacePressed = inputManager.isKeyPressed(javafx.scene.input.KeyCode.SPACE);
+            
+            // Only trigger on key press, not while held
+            if (spacePressed && !prevSpacePressed[0]) {
+                System.out.println("🔘 SPACE pressed - checking for NPC interactions");
+                
+                // Get player position
+                double playerX = idleSprite.getX();
+                double playerY = idleSprite.getY();
+                
+                System.out.println("Player position: (" + playerX + ", " + playerY + ")");
+                
+                // Check for nearby NPCs and interact
+                checkForNPCInteractions(gameWorld, playerX, playerY);
+            }
+            
+            // Update space key state
+            prevSpacePressed[0] = spacePressed;
+        });
+        
+        System.out.println("✅ NPC interaction system added - Press SPACE near NPCs to start conversations");
+    }
+    
+    /**
+     * Check for NPCs near the player and handle interactions
+     */
+    private void checkForNPCInteractions(javafx.scene.layout.Pane gameWorld, double playerX, double playerY) {
+        System.out.println("🔍 Checking for NPC interactions...");
+        
+        boolean foundNPC = false;
+        
+        // Look for NPCs in the game world
+        for (javafx.scene.Node node : getAllDescendants(gameWorld)) {
+            if (node instanceof javafx.scene.shape.Circle npcCircle) {
+                double npcX = npcCircle.getLayoutX();
+                double npcY = npcCircle.getLayoutY();
+                double distance = Math.sqrt(Math.pow(playerX - npcX, 2) + Math.pow(playerY - npcY, 2));
+                
+                if (distance <= 200) {
+                    System.out.println("✅ NPC within interaction range!");
+                    startConversationWithNPC(npcCircle);
+                    foundNPC = true;
+                    break;
+                }
+            } else if (node instanceof javafx.scene.image.ImageView npcImage) {
+                double npcX = npcImage.getLayoutX() + Math.max(1.0, npcImage.getBoundsInParent().getWidth()) * 0.5;
+                double npcY = npcImage.getLayoutY() + Math.max(1.0, npcImage.getBoundsInParent().getHeight()) * 0.5;
+                double distance = Math.sqrt(Math.pow(playerX - npcX, 2) + Math.pow(playerY - npcY, 2));
+                
+                if (distance <= 200) {
+                    String npcNameNearby = null;
+                    for (javafx.scene.Node sibling : getAllDescendants(gameWorld)) {
+                        if (sibling instanceof javafx.scene.text.Text t) {
+                            double tx = t.getLayoutX();
+                            double ty = t.getLayoutY();
+                            double nameDist = Math.sqrt(Math.pow(tx - npcX, 2) + Math.pow(ty - (npcY - 40), 2));
+                            if (nameDist < 120) { 
+                                npcNameNearby = t.getText(); 
+                                break; 
+                            }
+                        }
+                    }
+                    
+                    String npcType = "unknown";
+                    if (npcNameNearby != null) {
+                        String s = npcNameNearby.toLowerCase();
+                        if (s.contains("adventurer")) npcType = "adventurer";
+                        else if (s.contains("wise")) npcType = "wise_lady";
+                        else if (s.contains("business")) npcType = "businessman";
+                    }
+                    
+                    System.out.println("✅ Image NPC within range. Name: " + npcNameNearby + ", Type: " + npcType);
+                    startConversationWithNPC(npcImage, npcNameNearby, npcType);
+                    foundNPC = true;
+                    break;
+                }
+            }
+        }
+        
+        if (!foundNPC) {
+            System.out.println("❌ No NPCs found within interaction range");
+        }
+    }
+    
+    /**
+     * Collect all descendant nodes (breadth-first) under the given root pane
+     */
+    private java.util.List<javafx.scene.Node> getAllDescendants(javafx.scene.Parent root) {
+        java.util.ArrayList<javafx.scene.Node> all = new java.util.ArrayList<>();
+        java.util.ArrayDeque<javafx.scene.Parent> q = new java.util.ArrayDeque<>();
+        q.add(root);
+        while (!q.isEmpty()) {
+            javafx.scene.Parent p = q.poll();
+            for (javafx.scene.Node n : p.getChildrenUnmodifiable()) {
+                all.add(n);
+                if (n instanceof javafx.scene.Parent child) {
+                    q.add(child);
+                }
+            }
+        }
+        return all;
+    }
+    
+    /**
+     * Start conversation with an NPC (Circle fallback)
+     */
+    private void startConversationWithNPC(javafx.scene.shape.Circle npcCircle) {
+        System.out.println("💬 Starting conversation with Circle NPC at position: (" + npcCircle.getLayoutX() + ", " + npcCircle.getLayoutY() + ")");
+        // For now, show a simple interaction message
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+        alert.setTitle("NPC Interaction");
+        alert.setHeaderText("NPC Conversation");
+        alert.setContentText("You've found an NPC! The conversation system is now active. This NPC would normally start a full dialogue tree with multiple conversation options.");
+        alert.showAndWait();
+    }
+    
+    /**
+     * Start conversation with an NPC (ImageView with name and type)
+     */
+    private void startConversationWithNPC(javafx.scene.image.ImageView npcImage, String npcName, String npcType) {
+        System.out.println("💬 Starting conversation with " + npcName + " (Type: " + npcType + ") at position: (" + npcImage.getLayoutX() + ", " + npcImage.getLayoutY() + ")");
+        
+        // Create conversation system based on NPC type
+        ConversationSystem.DialogueNode conversationTree;
+        String npcDisplayType;
+        
+        switch (npcType) {
+            case "adventurer" -> {
+                conversationTree = NPCConversationTrees.createAdventurerConversation();
+                npcDisplayType = "Game Guide";
+            }
+            case "wise_lady" -> {
+                conversationTree = NPCConversationTrees.createWiseLadyConversation();
+                npcDisplayType = "Financial Sage";
+            }
+            case "businessman" -> {
+                conversationTree = NPCConversationTrees.createBusinessmanConversation();
+                npcDisplayType = "Business Expert";
+            }
+            default -> {
+                System.out.println("❌ Unknown NPC type: " + npcType);
+                return;
+            }
+        }
+        
+        if (conversationTree != null) {
+            ConversationSystem conversationSystem = new ConversationSystem(npcName, npcDisplayType, conversationTree);
+            conversationSystem.startConversation();
+        }
+    }
+    
+    /**
+     * Add NPC collision detection with reduced collision area and no push-back
+     */
+    private void addNPCCollisionDetection(PlayerSheetController controller, javafx.scene.layout.Pane gameWorld, Sprite idleSprite, InputManager inputManager) {
+        // Note: controller and inputManager parameters kept for future use
+        System.out.println("🛡️ Adding NPC collision detection to Free Play");
+        
+        // Create a custom updatable for NPC collision detection
+        gameLoop.addUpdatable(deltaTime -> {
+            // Get player position and size
+            double playerX = idleSprite.getX();
+            double playerY = idleSprite.getY();
+            double playerWidth = Math.max(1.0, idleSprite.getWidth());
+            double playerHeight = Math.max(1.0, idleSprite.getHeight());
+            double playerRadius = Math.max(playerWidth, playerHeight) * 0.5;
+            
+            // Check collision with all NPCs
+            for (javafx.scene.Node node : getAllDescendants(gameWorld)) {
+                // Skip player's own sprite
+                if (node == idleSprite.getNode()) continue;
+                
+                // Only consider likely NPC visuals
+                if (!isLikelyNPC(node, gameWorld)) continue;
+                
+                javafx.geometry.Point2D npcCenter;
+                double npcRadius;
+                
+                if (node instanceof javafx.scene.shape.Circle c) {
+                    npcCenter = new javafx.geometry.Point2D(c.getLayoutX(), c.getLayoutY());
+                    npcRadius = Math.max(1.0, c.getRadius());
+                } else if (node instanceof javafx.scene.image.ImageView iv) {
+                    npcCenter = new javafx.geometry.Point2D(
+                        iv.getLayoutX() + Math.max(1.0, iv.getBoundsInParent().getWidth()) * 0.5,
+                        iv.getLayoutY() + Math.max(1.0, iv.getBoundsInParent().getHeight()) * 0.5
+                    );
+                    npcRadius = Math.max(iv.getBoundsInParent().getWidth(), iv.getBoundsInParent().getHeight()) * 0.5;
+                } else {
+                    continue;
+                }
+                
+                // Calculate distance between player and NPC
+                double dx = playerX - npcCenter.getX();
+                double dy = playerY - npcCenter.getY();
+                double distance = Math.sqrt(dx * dx + dy * dy);
+                double minDistance = npcRadius + playerRadius + 2.0; // Reduced to 2 pixel buffer
+                
+                // If too close, just log the collision (no push-back)
+                if (distance > 0 && distance < minDistance) {
+                    System.out.println("🚫 NPC collision detected: player too close to NPC (distance: " + String.format("%.1f", distance) + "px)");
+                    break; // Only handle one collision per frame
+                }
+            }
+        });
+        
+        System.out.println("✅ NPC collision detection added - Reduced collision area (2px buffer, no push-back)");
+    }
+    
+    /**
+     * Check if a node is likely an NPC visual
+     */
+    private boolean isLikelyNPC(javafx.scene.Node node, javafx.scene.Parent searchRoot) {
+        if (node instanceof javafx.scene.shape.Circle) return true;
+        if (node instanceof javafx.scene.image.ImageView iv) {
+            // Check for nearby name text within ~140px above the image center
+            javafx.geometry.Bounds b = iv.localToScene(iv.getBoundsInLocal());
+            javafx.geometry.Point2D centerScene = new javafx.geometry.Point2D(
+                (b.getMinX() + b.getMaxX()) * 0.5,
+                (b.getMinY() + b.getMaxY()) * 0.5
+            );
+            javafx.geometry.Point2D centerLocal = searchRoot.sceneToLocal(centerScene);
+            for (javafx.scene.Node sibling : getAllDescendants(searchRoot)) {
+                if (sibling instanceof javafx.scene.text.Text t) {
+                    double dx = t.getLayoutX() - centerLocal.getX();
+                    double dy = (t.getLayoutY() - 40) - centerLocal.getY();
+                    if (Math.hypot(dx, dy) < 140) return true;
+                }
+            }
+        }
+        return false;
     }
     
     private void showNPCIntro() {

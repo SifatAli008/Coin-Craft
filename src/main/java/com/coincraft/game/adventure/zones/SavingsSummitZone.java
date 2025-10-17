@@ -124,6 +124,12 @@ public class SavingsSummitZone extends AdventureZone {
         System.out.println("A - Achievable: Set realistic goals");
         System.out.println("R - Relevant: Goals that matter to you");
         System.out.println("T - Time-bound: Set a deadline!");
+        
+        // Player-specific goal setting interaction
+        System.out.println("💡 Player, what's your first savings goal?");
+        // In a real implementation, this would open a dialog for the player to set goals
+        // and use player data like current position or progress
+        System.out.println("📍 Current position: (" + player.getCenterX() + ", " + player.getCenterY() + ")");
     }
     
     private void showSavingsCalculatorLesson(AdventurePlayer player) {
@@ -132,5 +138,10 @@ public class SavingsSummitZone extends AdventureZone {
         System.out.println("• After 1 year: $520");
         System.out.println("• After 5 years: $2,600");
         System.out.println("• With 5% interest: $2,900!");
+        
+        // Player-specific savings calculation
+        System.out.println("💰 Player, let's calculate your personal savings potential!");
+        // In a real implementation, this would use the player's current savings data
+        System.out.println("📍 Current position: (" + player.getCenterX() + ", " + player.getCenterY() + ")");
     }
 }

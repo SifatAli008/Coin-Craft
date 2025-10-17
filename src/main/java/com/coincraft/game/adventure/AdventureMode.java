@@ -26,24 +26,35 @@ public class AdventureMode {
      * Start the adventure mode
      */
     public void startAdventure() {
+        System.out.println("=== ADVENTURE MODE STARTING ===");
+        System.out.println("User: " + user.getUsername());
+        System.out.println("Stage: " + primaryStage);
+        
         // Play adventure start sound
         // SoundManager.getInstance().playSound("adventure_start.wav");
         
         // Create adventure controller
+        System.out.println("Creating AdventureController...");
         adventureController = new AdventureController(user, gameState);
         
         // Set the scene
+        System.out.println("Getting scene from controller...");
         Scene adventureScene = adventureController.getScene();
+        System.out.println("Scene obtained: " + adventureScene);
+        
+        System.out.println("Setting scene on stage...");
         primaryStage.setScene(adventureScene);
         primaryStage.setTitle("Coin Craft Adventure - " + user.getUsername());
         primaryStage.setResizable(false);
         
         // Show the stage
+        System.out.println("Showing stage...");
         primaryStage.show();
         
         System.out.println("🎮 Adventure Mode Started!");
         System.out.println("Welcome to the Financial Literacy Adventure, " + user.getUsername() + "!");
         System.out.println("Use WASD or click to move, SPACE to interact!");
+        System.out.println("=== ADVENTURE MODE COMPLETE ===");
     }
     
     /**

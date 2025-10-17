@@ -51,6 +51,7 @@ public abstract class AdventureZone {
         renderZoneElements(gameWorld);
         
         // Add NPCs
+        System.out.println("Rendering " + npcs.size() + " NPCs in zone: " + zoneName);
         for (AdventureNPC npc : npcs) {
             npc.render(gameWorld);
         }

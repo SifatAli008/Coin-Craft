@@ -1,20 +1,23 @@
 package com.coincraft.engine.input;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Input manager for handling keyboard and mouse input
  * Provides centralized input handling for the game engine
+ * Updated with mouse button support for right-click attack
  */
 public class InputManager {
     private final Scene scene;
@@ -30,6 +33,15 @@ public class InputManager {
     private boolean mousePressed = false;
     private boolean mouseReleased = false;
     private boolean mouseClicked = false;
+    // Button-specific mouse state
+    private boolean primaryPressed = false;
+    private boolean primaryJustPressed = false;
+    private boolean primaryReleased = false;
+    private boolean primaryClicked = false;
+    private boolean secondaryPressed = false;
+    private boolean secondaryJustPressed = false;
+    private boolean secondaryReleased = false;
+    private boolean secondaryClicked = false;
     
     // Input handlers
     private final List<InputHandler> handlers = new CopyOnWriteArrayList<>();
@@ -66,6 +78,12 @@ public class InputManager {
         keyReleased.clear();
         mouseReleased = false;
         mouseClicked = false;
+        primaryJustPressed = false;
+        primaryReleased = false;
+        primaryClicked = false;
+        secondaryJustPressed = false;
+        secondaryReleased = false;
+        secondaryClicked = false;
         
         // Process input events
         for (InputEvent event : inputEvents) {
@@ -115,6 +133,13 @@ public class InputManager {
         mousePressed = true;
         mouseX = event.getX();
         mouseY = event.getY();
+        if (event.getButton() == MouseButton.PRIMARY) {
+            primaryPressed = true;
+            primaryJustPressed = true;
+        } else if (event.getButton() == MouseButton.SECONDARY) {
+            secondaryPressed = true;
+            secondaryJustPressed = true;
+        }
         
         inputEvents.add(new InputEvent(InputEvent.Type.MOUSE_PRESSED, null, mouseX, mouseY));
     }
@@ -127,6 +152,13 @@ public class InputManager {
         mouseReleased = true;
         mouseX = event.getX();
         mouseY = event.getY();
+        if (event.getButton() == MouseButton.PRIMARY) {
+            primaryPressed = false;
+            primaryReleased = true;
+        } else if (event.getButton() == MouseButton.SECONDARY) {
+            secondaryPressed = false;
+            secondaryReleased = true;
+        }
         
         inputEvents.add(new InputEvent(InputEvent.Type.MOUSE_RELEASED, null, mouseX, mouseY));
     }
@@ -138,6 +170,11 @@ public class InputManager {
         mouseClicked = true;
         mouseX = event.getX();
         mouseY = event.getY();
+        if (event.getButton() == MouseButton.PRIMARY) {
+            primaryClicked = true;
+        } else if (event.getButton() == MouseButton.SECONDARY) {
+            secondaryClicked = true;
+        }
         
         inputEvents.add(new InputEvent(InputEvent.Type.MOUSE_CLICKED, null, mouseX, mouseY));
     }
@@ -162,6 +199,15 @@ public class InputManager {
     public boolean isMouseJustPressed() { return mousePressed && !mouseReleased; }
     public boolean isMouseJustReleased() { return mouseReleased; }
     public boolean isMouseClicked() { return mouseClicked; }
+    // Button-specific mouse helpers
+    public boolean isPrimaryMousePressed() { return primaryPressed; }
+    public boolean isPrimaryMouseJustPressed() { return primaryJustPressed; }
+    public boolean isPrimaryMouseJustReleased() { return primaryReleased; }
+    public boolean isPrimaryMouseClicked() { return primaryClicked; }
+    public boolean isSecondaryMousePressed() { return secondaryPressed; }
+    public boolean isSecondaryMouseJustPressed() { return secondaryJustPressed; }
+    public boolean isSecondaryMouseJustReleased() { return secondaryReleased; }
+    public boolean isSecondaryMouseClicked() { return secondaryClicked; }
     
     // Input handler management
     public void addInputHandler(InputHandler handler) {

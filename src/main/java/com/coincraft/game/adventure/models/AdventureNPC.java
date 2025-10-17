@@ -31,18 +31,37 @@ public class AdventureNPC {
         createNPCSprite();
     }
     
+    private String getNPCSpritePath() {
+        // Map NPC names to their corresponding sprite files
+        String lowerName = name.toLowerCase();
+        
+        if (lowerName.contains("business") || lowerName.contains("venture") || lowerName.contains("profit")) {
+            return getClass().getResource("/Assets/NPC/Smart Businessman.png").toExternalForm();
+        } else if (lowerName.contains("adventure") || lowerName.contains("thorin") || lowerName.contains("marcus") || lowerName.contains("gareth") || lowerName.contains("finn")) {
+            return getClass().getResource("/Assets/NPC/Strong Adventurere.png").toExternalForm();
+        } else if (lowerName.contains("wise") || lowerName.contains("sage") || lowerName.contains("luna") || lowerName.contains("aria") || lowerName.contains("elena")) {
+            return getClass().getResource("/Assets/NPC/Wise Lady.png").toExternalForm();
+        } else {
+            // Default to Smart Businessman if no match
+            return getClass().getResource("/Assets/NPC/Smart Businessman.png").toExternalForm();
+        }
+    }
+    
     private void createNPCSprite() {
         try {
-            // Load chest sprite from Assets
-            String chestSpritePath = getClass().getResource("/Assets/Sprites/Objects and buildings/Chest/spr_chest.png").toExternalForm();
-            Image chestImage = new Image(chestSpritePath);
-            ImageView chestImageView = new ImageView(chestImage);
-            chestImageView.setFitWidth(60);
-            chestImageView.setFitHeight(60);
-            chestImageView.setPreserveRatio(true);
-            npcSprite = chestImageView;
+            // Load appropriate NPC sprite based on name
+            String npcImagePath = getNPCSpritePath();
+            System.out.println("Loading NPC sprite for " + name + " from: " + npcImagePath);
+            Image npcImage = new Image(npcImagePath);
+            ImageView npcImageView = new ImageView(npcImage);
+            npcImageView.setFitWidth(60);
+            npcImageView.setFitHeight(60);
+            npcImageView.setPreserveRatio(true);
+            npcSprite = npcImageView;
+            System.out.println("Successfully loaded NPC sprite for " + name);
         } catch (Exception e) {
             // Fallback to circle sprite
+            System.out.println("Failed to load NPC sprite for " + name + ", using fallback: " + e.getMessage());
             npcSprite = new Circle(30, Color.LIGHTGREEN);
             ((Circle) npcSprite).setStroke(Color.DARKGREEN);
             ((Circle) npcSprite).setStrokeWidth(2);
@@ -64,6 +83,7 @@ public class AdventureNPC {
     }
     
     public void render(Pane gameWorld) {
+        System.out.println("Rendering NPC: " + name + " at position (" + x + ", " + y + ")");
         npcSprite.setLayoutX(x);
         npcSprite.setLayoutY(y);
         gameWorld.getChildren().add(npcSprite);
@@ -71,6 +91,7 @@ public class AdventureNPC {
         npcName.setLayoutX(x - name.length() * 3);
         npcName.setLayoutY(y - 40);
         gameWorld.getChildren().add(npcName);
+        System.out.println("NPC " + name + " rendered successfully");
     }
     
     public void update(double deltaTime, AdventurePlayer player) {
